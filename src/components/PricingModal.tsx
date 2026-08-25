@@ -14,13 +14,6 @@ interface PricingModalProps {
   highlightPlan?: "basic" | "premium";
 }
 
-const proFeatures = [
-  { icon: Sparkles, label: "Daily & Pro Predictions unlocked" },
-  { icon: BarChart3, label: "Basic & Pro AI predictions" },
-  { icon: Zap, label: "Live scores & standings" },
-  { icon: Ban, label: "Ad-free predictions experience" },
-];
-
 const premiumFeatures = [
   { icon: Crown, label: "All Premium Features" },
   { icon: Sparkles, label: "All Free & Premium Predictions" },
@@ -34,34 +27,23 @@ const premiumFeatures = [
   { icon: Ban, label: "Ad-Free Experience" },
 ];
 
-export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
+export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   const { plan: currentPlan, isAuthenticated } = useUserPlan();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
-  const [internalPlan, setInternalPlan] = useState<"basic" | "premium">(highlightPlan ?? "basic");
   const isAndroid = getIsAndroidApp();
-
-  // Sync internal plan when parent changes highlightPlan or modal opens
-  useEffect(() => {
-    if (open && highlightPlan) {
-      setInternalPlan(highlightPlan);
-    }
-  }, [open, highlightPlan]);
 
   const planRequired = searchParams.get("plan_required");
   const showFomoBadge = open && (planRequired === "premium" || planRequired === "pro");
 
-  const isPremium = internalPlan === "premium";
-  const targetPlan: UserPlan = isPremium ? "premium" : "basic";
-  const features = isPremium ? premiumFeatures : proFeatures;
+  const features = premiumFeatures;
+  const targetPlan: UserPlan = "premium";
 
-  // Pricing per plan & period
-  const pricing = isPremium
-    ? { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" }
-    : { monthly: "€3.99/mo", annual: "€39.99/yr", saveBadge: "Save 16%" };
+  // Pricing per period
+  const pricing = { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" };
   const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
   useEffect(() => {
@@ -98,9 +80,9 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
       return;
     }
 
-    // Android: use RevenueCat purchaseSubscription helper (priority chain)
+    // Android: use RevenueCat purchaseSubscription helper
     if (isAndroid) {
-      purchaseSubscription(targetPlan === "premium" ? "premium" : "basic", period, currentPlan);
+      purchaseSubscription("premium", period, currentPlan);
       return;
     }
 
@@ -143,68 +125,36 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-1 mb-2">
-              <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse",
-                isPremium
-                  ? "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40"
-                  : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-              )}>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">
                 <Flame className="h-3 w-3" />
-                {isPremium ? "Premium Prediction Just Dropped" : "Pro Prediction Just Dropped"}
+                Premium Prediction Just Dropped
               </div>
             </div>
           )}
 
           {/* Header */}
           <div className="text-center mt-1 mb-3">
-            <div className={cn(
-              "inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2",
-              isPremium
-                ? "bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]"
-                : "bg-gradient-to-br from-amber-500/30 to-yellow-600/30 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-            )}>
-              {isPremium
-                ? <Crown className="h-5 w-5 text-fuchsia-400" />
-                : <Star className="h-5 w-5 text-amber-400" />
-              }
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2 bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]">
+              <Crown className="h-5 w-5 text-fuchsia-400" />
             </div>
-            <h2 className={cn(
-              "text-lg font-bold mb-1 bg-clip-text text-transparent",
-              isPremium
-                ? "bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400"
-                : "bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400"
-            )}>
-              {isPremium ? "Unlock Premium Access" : "Get Full Access"}
+            <h2 className="text-lg font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400">
+              Unlock Premium Access
             </h2>
             <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
-              {isPremium
-                ? "Don't miss today's highest confidence AI predictions."
-                : "Get access to higher confidence AI predictions & analysis."
-              }
+              Don't miss today's highest confidence AI predictions.
             </p>
           </div>
 
           {/* Features */}
-          <div className={cn(
-            "rounded-xl p-3 mb-3 border",
-            isPremium
-              ? "bg-fuchsia-500/5 border-fuchsia-500/20"
-              : "bg-amber-500/5 border-amber-500/20"
-          )}>
+          <div className="rounded-xl p-3 mb-3 border bg-fuchsia-500/5 border-fuchsia-500/20">
             <h3 className="text-[11px] font-semibold text-foreground mb-2">
               Everything you get:
             </h3>
             <ul className="space-y-1.5">
               {features.map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-2.5">
-                  <div className={cn(
-                    "flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center",
-                    isPremium ? "bg-fuchsia-500/15" : "bg-amber-500/15"
-                  )}>
-                    <feature.icon className={cn(
-                      "h-3 w-3",
-                      isPremium ? "text-fuchsia-400" : "text-amber-400"
-                    )} />
+                  <div className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-fuchsia-500/15">
+                    <feature.icon className="h-3 w-3 text-fuchsia-400" />
                   </div>
                   <span className="text-[11px] text-foreground">{feature.label}</span>
                 </li>
@@ -215,10 +165,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           {/* Social Proof */}
           <div className="text-center mb-1">
             <p className="text-[11px] text-muted-foreground">
-              <span className={cn(
-                "font-semibold",
-                isPremium ? "text-fuchsia-400" : "text-amber-400"
-              )}>2,400+</span> users already upgraded
+              <span className="font-semibold text-fuchsia-400">2,400+</span> users already upgraded
             </p>
           </div>
         </div>
@@ -249,10 +196,7 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
                 )}
               >
                 Annual
-                <span className={cn(
-                  "ml-1 text-[10px] font-bold",
-                  isPremium ? "text-fuchsia-400" : "text-amber-400"
-                )}>
+                <span className="ml-1 text-[10px] font-bold text-fuchsia-400">
                   {pricing.saveBadge}
                 </span>
               </button>
@@ -262,45 +206,15 @@ export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModal
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
-            className={cn(
-              "w-full h-11 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg",
-              isPremium
-                ? "bg-gradient-to-r from-fuchsia-600 via-purple-600 to-pink-600 hover:from-fuchsia-500 hover:via-purple-500 hover:to-pink-500 text-white shadow-fuchsia-500/30"
-                : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-400 hover:via-yellow-400 hover:to-orange-400 text-black shadow-amber-500/30"
-            )}
+            className="w-full h-11 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg bg-gradient-to-r from-fuchsia-600 via-purple-600 to-pink-600 hover:from-fuchsia-500 hover:via-purple-500 hover:to-pink-500 text-white shadow-fuchsia-500/30"
           >
             <span className="flex items-center gap-2">
-              {isPremium ? <Crown className="h-4 w-4" /> : <Star className="h-4 w-4" />}
+              <Crown className="h-4 w-4" />
               {currentPlan === targetPlan
                 ? "Current Plan"
-                : isPremium
-                  ? `Upgrade to Premium – ${currentPrice}`
-                  : `Upgrade to Pro – ${currentPrice}`
-              }
+                : `Upgrade to Premium – ${currentPrice}`}
             </span>
           </Button>
-
-          {/* Cross-sell hint */}
-          {!isPremium && (
-            <p className="text-center text-[11px] text-muted-foreground mt-2">
-              Want everything? <button
-                onClick={() => setInternalPlan("premium")}
-                className="text-fuchsia-400 font-semibold underline underline-offset-2"
-              >
-                Go Premium →
-              </button>
-            </p>
-          )}
-          {isPremium && currentPlan === "free" && (
-            <p className="text-center text-[11px] text-muted-foreground mt-2">
-              Looking for a lighter plan? <button
-                onClick={() => setInternalPlan("basic")}
-                className="text-amber-400 font-semibold underline underline-offset-2"
-              >
-                Try Pro →
-              </button>
-            </p>
-          )}
         </div>
       </div>
     </div>

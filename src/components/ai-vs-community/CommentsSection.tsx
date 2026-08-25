@@ -134,7 +134,7 @@ export function CommentsSection({ matchId, userTier, aiPrediction }: CommentsSec
         </div>
       ) : (
         <p className="text-center text-[10px] text-muted-foreground py-2">
-          Upgrade to Pro to join the discussion
+          Upgrade to Premium to join the discussion
         </p>
       )}
     </div>

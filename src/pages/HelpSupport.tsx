@@ -115,7 +115,7 @@ const HelpSupport = () => {
         },
         {
           q: "How do I access predictions?",
-          a: "Free users can access Daily Predictions. To access Pro Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
+          a: "Free users can access Daily Predictions. To access Premium Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
         },
         {
           q: "When are new predictions posted?",
@@ -217,11 +217,11 @@ const HelpSupport = () => {
         },
         {
           q: "How do I earn points and what's the reward?",
-          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Pro Access extension. Your points only reset after you claim the reward, so you never lose progress."
+          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Premium Access extension. Your points only reset after you claim the reward, so you never lose progress."
         },
         {
           q: "How many predictions can I make per day?",
-          a: "Daily limits depend on your plan: Free users get 4 predictions per day, Pro users get 5, and Premium users get 6. Predictions are available for priority league matches only."
+          a: "Daily limits depend on your plan: Free users get 4 predictions per day and Premium users get 6. Legacy Pro users get 5. Predictions are available for priority league matches only."
         },
         {
           q: "When are Arena predictions resolved?",
@@ -248,7 +248,7 @@ const HelpSupport = () => {
         },
         {
           q: "What happens when I reach 1,000 points?",
-          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward! Free users get 1 month of Pro, Pro users get +1 month extension, and Premium users get +1 month Premium extension. Points reset after the reward is applied."
+          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward! Free users get 1 month of Premium, Premium users get +1 month Premium extension, and legacy Pro users get +1 month Premium extension. Points reset after the reward is applied."
         },
         {
           q: "Where can I see my points and rewards?",

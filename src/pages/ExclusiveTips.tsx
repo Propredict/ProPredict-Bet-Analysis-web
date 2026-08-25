@@ -87,10 +87,10 @@ export default function ExclusiveTips() {
 
   return <>
     <Helmet>
-      <title>Pro Insights – ProPredict</title>
+      <title>Premium Insights – ProPredict</title>
       <meta
         name="description"
-        content="Pro-level AI sports predictions with higher confidence analysis. For entertainment and informational purposes only."
+        content="Premium-level AI sports predictions with higher confidence analysis. For entertainment and informational purposes only."
       />
     </Helmet>
     <div className="section-gap">
@@ -106,7 +106,7 @@ export default function ExclusiveTips() {
             <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Pro Insights</h1>
+            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Premium Insights</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
               {isAndroidApp ? "Watch ads to access predictions or upgrade to Premium" : "Advanced match predictions with higher confidence selections"}
             </p>
@@ -115,7 +115,7 @@ export default function ExclusiveTips() {
         <div className="flex items-center gap-1">
           <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] px-1.5 py-0.5">
             <Star className="h-2.5 w-2.5 mr-0.5" />
-            Pro
+            Premium
           </Badge>
           <Button variant="outline" size="sm" onClick={handleRefresh} className="h-6 px-1.5 text-[9px]">
             <RefreshCw className="h-2.5 w-2.5 mr-1" />
@@ -127,7 +127,7 @@ export default function ExclusiveTips() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Pro Insights offer advanced match predictions with deeper analysis, higher confidence levels, and enhanced statistical insights. This section is intended for users who want more detailed and reliable predictions.
+          Premium Insights offer advanced match predictions with deeper analysis, higher confidence levels, and enhanced statistical insights. This section is intended for users who want more detailed and reliable predictions.
         </p>
       </Card>
 
@@ -139,8 +139,8 @@ export default function ExclusiveTips() {
                 <Crown className="h-4 w-4 text-amber-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Pro AI Predictions</h3>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe for $3.99/month</p>
+                <h3 className="font-semibold text-[10px] sm:text-xs text-amber-400">Remove Ads & Access Premium AI Predictions</h3>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to Premium</p>
               </div>
             </div>
             <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-6 sm:h-7 px-2 text-[9px] sm:text-[10px]" onClick={() => navigate("/get-premium")}>
@@ -193,8 +193,8 @@ export default function ExclusiveTips() {
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">
               <Target className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-primary mb-1">Fresh Pro Insights drop daily</p>
-              <p className="text-sm">New Pro predictions are generated every morning at 7:00 AM CET.</p>
+              <p className="text-primary mb-1">Fresh Premium Insights drop daily</p>
+              <p className="text-sm">New Premium predictions are generated every morning at 7:00 AM CET.</p>
               <Button variant="outline" size="sm" className="mt-4" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again

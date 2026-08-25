@@ -6,12 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { UnlockMethod } from "@/hooks/useUserPlan";
-import { useUserPlan } from "@/hooks/useUserPlan";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseMatchName } from "@/types/admin";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
-import { purchaseSubscription } from "@/hooks/useRevenueCat";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -84,7 +82,6 @@ export function AllTicketsCard({
   const totalOdds = ticket.total_odds || 0;
 
   const isAndroid = getIsAndroidApp();
-  const { plan } = useUserPlan();
 
   const handleUnlockClick = () => {
     // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
@@ -108,9 +105,9 @@ export function AllTicketsCard({
   };
 
   const handleSecondaryClick = () => {
-    // Android: Unlock Tip → purchase Premium package
+    // Android: Unlock Tip → go to the Premium paywall page
     if (isAndroid) {
-      purchaseSubscription("premium", "monthly", plan);
+      navigate("/get-premium");
       return;
     }
 

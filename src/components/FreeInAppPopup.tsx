@@ -89,7 +89,7 @@ export function FreeInAppPopup({ open, onClose, onContinueWithPro }: FreeInAppPo
             className="w-full h-8 text-[11px] text-muted-foreground hover:text-foreground gap-1.5"
           >
             <Crown className="h-3 w-3" />
-            Continue with Pro subscription
+            Continue with Premium subscription
           </Button>
         </div>
       </DialogContent>

@@ -186,7 +186,7 @@ export default function TicketDetails() {
       case "premium":
         return { label: "Premium Ticket", path: "/premium-predictions" };
       case "exclusive":
-        return { label: "Pro Ticket", path: "/pro-predictions" };
+        return { label: "Sure Odds 2+ Ticket", path: "/pro-predictions" };
       case "daily":
       default:
         return { label: "Daily Ticket", path: "/daily-predictions" };
@@ -266,7 +266,7 @@ export default function TicketDetails() {
       },
       upgrade_basic: {
         icon: Star,
-        text: "Subscribe to Pro",
+        text: "Subscribe to Premium",
         className: "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0",
         variant: "default" as const,
       },

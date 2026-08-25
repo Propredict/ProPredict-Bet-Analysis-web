@@ -2,7 +2,7 @@ import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type ContentTier, type UnlockMethod, useUserPlan } from "@/hooks/useUserPlan";
+import { type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useNavigate } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { purchaseSubscription } from "@/hooks/useRevenueCat";
 
 export type TipResult = "pending" | "won" | "lost";
 
@@ -84,7 +83,6 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
-  const { plan } = useUserPlan();
   const queryClient = useQueryClient();
   const [adminBusy, setAdminBusy] = useState<null | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -115,9 +113,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   };
 
   const handleSecondaryClick = () => {
-    // Android: Unlock Tip → purchase Premium package
+    // Android: Unlock Tip → go to the Premium paywall page
     if (getIsAndroidApp()) {
-      purchaseSubscription("premium", "monthly", plan);
+      navigate("/get-premium");
       return;
     }
     if (onSecondaryUnlock) { onSecondaryUnlock(); } else { navigate("/get-premium"); }
