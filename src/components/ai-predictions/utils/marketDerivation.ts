@@ -236,7 +236,7 @@ export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScor
 
 export function getRecommendedScoreConstraints(
   prediction: AIPrediction
-): Pick<ScoreConstraintOptions, "minTotalGoals" | "maxTotalGoals" | "requireBothTeamsToScore"> {
+): Pick<ScoreConstraintOptions, "minTotalGoals" | "maxTotalGoals" | "requireBothTeamsToScore" | "marketType"> {
   const goalProbs = calculateGoalMarketProbs(prediction);
 
   let minTotalGoals: number | undefined;
@@ -255,12 +255,22 @@ export function getRecommendedScoreConstraints(
     requireBothTeamsToScore = false;
   }
 
+  // The scoreline must also match the 1X2 direction shown on the card
+  // (e.g. never display "1-3" next to a "DNB Home" / Home Win recommendation).
+  const raw = (prediction.prediction || "").toLowerCase().trim();
+  let marketType: MarketType | undefined;
+  if (raw === "1" || raw === "home" || raw === "home win") marketType = "home_win";
+  else if (raw === "2" || raw === "away" || raw === "away win") marketType = "away_win";
+  else if (raw === "x" || raw === "draw") marketType = "draw";
+
   return {
     minTotalGoals,
     maxTotalGoals: Number.isFinite(maxTotalGoals ?? Number.NaN) ? maxTotalGoals : undefined,
     requireBothTeamsToScore,
+    marketType,
   };
 }
+
 
 /**
  * Check if a scoreline is consistent with a given market type.

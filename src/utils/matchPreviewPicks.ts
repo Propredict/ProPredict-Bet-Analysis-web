@@ -58,16 +58,19 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
   const dc1x = clamp(homePickConf + draw * 0.6, 50, 95);
   const dcx2 = clamp(awayPickConf + draw * 0.6, 50, 95);
   const dnbConf = clamp(Math.max(homePickConf, awayPickConf) + draw * 0.3, 50, 92);
-  const favorsHome = homeWin > awayWin && homeWin > draw;
-  const favorsAway = awayWin > homeWin && awayWin > draw;
+  // Direction must follow the model's actual pick (not just raw 1X2 %),
+  // otherwise we can show "DNB Home" next to an Away Win recommendation.
+  const favorsHome = homePickConf > awayPickConf && homePickConf > drawPickConf;
+  const favorsAway = awayPickConf > homePickConf && awayPickConf > drawPickConf;
 
   const candidatePicks: MatchPreviewAIPick[] = [
-    makePick("Home Win", homePickConf),
+    ...(favorsAway ? [] : [makePick("Home Win", homePickConf)]),
     makePick("Draw", drawPickConf),
-    makePick("Away Win", awayPickConf),
+    ...(favorsHome ? [] : [makePick("Away Win", awayPickConf)]),
     ...(favorsAway ? [] : [makePick("1X (Home/Draw)", dc1x)]),
     ...(favorsHome ? [] : [makePick("X2 (Draw/Away)", dcx2)]),
-    makePick(homeWin >= awayWin ? "DNB Home" : "DNB Away", dnbConf),
+    makePick(favorsAway ? "DNB Away" : "DNB Home", dnbConf),
+
     goalsPick,
     bttsPick,
   ];
