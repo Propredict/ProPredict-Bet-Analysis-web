@@ -22,6 +22,14 @@ export function DailyRewardWidget() {
 
 /* ─── WEBSITE: Premium info widget ─── */
 function WebRewardWidget() {
+  const { user } = useAuth();
+  const { currentStreak, loading } = useDailyReward();
+  const arenaStats = useArenaStats();
+
+  const points = arenaStats.points || 0;
+  const streak = currentStreak || 0;
+  const isLoading = loading || arenaStats.loading;
+
   return (
     <Card className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-card via-card to-amber-500/5 p-0">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(45,100%,50%,0.08),transparent_50%)]" />
@@ -40,18 +48,23 @@ function WebRewardWidget() {
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Build your streak and unlock rewards <span className="text-amber-400">⚡</span>
+              Reach 1,000 points and get 1 month Premium free <span className="text-amber-400">⚡</span>
             </p>
           </div>
 
           <div className="flex items-center gap-4 sm:gap-6">
             <div className="text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Current Streak</p>
-              <p className="text-2xl sm:text-3xl font-black text-foreground">7 <Flame className="inline h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" /></p>
+              <p className="text-2xl sm:text-3xl font-black text-foreground">
+                {isLoading ? "–" : user ? streak : 0}{" "}
+                <Flame className="inline h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
+              </p>
             </div>
             <div className="text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">AI Points</p>
-              <p className="text-2xl sm:text-3xl font-black text-amber-400">1,250</p>
+              <p className="text-2xl sm:text-3xl font-black text-amber-400">
+                {isLoading ? "–" : (user ? points : 0).toLocaleString()}
+              </p>
             </div>
             <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden border border-amber-500/20 shadow-lg shadow-amber-500/10">
               <img
@@ -78,7 +91,7 @@ function WebRewardWidget() {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">Daily Check-in</p>
-              <p className="text-[10px] sm:text-xs text-primary font-bold">+10 pts</p>
+              <p className="text-[10px] sm:text-xs text-primary font-bold">+3 to +15 pts</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/40 border border-border/60">
@@ -86,8 +99,8 @@ function WebRewardWidget() {
               <Target className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">Correct Predictions</p>
-              <p className="text-[10px] sm:text-xs text-primary font-bold">+25 pts</p>
+              <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">Correct Prediction</p>
+              <p className="text-[10px] sm:text-xs text-primary font-bold">+1 pt each</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/40 border border-border/60">
@@ -95,11 +108,12 @@ function WebRewardWidget() {
               <Flame className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">Streak Bonus</p>
-              <p className="text-[10px] sm:text-xs text-amber-400 font-bold">Up to +50 pts</p>
+              <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">7-Day Streak</p>
+              <p className="text-[10px] sm:text-xs text-amber-400 font-bold">72 pts / week</p>
             </div>
           </div>
         </div>
+
 
         {/* CTA */}
         <Link
