@@ -33,9 +33,6 @@ verify_jwt = false
 [functions.send-push-notification]
 verify_jwt = false
 
-[functions.send-wc-prediction-available]
-verify_jwt = false
-
 [functions.check-goals]
 verify_jwt = false
 
@@ -79,25 +76,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-rating-followup]
-verify_jwt = false
-
-[functions.send-worldcup-kickoff-push]
-verify_jwt = false
-
-[functions.send-worldcup-daily-push]
-verify_jwt = false
-
-[functions.send-worldcup-digest]
-verify_jwt = false
-
-[functions.get-wc-today]
-verify_jwt = false
-
-[functions.get-wc-top-players]
-verify_jwt = false
-
-
-[functions.debug-wc]
 verify_jwt = false
 
 [functions.get-fixtures-by-date]
