@@ -21,7 +21,7 @@ export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL }: Affiliate
       target="_blank"
       rel="noopener noreferrer sponsored"
       aria-label="1xBet – Register now (sponsored)"
-      className="group block relative overflow-hidden rounded-xl border border-white/10 shadow-lg hover:shadow-xl hover:border-blue-400/40 transition-all w-full h-full max-w-3xl mx-auto"
+      className="group block relative overflow-hidden rounded-xl border border-white/10 bg-[#0b1220] shadow-lg hover:shadow-xl hover:border-blue-400/40 transition-all w-full h-full max-w-3xl mx-auto"
     >
       <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-bold uppercase tracking-wider text-white/70">
         Sponsored
@@ -29,7 +29,7 @@ export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL }: Affiliate
       <img
         src={bannerAsset.url}
         alt="1xBet – Register now"
-        className="block w-full h-full object-cover min-h-[140px] sm:min-h-[160px] md:min-h-[180px] max-h-44"
+        className="block w-full h-[120px] sm:h-[150px] md:h-[170px] object-contain"
         loading="lazy"
       />
       <span className="absolute bottom-1 right-2 z-20 text-[9px] text-white/70">
