@@ -821,13 +821,20 @@ function MatchRow({
         </div>
 
         {/* Status */}
-        <div className="flex flex-col items-end gap-1 pt-0.5 flex-shrink-0">
-          <StatusBadge match={m} />
-          {isUpcoming && (
-            <span className="text-[11px] font-bold tabular-nums text-muted-foreground">{m.startTime}</span>
+        <div className="flex flex-col items-end gap-1 pt-0.5 flex-shrink-0 max-w-[86px]">
+          {isUpcoming ? (
+            <>
+              <span className="text-[13px] font-extrabold tabular-nums leading-none text-foreground">
+                {m.startTime}
+              </span>
+              <KickoffCountdown startTime={m.startTime} />
+            </>
+          ) : (
+            <StatusBadge match={m} />
           )}
           {soundActive && <Volume2 className="h-2.5 w-2.5 text-primary/60" />}
         </div>
+
       </div>
 
       {/* DESKTOP LAYOUT */}
