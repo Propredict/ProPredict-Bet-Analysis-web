@@ -14,13 +14,6 @@ interface PricingModalProps {
   highlightPlan?: "basic" | "premium";
 }
 
-const proFeatures = [
-  { icon: Sparkles, label: "Daily & Pro Predictions unlocked" },
-  { icon: BarChart3, label: "Basic & Pro AI predictions" },
-  { icon: Zap, label: "Live scores & standings" },
-  { icon: Ban, label: "Ad-free predictions experience" },
-];
-
 const premiumFeatures = [
   { icon: Crown, label: "All Premium Features" },
   { icon: Sparkles, label: "All Free & Premium Predictions" },
