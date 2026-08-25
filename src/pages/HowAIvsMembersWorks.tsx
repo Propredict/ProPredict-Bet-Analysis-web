@@ -44,7 +44,7 @@ export default function HowAIvsMembersWorks() {
         <title>How AI vs Members Works – AI Sports Predictions | ProPredict</title>
         <meta
           name="description"
-          content="Learn how AI vs Members works: AI predictions, community predictions, Arena points, win/loss resolution, and the free Pro month reward system."
+          content="Learn how AI vs Members works: AI predictions, community predictions, Arena points, win/loss resolution, and the free Premium month reward system."
         />
       </Helmet>
 
@@ -172,7 +172,7 @@ export default function HowAIvsMembersWorks() {
             <p className="text-[10px] md:text-xs text-amber-500 font-semibold mb-1.5">🎉 A Free Premium Month reward is granted automatically!</p>
             <ul className="space-y-1">
               <BulletItem>Free users → get Premium access for 30 days</BulletItem>
-              <BulletItem>Legacy Pro users → subscription upgraded to Premium for 30 days</BulletItem>
+              <BulletItem>All users → Premium access granted/extended for 30 days</BulletItem>
               <BulletItem>Premium users → Premium extended by 30 days</BulletItem>
             </ul>
           </div>

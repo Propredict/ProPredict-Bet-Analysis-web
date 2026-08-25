@@ -55,7 +55,7 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, totalPoints, on
                 🎯 {pointsTo1000} points to unlock FREE subscription upgrade!
               </p>
               <p className="text-[10px] text-muted-foreground">
-                Reach 1,000 Arena Points for a free month of Pro/Premium
+                Reach 1,000 Arena Points for a free month of Premium
               </p>
             </div>
           ) : (
