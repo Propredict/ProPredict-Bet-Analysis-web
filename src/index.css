@@ -121,7 +121,7 @@
   }
 
   .page-content {
-    @apply w-full max-w-7xl mx-auto px-4 py-5 md:py-8 space-y-5;
+    @apply w-full max-w-7xl mx-auto px-4 py-5 md:py-8 space-y-5 lg:max-w-none lg:mx-0;
   }
 
   .card-compact {
