@@ -84,6 +84,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
+  const { plan } = useUserPlan();
   const queryClient = useQueryClient();
   const [adminBusy, setAdminBusy] = useState<null | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
