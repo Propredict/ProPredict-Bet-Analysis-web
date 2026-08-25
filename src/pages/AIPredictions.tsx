@@ -709,10 +709,6 @@ export default function AIPredictions() {
           {/* Neon AI hero banner */}
           <AIHeroBanner />
 
-          {/* Sponsored: 1xBet affiliate banner – web only */}
-          <AffiliateBanner1xBet />
-
-
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
             <Card className="p-3 md:p-4 bg-gradient-to-r from-fuchsia-500/10 via-amber-500/5 to-primary/10 border-fuchsia-500/20 relative overflow-hidden">
