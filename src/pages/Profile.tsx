@@ -452,7 +452,7 @@ const Profile = () => {
                   <Progress value={Math.min((arenaStats.points / 1000) * 100, 100)} className="h-2.5" />
                   {arenaStats.points < 1000 && (
                     <p className="text-[9px] text-amber-400/80 font-medium">
-                      🔥 {1000 - arenaStats.points} points left to unlock a free Pro month!
+                      🔥 {1000 - arenaStats.points} points left to unlock a free Premium month!
                     </p>
                   )}
                 </div>
@@ -462,7 +462,7 @@ const Profile = () => {
                   <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1 pt-1 border-t border-border/50">
                     <p className="font-medium text-foreground text-[9px] mb-1">Rewards at 1,000 points:</p>
                     <p>🆓 Free → <span className="text-primary font-semibold">1 month Premium free</span></p>
-                    <p>⭐ Legacy Pro → <span className="text-primary font-semibold">+1 month Premium extended</span></p>
+                    <p>⭐ Reward → <span className="text-primary font-semibold">+1 month Premium access</span></p>
                     <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
                   </div>
                 )}

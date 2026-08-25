@@ -366,7 +366,7 @@ Deno.serve(async (req) => {
                       .update({ points: newPoints, wins: stats.wins + 1, current_streak: newStreak })
                       .eq("id", stats.id);
 
-                    // Auto-grant free Pro month at 1000 points
+                    // Auto-grant free Premium month at 1000 points
                     if (newPoints >= 1000 && !stats.reward_granted) {
                       // Mark reward as granted + reset points to 0 for new cycle
                       await supabase
@@ -385,11 +385,11 @@ Deno.serve(async (req) => {
                         await supabase.from("arena_rewards").insert({
                           user_id: ap.user_id,
                           season_id: seasonData.season_id,
-                          reward_type: "free_pro_month",
+                          reward_type: "free_premium_month",
                         });
                       }
 
-                      // Extend or create Pro subscription for 30 days
+                      // Extend or create Premium subscription for 30 days
                       const expiresAt = new Date();
                       expiresAt.setDate(expiresAt.getDate() + 30);
 
@@ -401,7 +401,7 @@ Deno.serve(async (req) => {
 
                       if (existingSub) {
                         // Extend current plan by 30 days (never downgrade)
-                        const currentPlan = (existingSub.plan === "free" || existingSub.status !== "active") ? "basic" : existingSub.plan;
+                        const currentPlan = "premium";
                         const baseDate = existingSub.expires_at && new Date(existingSub.expires_at) > new Date() ? new Date(existingSub.expires_at) : new Date();
                         baseDate.setDate(baseDate.getDate() + 30);
 
@@ -421,20 +421,20 @@ Deno.serve(async (req) => {
                           .from("user_subscriptions")
                           .insert({
                             user_id: ap.user_id,
-                            plan: "basic",
+                            plan: "premium",
                             status: "active",
                             expires_at: expiresAt.toISOString(),
                             subscription_source: "arena_reward",
                           });
-                        console.log(`🎉 Arena reward: created free Pro month for ${ap.user_id}`);
+                        console.log(`🎉 Arena reward: created free Premium month for ${ap.user_id}`);
                       }
 
                       // Send reward notification
                       await supabase.from("arena_notifications").insert({
                         user_id: ap.user_id,
                         type: "win",
-                        title: "🎉 Free Pro Month Unlocked!",
-                        message: "Congratulations! You reached 1000 Arena points and earned a free Pro month. Your points have been reset — start a new cycle!",
+                        title: "🎉 Free Premium Month Unlocked!",
+                        message: "Congratulations! You reached 1000 Arena points and earned a free Premium month. Your points have been reset — start a new cycle!",
                         match_id: fixtureId,
                       });
                     }
