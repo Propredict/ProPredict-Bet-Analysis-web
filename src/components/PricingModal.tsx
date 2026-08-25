@@ -27,34 +27,23 @@ const premiumFeatures = [
   { icon: Ban, label: "Ad-Free Experience" },
 ];
 
-export function PricingModal({ open, onOpenChange, highlightPlan }: PricingModalProps) {
+export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   const { plan: currentPlan, isAuthenticated } = useUserPlan();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
-  const [internalPlan, setInternalPlan] = useState<"basic" | "premium">(highlightPlan ?? "basic");
   const isAndroid = getIsAndroidApp();
-
-  // Sync internal plan when parent changes highlightPlan or modal opens
-  useEffect(() => {
-    if (open && highlightPlan) {
-      setInternalPlan(highlightPlan);
-    }
-  }, [open, highlightPlan]);
 
   const planRequired = searchParams.get("plan_required");
   const showFomoBadge = open && (planRequired === "premium" || planRequired === "pro");
 
-  const isPremium = internalPlan === "premium";
-  const targetPlan: UserPlan = isPremium ? "premium" : "basic";
-  const features = isPremium ? premiumFeatures : proFeatures;
+  const features = premiumFeatures;
+  const targetPlan: UserPlan = "premium";
 
-  // Pricing per plan & period
-  const pricing = isPremium
-    ? { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" }
-    : { monthly: "€3.99/mo", annual: "€39.99/yr", saveBadge: "Save 16%" };
+  // Pricing per period
+  const pricing = { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" };
   const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
   useEffect(() => {
