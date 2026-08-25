@@ -11,6 +11,7 @@ import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsS
 import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
 import { selectTopPicks, leagueTier } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
+import { useFixtures } from "@/hooks/useFixtures";
 // Stats now calculated from current day's predictions directly
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
