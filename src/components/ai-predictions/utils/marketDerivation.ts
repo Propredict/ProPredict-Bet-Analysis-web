@@ -207,11 +207,14 @@ interface RankedCorrectScore extends CorrectScorePrediction {
 
 export interface ScoreConstraintOptions {
   marketType?: MarketType;
+  /** Additional markets the scoreline must satisfy (e.g. 1X2 direction + best pick). */
+  extraMarketTypes?: (MarketType | undefined)[];
   safeCombo?: string | null;
   minTotalGoals?: number;
   maxTotalGoals?: number;
   requireBothTeamsToScore?: boolean | null;
 }
+
 
 function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
   const { homeXg, awayXg } = getXgValues(prediction);
@@ -327,16 +330,24 @@ export function getConsistentTopCorrectScores(
   limit = 3
 ): CorrectScorePrediction[] {
   const rankedScores = calculateRankedCorrectScores(prediction);
-  const filteredScores = rankedScores.filter((score) => {
-    const matchesMarket = options.marketType ? scoreMatchesMarket(score.home, score.away, options.marketType) : true;
-    const matchesExtraConstraints = scoreMatchesConstraintOptions(score.home, score.away, options);
-    const matchesSafeCombo = scoreMatchesSafeCombo(score.home, score.away, options.safeCombo);
-    return matchesMarket && matchesExtraConstraints && matchesSafeCombo;
-  });
+  const markets = [options.marketType, ...(options.extraMarketTypes ?? [])].filter(Boolean) as MarketType[];
 
-  const source = filteredScores.length > 0 ? filteredScores : rankedScores;
+  const matchesMarkets = (h: number, a: number) => markets.every((m) => scoreMatchesMarket(h, a, m));
+
+  // Full constraints first, then progressively relax — but ALWAYS keep the
+  // 1X2 / market direction so score and picks can never contradict each other.
+  const full = rankedScores.filter(
+    (s) =>
+      matchesMarkets(s.home, s.away) &&
+      scoreMatchesConstraintOptions(s.home, s.away, options) &&
+      scoreMatchesSafeCombo(s.home, s.away, options.safeCombo)
+  );
+  const directionOnly = rankedScores.filter((s) => matchesMarkets(s.home, s.away));
+
+  const source = full.length > 0 ? full : directionOnly.length > 0 ? directionOnly : rankedScores;
   return source.slice(0, limit).map(({ score, probability }) => ({ score, probability }));
 }
+
 
 /**
  * Get the Poisson-derived predicted score aligned with displayed market signals.
