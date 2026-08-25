@@ -188,7 +188,10 @@ const Index = () => {
         </a>
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
-        <AffiliateBanner1xBet />
+        <div className="w-full max-w-5xl mx-auto">
+          <AffiliateBanner1xBet />
+        </div>
+
 
         {/* Social Proof Section */}
         <Suspense fallback={<LazyFallback />}>
