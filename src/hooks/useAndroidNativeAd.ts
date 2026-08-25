@@ -3,8 +3,8 @@
  * based on the current route.
  *
  * Pages WITH native ad:
- *   /daily-analysis, /pro-analysis, /premium-analysis
- *   /daily-predictions, /pro-predictions, /premium-predictions
+ *   /daily-analysis, /top-picks, /premium-analysis
+ *   /daily-predictions, /sure-odds, /premium-predictions
  *   /winning-history
  *
  * All other pages: native ad hidden.
@@ -15,10 +15,10 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const AD_ROUTES = new Set([
   "/daily-analysis",
-  "/pro-analysis",
+  "/top-picks",
   "/premium-analysis",
   "/daily-predictions",
-  "/pro-predictions",
+  "/sure-odds",
   "/premium-predictions",
   "/winning-history",
   "/live-scores",

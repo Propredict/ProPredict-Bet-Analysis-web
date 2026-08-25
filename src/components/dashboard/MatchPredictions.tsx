@@ -32,7 +32,7 @@ function mapDbTipToTip(dbTip: any): Tip {
 
 const TAB_ROUTES: Record<TabType, string> = {
   daily: "/daily-analysis",
-  exclusive: "/pro-analysis",
+  exclusive: "/top-picks",
   premium: "/premium-analysis"
 };
 
@@ -240,7 +240,7 @@ export function MatchPredictions() {
                 <Button
                   size="sm"
                   className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
-                  onClick={() => navigate("/pro-analysis")}
+                  onClick={() => navigate("/top-picks")}
                 >
                   <span>See all Top Picks</span>
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />

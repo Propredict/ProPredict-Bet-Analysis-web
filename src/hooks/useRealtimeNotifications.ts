@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 function getCategoryRoute(category: string | null): string | null {
   if (category === "diamond_pick") return "/diamond-pick";
   if (category === "risk_of_the_day") return "/risk-of-the-day";
-  if (category === "sure_odds") return "/pro-predictions";
+  if (category === "sure_odds") return "/sure-odds";
   return null;
 }
 
@@ -16,13 +16,13 @@ function getTierRoute(type: "tip" | "ticket", tier: string): string {
   const routes: Record<string, Record<string, string>> = {
     tip: {
       premium: "/premium-analysis",
-      exclusive: "/pro-analysis",
+      exclusive: "/top-picks",
       daily: "/daily-analysis",
       free: "/daily-analysis",
     },
     ticket: {
       premium: "/premium-predictions",
-      exclusive: "/pro-predictions",
+      exclusive: "/sure-odds",
       daily: "/daily-predictions",
       free: "/daily-predictions",
     },

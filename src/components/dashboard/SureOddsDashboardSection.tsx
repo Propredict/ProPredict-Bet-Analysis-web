@@ -83,7 +83,7 @@ export function SureOddsDashboardSection() {
           <Button
             size="sm"
             className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
-            onClick={() => navigate("/pro-predictions")}
+            onClick={() => navigate("/sure-odds")}
           >
             <Ticket className="h-3.5 w-3.5 mr-1" />
             See Ticket
@@ -129,7 +129,7 @@ export function SureOddsDashboardSection() {
           className={cn(
             "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 text-xs font-semibold"
           )}
-          onClick={() => navigate("/pro-predictions")}
+          onClick={() => navigate("/sure-odds")}
         >
           See all Sure Odds Tickets →
         </Button>

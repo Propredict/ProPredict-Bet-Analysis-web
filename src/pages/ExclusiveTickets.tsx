@@ -132,7 +132,7 @@ export default function ExclusiveTickets() {
       <meta property="og:title" content="Sure Odds 2+ – ProPredict" />
       <meta property="og:description" content="Daily ticket with higher confidence AI selections." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
-      <meta property="og:url" content="https://propredict.me/pro-predictions" />
+      <meta property="og:url" content="https://propredict.me/sure-odds" />
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">

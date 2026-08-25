@@ -22,8 +22,8 @@ export async function startSureOddsWebCheckout(): Promise<void> {
         priceId: SURE_ODDS_STRIPE_PRICE_ID,
         mode: "payment",
         purchaseType: "daily_ticket",
-        successUrl: `${window.location.origin}/pro-predictions?payment=success&product=sure_odds`,
-        cancelUrl: `${window.location.origin}/pro-predictions`,
+        successUrl: `${window.location.origin}/sure-odds?payment=success&product=sure_odds`,
+        cancelUrl: `${window.location.origin}/sure-odds`,
       },
     });
 

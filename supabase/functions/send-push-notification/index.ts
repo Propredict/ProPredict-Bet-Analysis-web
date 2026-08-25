@@ -270,7 +270,7 @@ serve(async (req) => {
       diamond_pick: "/diamond-pick",
       risk_of_the_day: "/risk-of-the-day",
       multi_risk: type === "tip" ? "/risk-of-the-day" : "/multi-risk-matches",
-      sure_odds: "/pro-predictions",
+      sure_odds: "/sure-odds",
     };
     const tierRouteMap: Record<string, string> = {
       premium: type === "tip" ? "premium-analysis" : "premium-predictions",
