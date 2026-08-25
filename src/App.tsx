@@ -217,10 +217,12 @@ const App = () => {
                     <Route path="/daily-tips" element={<NavigateWithSearch to="/daily-analysis" />} />
                     <Route path="/daily-predictions" element={<DailyTickets />} />
                     <Route path="/daily-tickets" element={<NavigateWithSearch to="/daily-predictions" />} />
-                    <Route path="/pro-analysis" element={<ExclusiveTips />} />
-                    <Route path="/exclusive-tips" element={<NavigateWithSearch to="/pro-analysis" />} />
-                    <Route path="/pro-predictions" element={<ExclusiveTickets />} />
-                    <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/pro-predictions" />} />
+                    <Route path="/top-picks" element={<ExclusiveTips />} />
+                    <Route path="/pro-analysis" element={<NavigateWithSearch to="/top-picks" />} />
+                    <Route path="/exclusive-tips" element={<NavigateWithSearch to="/top-picks" />} />
+                    <Route path="/sure-odds" element={<ExclusiveTickets />} />
+                    <Route path="/pro-predictions" element={<NavigateWithSearch to="/sure-odds" />} />
+                    <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/sure-odds" />} />
                     <Route path="/premium-analysis" element={<PremiumTips />} />
                     <Route path="/premium-tips" element={<NavigateWithSearch to="/premium-analysis" />} />
                     <Route path="/premium-predictions" element={<PremiumTickets />} />
