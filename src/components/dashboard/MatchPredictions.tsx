@@ -225,7 +225,7 @@ export function MatchPredictions() {
               <div className="text-center space-y-1">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
                   <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
-                  Sure Odds 2+ Ticket
+                  Top Picks
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
                   Higher confidence · sharper edge
