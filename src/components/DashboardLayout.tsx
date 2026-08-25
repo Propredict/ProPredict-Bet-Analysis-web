@@ -162,8 +162,8 @@ export function DashboardLayout({ children, fullWidth = false }: DashboardLayout
           </header>
 
           {/* Main Content - GLOBAL COMPACT DENSITY padding */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 pb-20 md:pb-6 min-w-0 mt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:mt-[calc(2.75rem+env(safe-area-inset-top,0px))]">
-            <div className={cn("mx-auto w-full space-y-4 md:space-y-6", !fullWidth && "max-w-[1200px]")}>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 md:py-6 md:px-6 lg:px-8 pb-20 md:pb-6 min-w-0 mt-[calc(2.5rem+env(safe-area-inset-top,0px))] sm:mt-[calc(2.75rem+env(safe-area-inset-top,0px))]">
+            <div className={cn("mx-auto w-full space-y-4 md:space-y-6", !fullWidth && "max-w-[1200px] lg:max-w-none xl:max-w-[1700px]")}>
               {children}
             </div>
           </main>
