@@ -82,7 +82,6 @@ export function AllTicketsCard({
   const totalOdds = ticket.total_odds || 0;
 
   const isAndroid = getIsAndroidApp();
-  const { plan } = useUserPlan();
 
   const handleUnlockClick = () => {
     // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
