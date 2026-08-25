@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { UnlockMethod } from "@/hooks/useUserPlan";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseMatchName } from "@/types/admin";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { purchaseSubscription } from "@/hooks/useRevenueCat";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -82,6 +84,7 @@ export function AllTicketsCard({
   const totalOdds = ticket.total_odds || 0;
 
   const isAndroid = getIsAndroidApp();
+  const { plan } = useUserPlan();
 
   const handleUnlockClick = () => {
     // Android-specific unlock types - ALWAYS call onUnlockClick (triggers native bridge)
@@ -105,17 +108,12 @@ export function AllTicketsCard({
   };
 
   const handleSecondaryClick = () => {
-    // Android: HARD BLOCK - NO Stripe, NO redirects
+    // Android: Unlock Tip → purchase Premium package
     if (isAndroid) {
-      if ((window as any).Android?.getPro) {
-        (window as any).Android.getPro();
-      } else if ((window as any).Android?.buyPro) {
-        (window as any).Android.buyPro();
-      }
-      // Always return on Android - never fall through to web
+      purchaseSubscription("premium", "monthly", plan);
       return;
     }
-    
+
     // Web-only fallback
     navigate("/get-premium");
   };
