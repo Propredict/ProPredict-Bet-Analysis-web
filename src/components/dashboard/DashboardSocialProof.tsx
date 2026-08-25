@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Star, Quote, Users, Target, BarChart3, Crown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
 
 
 
