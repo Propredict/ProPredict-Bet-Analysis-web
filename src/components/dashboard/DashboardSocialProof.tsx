@@ -16,11 +16,12 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: "92%", label: "Prediction Accuracy", sub: "Top Rated", icon: Target, color: "primary" },
-  { value: "10K+", label: "Active Users", sub: "Growing Daily", icon: Users, color: "primary" },
-  { value: "500+", label: "Daily Analyses", sub: "AI Powered", icon: BarChart3, color: "primary" },
-  { value: "4.9", label: "User Rating", sub: "Loved by Users", icon: Star, isStar: true, color: "amber" },
+  { value: "92%", label: "Prediction Accuracy", sub: "Top Rated", icon: Target },
+  { value: "10K+", label: "Active Users", sub: "Growing Daily", icon: Users },
+  { value: "500+", label: "Daily Analyses", sub: "AI Powered", icon: BarChart3 },
+  { value: "4.9", label: "User Rating", sub: "Loved by Users", icon: Star, isStar: true },
 ];
+
 
 export function DashboardSocialProof() {
   const [current, setCurrent] = useState(0);
