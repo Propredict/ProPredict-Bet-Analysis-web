@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Star, Rocket, Zap, Bell, BarChart3, ShieldCheck, ChevronRight, Crown } from "lucide-react";
+import { X, Flame, Smartphone, Zap, Target, Trophy } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const STORAGE_KEY = "app-download-popup-dismissed";
@@ -31,91 +31,57 @@ export function AppDownloadPopup() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-sm rounded-2xl border border-primary/30 bg-card shadow-2xl shadow-primary/10 overflow-hidden animate-scale-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-sm rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-background shadow-2xl overflow-hidden animate-scale-in">
+        {/* Stadium light accents */}
+        <div className="absolute top-0 left-4 w-1 h-16 bg-gradient-to-b from-primary/40 to-transparent rounded-full blur-sm" />
+        <div className="absolute top-0 right-4 w-1 h-16 bg-gradient-to-b from-primary/40 to-transparent rounded-full blur-sm" />
+        <div className="absolute top-2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
         {/* Close button */}
         <button
           onClick={dismiss}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-foreground/70 hover:text-foreground transition-colors z-20"
+          className="absolute top-3 right-3 p-2 rounded-full bg-background/60 hover:bg-background/80 text-foreground/80 hover:text-foreground transition-colors z-20 border border-border/50"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {/* Hero gradient top */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-background p-6 pb-5">
-          {/* Decorative crown */}
-          <div className="absolute top-4 right-10 text-warning/80 animate-pulse-glow-star">
-            <Crown className="h-6 w-6" />
+        {/* Content */}
+        <div className="relative p-6 pt-8 text-center">
+          {/* Flame icon */}
+          <div className="mx-auto mb-4 w-14 h-14 rounded-full bg-gradient-to-br from-warning/20 to-destructive/20 border border-warning/30 flex items-center justify-center animate-pulse-glow-star">
+            <Flame className="h-7 w-7 text-warning" />
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Phone mockup */}
-            <div className="relative shrink-0 w-[78px] h-[140px] rounded-[18px] border-[3px] border-foreground/20 bg-background shadow-xl shadow-black/40 overflow-hidden">
-              {/* Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-foreground/20 rounded-b-full z-10" />
-              {/* Screen */}
-              <div className="absolute inset-0 flex flex-col p-2 pt-4 bg-gradient-to-b from-card to-background">
-                <div className="text-[6px] font-bold text-foreground/90 text-center leading-tight">
-                  TODAY'S TICKET
-                </div>
-                <div className="mt-1 text-[8px] font-bold text-warning text-center">
-                  ODDS 2+
-                </div>
-                <div className="mt-auto space-y-1.5">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center justify-between text-[5px] text-muted-foreground">
-                      <span>Match {i}</span>
-                      <span className="text-primary">&gt;2.0</span>
-                    </div>
-                  ))}
-                  <div className="mt-1 rounded px-1 py-1 bg-warning/20 text-[6px] font-bold text-warning text-center">
-                    TOTAL 2.35+
-                  </div>
-                </div>
-              </div>
-              {/* Reflection */}
-              <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/5 rounded-full blur-md" />
-            </div>
+          {/* Headline */}
+          <h3 className="text-2xl font-black uppercase tracking-tight leading-none text-foreground">
+            Don't miss today's
+          </h3>
+          <h3 className="text-3xl font-black uppercase tracking-tight leading-none mt-1">
+            <span className="text-primary">FREE</span>
+            <span className="text-foreground"> tips!</span>
+          </h3>
 
-            {/* Headline */}
-            <div className="text-left">
-              <h3 className="text-xl font-bold leading-tight text-foreground">
-                Get Premium
-              </h3>
-              <p className="text-lg font-bold leading-tight text-primary">
-                Tips and Tickets
-              </p>
-              <p className="text-sm font-bold leading-tight text-foreground">
-                every day
-              </p>
-              <p className="text-base font-bold leading-tight text-primary">
-                faster on app
-              </p>
-              <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
-                More value. More wins. Only on the app.
-              </p>
-            </div>
-          </div>
-        </div>
+          <p className="mt-3 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+            Get instant access on mobile
+            <Smartphone className="h-4 w-4 text-primary" />
+          </p>
 
-        {/* Features */}
-        <div className="px-5 py-4">
-          <div className="grid grid-cols-3 gap-2">
+          {/* Features */}
+          <div className="mt-5 flex items-center justify-between gap-2 rounded-xl border border-border/50 bg-background/50 p-3">
             {[
-              { icon: Zap, label: "Faster Access", desc: "Get tips sooner" },
-              { icon: Bell, label: "Instant Alerts", desc: "Never miss a pick" },
-              { icon: BarChart3, label: "Exclusive Insights", desc: "App-only analysis" },
-            ].map((f) => (
-              <div
-                key={f.label}
-                className="flex flex-col items-center text-center p-2.5 rounded-xl bg-muted/30 border border-border/50"
-              >
-                <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-1.5">
-                  <f.icon className="h-4 w-4 text-primary" />
+              { icon: Zap, label: "FAST ACCESS", desc: "Anytime" },
+              { icon: Target, label: "DAILY TIPS", desc: "Expert picks" },
+              { icon: Trophy, label: "MORE WINS", desc: "Better results" },
+            ].map((f, i) => (
+              <div key={f.label} className="flex-1 flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-1.5">
+                  <f.icon className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-[10px] font-bold text-foreground leading-tight">{f.label}</p>
-                <p className="text-[8px] text-muted-foreground leading-tight mt-0.5">{f.desc}</p>
+                <p className="text-[9px] font-bold text-foreground leading-tight tracking-wide">{f.label}</p>
+                <p className="text-[8px] text-muted-foreground leading-tight">{f.desc}</p>
+                {i < 2 && <div className="hidden" />}
               </div>
             ))}
           </div>
@@ -126,35 +92,23 @@ export function AppDownloadPopup() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}
-            className="mt-4 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 animate-cta-blink"
+            className="mt-5 flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-warning via-warning to-accent text-warning-foreground font-black text-lg uppercase tracking-wide hover:opacity-95 transition-opacity shadow-lg shadow-warning/25 animate-cta-blink"
           >
-            <Rocket className="h-4 w-4" />
-            <span>Open the App Now</span>
-            <ChevronRight className="h-4 w-4" />
+            <Smartphone className="h-5 w-5" />
+            <span>Download App</span>
           </a>
-
-          {/* Trust badge */}
-          <div className="mt-3 flex flex-col items-center gap-1">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" />
-              <span>Trusted by thousands of smart players</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-3 w-3 text-warning fill-warning" />
-              ))}
-              <span className="text-[10px] text-muted-foreground ml-1">4.9 on Google Play</span>
-            </div>
-          </div>
 
           {/* Skip */}
           <button
             onClick={dismiss}
-            className="mt-3 w-full text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-muted-foreground/30"
           >
-            Maybe later
+            No thanks, I'll continue browsing
           </button>
         </div>
+
+        {/* Bottom glow accent */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full blur-sm" />
       </div>
     </div>
   );
