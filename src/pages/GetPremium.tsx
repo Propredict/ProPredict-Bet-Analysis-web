@@ -63,7 +63,7 @@ const androidPlans = {
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
         { text: "Match Previews", included: false },
-        { text: "Pro Insights", included: false },
+        { text: "Premium Insights", included: false },
         { text: "Premium Ticket", included: false },
         { text: "Ad-free experience", included: false },
       ],
@@ -105,7 +105,7 @@ const androidPlans = {
         { text: "League standings", included: true },
         { text: "Basic predictions", included: true },
         { text: "Match Previews", included: false },
-        { text: "Pro Insights", included: false },
+        { text: "Premium Insights", included: false },
         { text: "Premium Ticket", included: false },
         { text: "Ad-free experience", included: false },
       ],
@@ -439,7 +439,7 @@ export default function GetPremium() {
     <>
     <Helmet>
       <title>Get Premium – Upgrade Your Plan | ProPredict</title>
-      <meta name="description" content="Upgrade to Pro or Premium for full access to AI predictions, match previews, and ad-free experience. Flexible monthly and annual plans." />
+      <meta name="description" content="Upgrade to Premium for full access to AI predictions, match previews, and ad-free experience. Flexible monthly and annual plans." />
       <meta property="og:title" content="Get Premium – ProPredict" />
       <meta property="og:description" content="Upgrade for full access to AI predictions, match previews, and ad-free experience." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />

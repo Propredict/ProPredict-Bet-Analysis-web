@@ -45,7 +45,7 @@ function getTierLabel(type: "tip" | "ticket", tier: string, category?: string | 
   const special = getCategoryLabel(category ?? null);
   if (special) return special;
   if (tier === "premium") return type === "tip" ? "👑 Premium AI Pick Available!" : "👑 Premium AI Combo Available!";
-  if (tier === "exclusive") return type === "tip" ? "🔥 Pro AI Pick Available!" : "🔥 Pro AI Combo Available!";
+  if (tier === "exclusive") return type === "tip" ? "🔥 Premium AI Pick Available!" : "🔥 Premium AI Combo Available!";
   return type === "tip" ? "⚽ New AI Pick Available!" : "🎫 New AI Combo Available!";
 }
 

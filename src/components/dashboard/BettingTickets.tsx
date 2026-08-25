@@ -125,7 +125,7 @@ export function BettingTickets() {
   const getCtaLabel = () => {
     switch (activeTab) {
       case "daily": return "See all Daily Ticket";
-      case "exclusive": return "See all Pro Ticket";
+      case "exclusive": return "See all Sure Odds 2+ Tickets";
       case "premium": return "See all Premium Ticket";
     }
   };

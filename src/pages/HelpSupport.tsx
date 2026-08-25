@@ -115,7 +115,7 @@ const HelpSupport = () => {
         },
         {
           q: "How do I access predictions?",
-          a: "Free users can access Daily Predictions. To access Pro Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
+          a: "Free users can access Daily Predictions. To access Premium Insights and Premium Predictions, upgrade your subscription plan. Each tier provides access to more detailed analysis and higher-confidence predictions."
         },
         {
           q: "When are new predictions posted?",
@@ -217,7 +217,7 @@ const HelpSupport = () => {
         },
         {
           q: "How do I earn points and what's the reward?",
-          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Pro Access extension. Your points only reset after you claim the reward, so you never lose progress."
+          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Premium Access extension. Your points only reset after you claim the reward, so you never lose progress."
         },
         {
           q: "How many predictions can I make per day?",
