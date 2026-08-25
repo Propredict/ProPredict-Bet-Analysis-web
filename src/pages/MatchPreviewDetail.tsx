@@ -62,8 +62,8 @@ function getPredictionEmoji(prediction: string | null) {
   return "📊";
 }
 
-function deriveStatsGrid(pred: any) {
-  const scoreParts = (pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
+function deriveStatsGrid(pred: any, consistentScore?: string | null) {
+  const scoreParts = (consistentScore ?? pred.predicted_score ?? "").match(/^(\d+)\s*[-:]\s*(\d+)$/);
   const homeGoals = scoreParts ? parseInt(scoreParts[1]) : (pred.last_home_goals ?? 1);
   const awayGoals = scoreParts ? parseInt(scoreParts[2]) : (pred.last_away_goals ?? 1);
   const totalGoalsAvg = homeGoals + awayGoals;
