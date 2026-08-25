@@ -379,12 +379,9 @@ const AIPredictionCardInner = ({
                      <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                        👑 Premium Analysis
                      </Badge>
-                   </div>
-                  <p className="text-[8px] md:text-[9px] text-muted-foreground/70">
-                    Pro from €3.99/mo · Premium from €14.99/mo
-                  </p>
-                </div>
-                <ChevronDown className="w-3 h-3 text-muted-foreground -rotate-90 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground -rotate-90 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1" />
               </div>
             </div>
           </div>
