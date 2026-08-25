@@ -159,14 +159,10 @@ serve(async (req) => {
 
       if (!favUsers || favUsers.length === 0) {
         console.log(`[check-goals] No users favorited match ${matchId}, skipping notification`);
-        await supabase.from("match_scores_cache").upsert({
-          match_id: matchId,
-          home_score: homeScore,
-          away_score: awayScore,
-          updated_at: new Date().toISOString(),
-        });
+        queueCacheUpdate(matchId, homeScore, awayScore);
         continue;
       }
+
 
       const userIds = favUsers.map((f) => f.user_id);
 
