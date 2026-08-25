@@ -270,15 +270,18 @@ serve(async (req) => {
       }
 
       // ================= UPDATE CACHE =================
-      await supabase.from("match_scores_cache").upsert({
-        match_id: matchId,
-        home_score: homeScore,
-        away_score: awayScore,
-        updated_at: new Date().toISOString(),
-      });
+      queueCacheUpdate(matchId, homeScore, awayScore);
     }
 
-    console.log(`[check-goals] Done. Goals: ${totalGoals}, Notifications: ${totalNotifications}`);
+    // ============ BATCH WRITE (only changed scores) ============
+    if (pendingUpserts.length > 0) {
+      const { error: upsertErr } = await supabase
+        .from("match_scores_cache")
+        .upsert(pendingUpserts, { onConflict: "match_id" });
+      if (upsertErr) console.error("[check-goals] Cache upsert failed:", upsertErr.message);
+    }
+    console.log(`[check-goals] Done. Goals: ${totalGoals}, Notifications: ${totalNotifications}, cache writes: ${pendingUpserts.length}`);
+
 
     return new Response(
       JSON.stringify({
