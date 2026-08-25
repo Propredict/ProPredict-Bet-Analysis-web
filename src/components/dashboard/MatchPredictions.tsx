@@ -240,9 +240,9 @@ export function MatchPredictions() {
                 <Button
                   size="sm"
                   className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
-                  onClick={() => navigate("/exclusive-tickets")}
+                  onClick={() => navigate("/pro-analysis")}
                 >
-                  <span>See all Sure Odds 2+</span>
+                  <span>See all Top Picks</span>
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>
