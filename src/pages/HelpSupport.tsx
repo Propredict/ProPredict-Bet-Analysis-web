@@ -23,7 +23,8 @@ import {
   Lock,
   Clock,
   ArrowLeft,
-  Gift
+  Gift,
+  Ticket
 } from "lucide-react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useState, useEffect, useRef } from "react";
