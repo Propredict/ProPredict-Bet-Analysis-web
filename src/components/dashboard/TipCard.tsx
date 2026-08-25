@@ -115,9 +115,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
   };
 
   const handleSecondaryClick = () => {
-    // Android: Unlock Tip → purchase Premium package
+    // Android: Unlock Tip → go to the Premium paywall page
     if (getIsAndroidApp()) {
-      purchaseSubscription("premium", "monthly", plan);
+      navigate("/get-premium");
       return;
     }
     if (onSecondaryUnlock) { onSecondaryUnlock(); } else { navigate("/get-premium"); }
