@@ -300,9 +300,14 @@ export default function MatchPreviews() {
               </div>
             </div>
             <div className="hidden md:flex justify-end items-center">
-              <div className="w-24 h-24 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.15)]">
-                <Sparkles className="h-10 w-10 text-violet-400/70" />
-              </div>
+              <img
+                src={aiBrainAsset.url}
+                alt="AI brain"
+                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_rgba(139,92,246,0.35)]"
+                loading="lazy"
+                width={96}
+                height={96}
+              />
             </div>
           </div>
         </Card>
