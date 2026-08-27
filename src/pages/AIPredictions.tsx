@@ -691,7 +691,7 @@ export default function AIPredictions() {
               <div className="min-w-0">
                 <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Active</p>
                 <p className="text-sm md:text-xl font-extrabold text-primary leading-none">
-                  {loading ? "..." : dayStats.pending}
+                  {loading ? "..." : activeCount}
                 </p>
                 <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Picks running now</p>
               </div>
