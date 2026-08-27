@@ -576,7 +576,23 @@ export type MarketType =
 interface MarketCandidate {
   type: MarketType;
   prob: number;
+  /** Ranking score only — the displayed percentage always stays the raw prob. */
+  score: number;
 }
+
+/**
+ * Selection penalties keep the Main pick informative and varied.
+ * Over 1.5 is mathematically the highest market in almost every match, so
+ * without a penalty every single card would show "Over 1.5". It is only
+ * selected when it is clearly stronger than any other market.
+ */
+const SELECTION_PENALTY: Partial<Record<MarketType, number>> = {
+  over15: 16,
+  under35: 14,
+  dc_1x: 6,
+  dc_x2: 6,
+};
+
 
 /**
  * Get every concrete market that may be shown as the Main pick.
