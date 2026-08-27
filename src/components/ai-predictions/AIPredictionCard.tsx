@@ -303,26 +303,20 @@ const AIPredictionCardInner = ({
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
               "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded",
-              displayTier === "free" ? "grid grid-cols-1" : displayTier === "pro" ? "grid grid-cols-4" : "grid grid-cols-5"
+              displayTier === "premium" ? "grid grid-cols-5" : "grid grid-cols-4"
             )}>
               <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Main
               </TabsTrigger>
-              {displayTier !== "free" && (
-                <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                  Goals
-                </TabsTrigger>
-              )}
-              {displayTier !== "free" && (
-                <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                  BTTS
-                </TabsTrigger>
-              )}
-              {displayTier !== "free" && (
-                <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                  DC
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                Goals
+              </TabsTrigger>
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                BTTS
+              </TabsTrigger>
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                DC
+              </TabsTrigger>
               {displayTier === "premium" && (
                 <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                   Combo
@@ -334,23 +328,18 @@ const AIPredictionCardInner = ({
               <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} />
             </TabsContent>
 
-            {displayTier !== "free" && (
-              <TabsContent value="goals" className="mt-2 md:mt-3">
-                <GoalsMarketTab prediction={prediction} hasAccess={hasAccess} />
-              </TabsContent>
-            )}
+            <TabsContent value="goals" className="mt-2 md:mt-3">
+              <GoalsMarketTab prediction={prediction} hasAccess={hasAccess} />
+            </TabsContent>
 
-            {displayTier !== "free" && (
-              <TabsContent value="btts" className="mt-2 md:mt-3">
-                <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
-              </TabsContent>
-            )}
+            <TabsContent value="btts" className="mt-2 md:mt-3">
+              <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
+            </TabsContent>
 
-            {displayTier !== "free" && (
-              <TabsContent value="double" className="mt-2 md:mt-3">
-                <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
-              </TabsContent>
-            )}
+            <TabsContent value="double" className="mt-2 md:mt-3">
+              <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
+            </TabsContent>
+
 
             {displayTier === "premium" && (
               <TabsContent value="combos" className="mt-2 md:mt-3">
