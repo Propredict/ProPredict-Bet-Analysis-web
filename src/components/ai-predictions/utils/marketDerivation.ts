@@ -685,17 +685,6 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 const MAX_SAME_PICK = 4;
 const diversityOverrides = new Map<string, MarketType>();
 
-/**
- * Ids of predictions currently shown in the FREE tier. The "clear favourite"
- * headline rule (home/away win instead of a generic Under 2.5) applies to
- * Free cards only — Pro and Premium keep their existing logic.
- */
-const freeTierIds = new Set<string>();
-
-export function setFreeTierIds(ids: Iterable<string>): void {
-  freeTierIds.clear();
-  for (const id of ids) freeTierIds.add(id);
-}
 
 
 function getPredictionKey(prediction: AIPrediction): string {
@@ -820,7 +809,7 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
  * Only when the two sides are close do we fall back to Under 2.5 / Double Chance.
  */
 const FAVOURITE_GAP = 6;
-const DC_MIN_CONFIDENCE = 62;
+const DC_MIN_CONFIDENCE = 65;
 
 function getFavouriteMarket(
   prediction: AIPrediction,
