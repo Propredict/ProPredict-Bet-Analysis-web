@@ -645,19 +645,52 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
  * eligibility keep using the strongest raw probability (see
  * getBestEligibleProbability).
  */
-export function getBestPickType(prediction: AIPrediction): MarketType {
+const MARKET_FAMILY: Partial<Record<MarketType, string>> = {
+  over15: "goals",
+  over25: "goals",
+  over35: "goals",
+  under25: "goals",
+  under35: "goals",
+  btts_yes: "btts",
+  btts_no: "btts",
+  home_win: "1x2",
+  away_win: "1x2",
+  draw: "1x2",
+  dc_1x: "dc",
+  dc_x2: "dc",
+  dc_12: "dc",
+};
+
+export function getBestPickType(
+  prediction: AIPrediction,
+  tier?: "free" | "pro" | "premium",
+): MarketType {
   const candidates = getMarketCandidates(prediction);
   const top = candidates[0];
+  let chosen = top;
+
   if (top.type === "over15") {
     // Prefer a different strong market so cards don't all read "Over 1.5",
     // but never downgrade the shown confidence: the alternative must itself
     // be a high-probability pick (>= 65%), otherwise keep the strongest one.
     const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
-    if (alternative) return alternative.type;
+    if (alternative) chosen = alternative;
   }
 
-  return top.type;
+  // Free/Pro cards previously all resolved to the same generic goals market
+  // (every Pro "Under 2.5", every Free "Over 1.5"). When another equally
+  // strong market family is available (>= 65%), show that instead. Premium is
+  // untouched, and confidence still comes from the shown market itself.
+  if ((tier === "free" || tier === "pro") && MARKET_FAMILY[chosen.type] === "goals") {
+    const diverse = candidates.find(
+      (c) => c.prob >= 65 && MARKET_FAMILY[c.type] !== "goals",
+    );
+    if (diverse) chosen = diverse;
+  }
+
+  return chosen.type;
 }
+
 
 
 
