@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown, Gift } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
