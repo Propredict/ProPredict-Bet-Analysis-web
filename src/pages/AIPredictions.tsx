@@ -28,7 +28,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
-import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, setFreeTierIds, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
 type SortOption = "confidence" | "kickoff";
@@ -137,10 +137,16 @@ export default function AIPredictions() {
     () => {
       // Spread headline picks so the same market never repeats on every card.
       applyPickDiversity(predictions);
-      return assignTiers(predictions);
+      const result = assignTiers(predictions);
+      // Free-only rule: clear favourite is shown instead of a generic goals pick.
+      setFreeTierIds(
+        [...result.tierMap.entries()].filter(([, t]) => t === "free").map(([id]) => id),
+      );
+      return result;
     },
     [predictions],
   );
+
 
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
