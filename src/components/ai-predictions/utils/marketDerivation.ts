@@ -649,11 +649,17 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
   const candidates = getMarketCandidates(prediction);
   const top = candidates[0];
   if (top.type === "over15") {
-    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+    // Prefer the strongest genuinely informative alternative. Strong matches
+    // find one at >= 65%; weaker (Free) matches still show their next most
+    // probable concrete market instead of a repeated "Over 1.5".
+    const alternative =
+      candidates.find((c) => c.type !== "over15" && c.prob >= 65) ??
+      candidates.find((c) => c.type !== "over15" && c.prob >= 50);
     if (alternative) return alternative.type;
   }
   return top.type;
 }
+
 
 
 /**
