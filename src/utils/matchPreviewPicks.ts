@@ -54,19 +54,24 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
   const awayPickConf = mainPrediction === "2" || mainPrediction === "away" ? clamp(Math.max(awayWin, confidence * 0.85), 40, 92) : awayWin;
   const drawPickConf = mainPrediction === "x" || mainPrediction === "draw" ? clamp(Math.max(draw, confidence * 0.8), 40, 88) : draw;
 
-  // Double chance / DNB derived from 1X2
-  const dc1x = clamp(homePickConf + draw * 0.6, 50, 95);
-  const dcx2 = clamp(awayPickConf + draw * 0.6, 50, 95);
-  const dnbConf = clamp(Math.max(homePickConf, awayPickConf) + draw * 0.3, 50, 92);
-  // Direction must follow the model's actual pick (not just raw 1X2 %),
-  // otherwise we can show "DNB Home" next to an Away Win recommendation.
+  // Double chance / DNB derived from NORMALIZED 1X2 (exact probability math,
+  // same basis as the AI Predictions market model — no arbitrary boosts).
+  const total1x2 = Math.max(1, homePickConf + drawPickConf + awayPickConf);
+  const nHome = (homePickConf / total1x2) * 100;
+  const nDraw = (drawPickConf / total1x2) * 100;
+  const nAway = (awayPickConf / total1x2) * 100;
+  const dc1x = clamp(nHome + nDraw, 5, 97);
+  const dcx2 = clamp(nDraw + nAway, 5, 97);
   const favorsHome = homePickConf > awayPickConf && homePickConf > drawPickConf;
   const favorsAway = awayPickConf > homePickConf && awayPickConf > drawPickConf;
+  // DNB = win probability conditioned on no draw: p / (pHome + pAway)
+  const dnbBase = Math.max(1, nHome + nAway);
+  const dnbConf = clamp(((favorsAway ? nAway : nHome) / dnbBase) * 100, 5, 95);
 
   const candidatePicks: MatchPreviewAIPick[] = [
-    ...(favorsAway ? [] : [makePick("Home Win", homePickConf)]),
-    makePick("Draw", drawPickConf),
-    ...(favorsHome ? [] : [makePick("Away Win", awayPickConf)]),
+    ...(favorsAway ? [] : [makePick("Home Win", nHome)]),
+    makePick("Draw", nDraw),
+    ...(favorsHome ? [] : [makePick("Away Win", nAway)]),
     ...(favorsAway ? [] : [makePick("1X (Home/Draw)", dc1x)]),
     ...(favorsHome ? [] : [makePick("X2 (Draw/Away)", dcx2)]),
     makePick(favorsAway ? "DNB Away" : "DNB Home", dnbConf),
