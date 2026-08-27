@@ -754,6 +754,21 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
   const candidates = getMarketCandidates(prediction);
 
   const top = candidates[0];
+
+  // Clear favourite rule (all tiers): when one side is meaningfully stronger
+  // than the other, the headline must say WHO wins (or 1X / X2), never a
+  // generic goals line. Only near-even matches (< FAVOURITE_GAP) fall back to
+  // Under 2.5 / Over markets.
+  const GENERIC_GOALS: MarketType[] = ["under25", "over25", "over35", "over15"];
+  if (GENERIC_GOALS.includes(top.type)) {
+    const favourite = getFavouriteMarket(prediction, candidates);
+    if (favourite) {
+      const favProb = candidates.find((c) => c.type === favourite)?.prob ?? 0;
+      // Premium cards must not drop below their 80% qualification.
+      if (top.prob < 80 || favProb >= 80) return favourite;
+    }
+  }
+
   if (top.type === "over15") {
     // Premium band (strongest market >= 80) keeps the strict rule — those cards
     // must never show a weaker headline than the tier they qualified for.
