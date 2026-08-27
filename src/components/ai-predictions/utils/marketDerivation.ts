@@ -717,7 +717,7 @@ export function applyPickDiversity(predictions: AIPrediction[]): void {
       (c) =>
         c.type !== natural &&
         c.type !== "over15" &&
-        c.prob >= 55 &&
+        c.prob >= 65 &&
         (counts.get(c.type) ?? 0) < MAX_SAME_PICK,
     );
 
@@ -758,7 +758,8 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
     // which made every card read identically. Show the strongest genuinely
     // informative alternative instead (>= 55), so the list reflects the real
     // per-match analysis (BTTS, Over/Under 2.5, 1X2, DC...) with variety.
-    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 55);
+    // Never display a headline pick below 65% — that is the minimum safety bar.
+    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
     if (alternative) {
       // Avoid the whole list collapsing onto the same generic goals market:
       // when a match-specific market (1X2 / DC / BTTS) is essentially as
@@ -769,7 +770,7 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
           (c) =>
             !GENERIC.includes(c.type) &&
             c.type !== "over15" &&
-            c.prob >= 58 &&
+            c.prob >= 65 &&
             alternative.prob - c.prob <= 8,
         );
         if (specific) return specific.type;
