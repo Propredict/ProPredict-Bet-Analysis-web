@@ -805,7 +805,8 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
  * the card should say WHO is expected to win rather than a generic goals line.
  * Only when the two sides are close do we fall back to Under 2.5 / Double Chance.
  */
-const FAVOURITE_GAP = 12;
+const FAVOURITE_GAP = 6;
+const DC_MIN_CONFIDENCE = 62;
 
 function getFavouriteMarket(
   prediction: AIPrediction,
@@ -816,14 +817,15 @@ function getFavouriteMarket(
   if (gap < FAVOURITE_GAP) return null;
 
   const homeFavourite = hw > aw;
-  const order: MarketType[] = homeFavourite
-    ? ["home_win", "dc_1x"]
-    : ["away_win", "dc_x2"];
+  const order: { type: MarketType; min: number }[] = homeFavourite
+    ? [{ type: "home_win", min: 65 }, { type: "dc_1x", min: DC_MIN_CONFIDENCE }]
+    : [{ type: "away_win", min: 65 }, { type: "dc_x2", min: DC_MIN_CONFIDENCE }];
 
-  for (const type of order) {
-    const match = candidates.find((c) => c.type === type && c.prob >= 65);
+  for (const { type, min } of order) {
+    const match = candidates.find((c) => c.type === type && c.prob >= min);
     if (match) return match.type;
   }
+
   return null;
 }
 
