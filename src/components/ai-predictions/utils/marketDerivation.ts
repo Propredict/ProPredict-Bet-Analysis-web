@@ -651,6 +651,64 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 }
 
 /**
+ * Display-only diversity layer.
+ *
+ * Without it, the mathematically strongest market (e.g. "Under 2.5") repeats on
+ * nearly every Free/Pro card. `applyPickDiversity` spreads the headline picks so
+ * the same market type appears at most MAX_SAME_PICK times, always choosing the
+ * next strongest genuine alternative (>= 55%) for the remaining matches.
+ * Confidence always follows the pick that is actually displayed.
+ */
+const MAX_SAME_PICK = 4;
+const diversityOverrides = new Map<string, MarketType>();
+
+function getPredictionKey(prediction: AIPrediction): string {
+  return (
+    prediction.id ??
+    `${prediction.match_id ?? ""}-${prediction.home_team}-${prediction.away_team}`
+  );
+}
+
+export function applyPickDiversity(predictions: AIPrediction[]): void {
+  diversityOverrides.clear();
+  const counts = new Map<MarketType, number>();
+
+  const ordered = [...predictions].sort(
+    (a, b) => getMarketCandidates(b)[0].prob - getMarketCandidates(a)[0].prob,
+  );
+
+  for (const prediction of ordered) {
+    const candidates = getMarketCandidates(prediction);
+    const eligible = candidates[0].prob;
+    // Premium cards keep the strict strongest-market rule.
+    if (eligible >= 80) continue;
+
+    const natural = getBestPickType(prediction);
+    const used = counts.get(natural) ?? 0;
+
+    if (used < MAX_SAME_PICK) {
+      counts.set(natural, used + 1);
+      continue;
+    }
+
+    const alternative = candidates.find(
+      (c) =>
+        c.type !== natural &&
+        c.type !== "over15" &&
+        c.prob >= 55 &&
+        (counts.get(c.type) ?? 0) < MAX_SAME_PICK,
+    );
+
+    if (alternative) {
+      diversityOverrides.set(getPredictionKey(prediction), alternative.type);
+      counts.set(alternative.type, (counts.get(alternative.type) ?? 0) + 1);
+    } else {
+      counts.set(natural, used + 1);
+    }
+  }
+}
+
+/**
  * Get the best pick's market type for a prediction.
  *
  * Display rule: "Over 1.5" is mathematically the highest probability on almost
@@ -661,7 +719,10 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
  * getBestEligibleProbability).
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
+  const override = diversityOverrides.get(getPredictionKey(prediction));
+  if (override) return override;
   const candidates = getMarketCandidates(prediction);
+
   const top = candidates[0];
   if (top.type === "over15") {
     // Premium band (strongest market >= 80) keeps the strict rule — those cards
