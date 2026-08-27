@@ -637,10 +637,24 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
 /**
  * Get the best pick's market type for a prediction.
+ *
+ * Display rule: "Over 1.5" is mathematically the highest probability on almost
+ * every match, which made every card look identical. When another concrete
+ * market is also strong (>= 65%), that more informative pick is shown instead.
+ * This only affects the DISPLAYED headline pick — confidence and tier
+ * eligibility keep using the strongest raw probability (see
+ * getBestEligibleProbability).
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
-  return getMarketCandidates(prediction)[0].type;
+  const candidates = getMarketCandidates(prediction);
+  const top = candidates[0];
+  if (top.type === "over15") {
+    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+    if (alternative) return alternative.type;
+  }
+  return top.type;
 }
+
 
 /**
  * Get the RAW (display) probability for the best pick — without bonuses/penalties.
