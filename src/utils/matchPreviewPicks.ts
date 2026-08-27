@@ -54,22 +54,16 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
     ? makePick("BTTS Yes", goalProbs.bttsYes)
     : makePick("BTTS No", goalProbs.bttsNo);
 
-  // 1X2 picks use stored probabilities (same source as AI Predictions)
-  const mainPrediction = (pred.prediction || "").toLowerCase();
-  const homePickConf = mainPrediction === "1" || mainPrediction === "home" ? clamp(Math.max(homeWin, confidence * 0.85), 40, 92) : homeWin;
-  const awayPickConf = mainPrediction === "2" || mainPrediction === "away" ? clamp(Math.max(awayWin, confidence * 0.85), 40, 92) : awayWin;
-  const drawPickConf = mainPrediction === "x" || mainPrediction === "draw" ? clamp(Math.max(draw, confidence * 0.8), 40, 88) : draw;
-
-  // Double chance / DNB derived from NORMALIZED 1X2 (exact probability math,
-  // same basis as the AI Predictions market model — no arbitrary boosts).
-  const total1x2 = Math.max(1, homePickConf + drawPickConf + awayPickConf);
-  const nHome = (homePickConf / total1x2) * 100;
-  const nDraw = (drawPickConf / total1x2) * 100;
-  const nAway = (awayPickConf / total1x2) * 100;
+  // 1X2 uses the SAME normalized probabilities as the AI Predictions cards.
+  // No boosts based on the stored headline prediction — a boost could flip the
+  // favourite here (Home Win) while AI Predictions shows the other side (Away Win).
+  const nHome = homeWin;
+  const nDraw = draw;
+  const nAway = awayWin;
   const dc1x = clamp(nHome + nDraw, 5, 97);
   const dcx2 = clamp(nDraw + nAway, 5, 97);
-  const favorsHome = homePickConf > awayPickConf && homePickConf > drawPickConf;
-  const favorsAway = awayPickConf > homePickConf && awayPickConf > drawPickConf;
+  const favorsHome = nHome > nAway && nHome > nDraw;
+  const favorsAway = nAway > nHome && nAway > nDraw;
   // DNB = win probability conditioned on no draw: p / (pHome + pAway)
   const dnbBase = Math.max(1, nHome + nAway);
   const dnbConf = clamp(((favorsAway ? nAway : nHome) / dnbBase) * 100, 5, 95);
