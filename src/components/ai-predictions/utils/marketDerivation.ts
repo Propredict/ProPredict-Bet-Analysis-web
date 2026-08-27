@@ -579,15 +579,10 @@ interface MarketCandidate {
 }
 
 /**
- * Get all market candidates with their probabilities.
- * Strategy for diversity:
- *  - 1X2 gets +8 "primary market" bonus (it's the headline market punters care about)
- *  - Over 1.5 / Under 3.5 require very high probability (>80%) to win Main —
- *    otherwise they'd dominate every card with the same boring pick
- *  - Under 2.5 is allowed but penalized so it doesn't blanket every match
- *  - Double Chance (1X / X2 / 12) is selected as a SAFE FALLBACK when no
- *    single 1X2 outcome exceeds 60% AND the combined DC probability ≥ 80%.
- *    This gives users a reliable pick when matches are too tight for a clean call.
+ * Get every concrete market that may be shown as the Main pick.
+ * Probabilities here are the real displayed values: no diversity bonuses or
+ * hidden penalties. This guarantees that Main and tier assignment use the
+ * exact same strongest prediction.
  */
 function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   let hw = prediction.home_win ?? 33;
@@ -605,24 +600,6 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
 
   const probs = calculateGoalMarketProbs(prediction);
 
-  const PRIMARY_BOOST = 12; // 1X2 headline boost when a side is genuinely favored
-  const PRIMARY_SOFT_BOOST = 6;
-  const COMMON_PENALTY = 18; // suppress generic Over 1.5 unless no sharper market exists
-  // "Safe" defensive markets (Under 2.5, BTTS No) tend to blanket every card
-  // because low-scoring matches naturally push both into the 65–80% range.
-  // Apply symmetric penalties + minimum thresholds so they only win Main when
-  // they're clearly the safest pick AND no primary 1X2 outcome is competitive.
-  // This preserves diversity: sometimes Under 2.5, sometimes BTTS No, sometimes
-  // Over 2.5, sometimes BTTS Yes, sometimes 1X2 — whichever is genuinely strongest.
-  const DEFENSIVE_PENALTY = 30;
-  const UNDER25_MIN = 82; // Under 2.5 only when it is truly dominant
-  const BTTS_NO_MIN = 80; // BTTS No only when it is truly dominant
-  // Small random-ish tiebreaker per prediction so two matches with identical
-  // Under 2.5 = 72% and BTTS No = 72% don't both resolve to the same market.
-  const tiebreakSeed = ((prediction.id ?? "").toString()
-    .split("")
-    .reduce((acc, c) => acc + c.charCodeAt(0), 0)) % 5; // 0..4
-
   // Double Chance probabilities
   const dc1x = hw + d;
   const dcx2 = d + aw;
@@ -634,32 +611,24 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const dcEligible = maxSingle < 55 && d >= 25;
 
   const candidates: MarketCandidate[] = [
-    { type: "home_win", prob: hw + (hw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
-    { type: "away_win", prob: aw + (aw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
-    { type: "draw", prob: d >= 30 ? d + PRIMARY_SOFT_BOOST : 0 },
-    // Double Chance — safe pick fallback for genuinely tight matches only
-    { type: "dc_1x", prob: dcEligible && dc1x >= 76 ? dc1x - 2 : 0 },
-    { type: "dc_x2", prob: dcEligible && dcx2 >= 76 ? dcx2 - 2 : 0 },
+    { type: "home_win", prob: hw },
+    { type: "away_win", prob: aw },
+    { type: "draw", prob: d },
+    // Double Chance remains limited to genuinely tight matches so a broad
+    // mathematical sum cannot displace a more useful concrete prediction.
+    { type: "dc_1x", prob: dcEligible && dc1x >= 76 ? dc1x : 0 },
+    { type: "dc_x2", prob: dcEligible && dcx2 >= 76 ? dcx2 : 0 },
     // "12" (Home or Away) is never shown as a main pick — it tells the user nothing.
     { type: "dc_12", prob: 0 },
 
-    // Over 1.5 is too generic to headline most cards; use it only when the
-    // sharper Over 2.5 signal is not strong enough.
-    { type: "over15", prob: probs.over15 >= 86 && probs.over25 < 58 ? probs.over15 - COMMON_PENALTY : 0 },
-    { type: "over25", prob: probs.over25 >= 56 ? probs.over25 + 4 : probs.over25 },
-    // Over 3.5 — high-scoring matches only (≥60%)
-    { type: "over35", prob: probs.over35 >= 60 ? probs.over35 : 0 },
-    // Under 2.5: extra penalty when a 1X2 favorite exists, so it cannot blanket Free/Pro lists
-    { type: "under25",
-      prob: probs.under25 >= UNDER25_MIN
-        ? probs.under25 - DEFENSIVE_PENALTY - (maxSingle >= 48 ? 8 : 0) + (tiebreakSeed % 2)
-        : 0 },
-    { type: "btts_yes", prob: probs.bttsYes >= 56 ? probs.bttsYes + (tiebreakSeed % 2) : 0 },
-    { type: "btts_no",
-      prob: probs.bttsNo >= BTTS_NO_MIN
-        ? probs.bttsNo - 24 - (maxSingle >= 48 ? 6 : 0) + ((tiebreakSeed + 1) % 2)
-        : 0 },
-    // Under 3.5 intentionally excluded — too generic, would dominate every Premium card
+    { type: "over15", prob: probs.over15 },
+    { type: "over25", prob: probs.over25 },
+    { type: "over35", prob: probs.over35 },
+    { type: "under25", prob: probs.under25 },
+    { type: "btts_yes", prob: probs.bttsYes },
+    { type: "btts_no", prob: probs.bttsNo },
+    // Under 3.5 is not displayed in the Goals tab, so it cannot classify a card.
+    { type: "under35", prob: 0 },
   ];
 
   candidates.sort((a, b) => b.prob - a.prob);
@@ -670,19 +639,7 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
  * Get the best pick's market type for a prediction.
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
-  const best = getMarketCandidates(prediction)[0].type;
-
-  // Upgrade Over 1.5 → Over 2.5 when the model also expects a high-scoring game
-  // (Over 3.5 ≥ 50%). Avoids repetitive "Over 1.5" best picks when the AI is
-  // clearly forecasting plenty of goals.
-  if (best === "over15") {
-    const probs = calculateGoalMarketProbs(prediction);
-    if (probs.over35 >= 50 && probs.over25 >= 70) {
-      return "over25";
-    }
-  }
-
-  return best;
+  return getMarketCandidates(prediction)[0].type;
 }
 
 /**
@@ -714,20 +671,11 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 }
 
 /**
- * Strength used for tier eligibility.
- *
- * The headline pick is chosen with boosts/penalties (for diversity), so its RAW
- * probability can be e.g. 51% even when the match also has a perfectly valid
- * Over 1.5 88% or Under 2.5 84% pick. Using only the headline value silently
- * dropped most matches below the 65% quality gate. Eligibility therefore uses
- * the strongest RAW probability among all markets that are actually displayable.
+ * Strength used for tier eligibility. It is deliberately identical to the
+ * percentage rendered in Main so a Premium card can never show a weaker pick.
  */
 export function getBestEligibleProbability(prediction: AIPrediction): number {
-  const raw = getRawProbMap(prediction);
-  const eligible = getMarketCandidates(prediction).filter((c) => c.prob > 0);
-  const best = eligible.reduce((max, c) => Math.max(max, raw[c.type]), 0);
-  // Over 1.5 / Under 3.5 are valid safety markets even when not headline-worthy.
-  return Math.max(best, raw.over15 >= 85 ? raw.over15 : 0, raw.under35 >= 85 ? raw.under35 : 0);
+  return getBestMarketProbability(prediction);
 }
 
 
