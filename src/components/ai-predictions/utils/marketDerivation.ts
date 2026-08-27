@@ -285,8 +285,7 @@ export function getRecommendedScoreConstraints(
   // No explicit 1X2 text: infer direction from the model when one side is a
   // clear favourite, so we never show "0-1 / 0-2" next to Home 51% vs Away 31%.
   if (!marketType) {
-    const hw = prediction.home_win ?? 0;
-    const aw = prediction.away_win ?? 0;
+    const { hw, aw } = getNormalized1x2(prediction);
     if (hw >= 45 && hw - aw >= 12) marketType = "home_win";
     else if (aw >= 45 && aw - hw >= 12) marketType = "away_win";
   }
@@ -305,17 +304,25 @@ export function getRecommendedScoreConstraints(
  * Check if a scoreline is consistent with a given market type.
  */
 function scoreMatchesMarket(home: number, away: number, market: MarketType): boolean {
+  const total = home + away;
   switch (market) {
     case "home_win": return home > away;
     case "away_win": return away > home;
     case "draw": return home === away;
-    case "over25": return (home + away) > 2;
-    case "under25": return (home + away) <= 2;
+    case "dc_1x": return home >= away;
+    case "dc_x2": return away >= home;
+    case "dc_12": return home !== away;
+    case "over15": return total > 1;
+    case "over25": return total > 2;
+    case "over35": return total > 3;
+    case "under25": return total <= 2;
+    case "under35": return total <= 3;
     case "btts_yes": return home > 0 && away > 0;
     case "btts_no": return home === 0 || away === 0;
     default: return true;
   }
 }
+
 
 function scoreMatchesConstraintOptions(home: number, away: number, options: ScoreConstraintOptions): boolean {
   const total = home + away;
