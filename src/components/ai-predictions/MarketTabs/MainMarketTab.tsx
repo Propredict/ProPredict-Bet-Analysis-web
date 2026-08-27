@@ -118,8 +118,13 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
   const probs = getRawProbMap(prediction);
   const meta = MARKET_META[bestType];
-  return { label: meta.getLabel(prediction), conf: probs[bestType], icon: meta.icon, type: bestType };
+  const strongest = getBestEligibleProbability(prediction);
+  // Premium band: the headline shows the informative pick (e.g. "Panathinaikos
+  // to Win") while AI Confidence keeps the card's strongest analysed value.
+  const conf = strongest >= 80 ? Math.max(probs[bestType], strongest) : probs[bestType];
+  return { label: meta.getLabel(prediction), conf, icon: meta.icon, type: bestType };
 }
+
 
 /**
  * AI Confidence must match the pick that is actually displayed. Using the
