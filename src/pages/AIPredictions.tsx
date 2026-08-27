@@ -28,7 +28,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
-import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, setFreeTierIds, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
 type SortOption = "confidence" | "kickoff";
