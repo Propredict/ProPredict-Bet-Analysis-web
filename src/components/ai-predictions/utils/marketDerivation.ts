@@ -661,7 +661,10 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
  * getBestEligibleProbability).
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
+  const override = diversityOverrides.get(getPredictionKey(prediction));
+  if (override) return override;
   const candidates = getMarketCandidates(prediction);
+
   const top = candidates[0];
   if (top.type === "over15") {
     // Premium band (strongest market >= 80) keeps the strict rule — those cards
