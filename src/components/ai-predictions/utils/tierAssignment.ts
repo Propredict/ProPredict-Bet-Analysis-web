@@ -21,11 +21,12 @@ export function assignTiers(predictions: Array<any>): {
   const fallbackIds = new Set<string>();
 
   const scored = predictions.map((p) => {
-    const bestPickProb = getBestMarketProbability(p);
-    // The strongest concrete prediction shown to the user determines its tier.
-    // For example, BTTS Yes 87% or Over 2.5 86% belongs in Premium even when
-    // the separate overall AI confidence value is lower.
-    const verifiedStrength = bestPickProb;
+    // Strength = strongest RAW probability among displayable markets, not just
+    // the headline pick (whose raw value can be low after diversity boosts).
+    const verifiedStrength = Math.max(
+      getBestEligibleProbability(p),
+      getBestMarketProbability(p),
+    );
     const baseTier = getTierFromConfidence(verifiedStrength) as Tier;
     return {
       id: p.id!,
@@ -34,6 +35,7 @@ export function assignTiers(predictions: Array<any>): {
       prediction: p,
     };
   });
+
 
 
   const sorted = [...scored].sort((a, b) => {
