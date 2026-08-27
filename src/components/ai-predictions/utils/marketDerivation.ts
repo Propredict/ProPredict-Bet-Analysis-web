@@ -825,9 +825,13 @@ function getFavouriteMarket(
   prediction: AIPrediction,
   candidates: MarketCandidate[],
 ): MarketType | null {
+  // Free tier only.
+  if (!prediction.id || !freeTierIds.has(prediction.id)) return null;
+
   const { hw, aw } = getNormalized1x2(prediction);
   const gap = Math.abs(hw - aw);
   if (gap < FAVOURITE_GAP) return null;
+
 
   const homeFavourite = hw > aw;
   const order: { type: MarketType; min: number }[] = homeFavourite
