@@ -1,5 +1,6 @@
 import { getBestMarketProbability, getTierFromConfidence } from "./marketDerivation";
 import { leagueTier } from "./topPicksRanking";
+import { getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
 
 export type Tier = "free" | "pro" | "premium";
 
@@ -21,7 +22,10 @@ export function assignTiers(predictions: Array<any>): {
 
   const scored = predictions.map((p) => {
     const bestPickProb = getBestMarketProbability(p);
-    const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb);
+    // Use the SAME strength measure as the Top 30 page so a match eligible
+    // there is never missing from AI Predictions.
+    const previewPickProb = getTopMatchPreviewPick(p).confidence;
+    const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb, previewPickProb);
     return {
       id: p.id!,
       strength: effectiveStrength,
