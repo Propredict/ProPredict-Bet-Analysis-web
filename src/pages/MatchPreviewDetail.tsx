@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Clock, Sparkles, Lock, Zap, Trophy, Target, Gauge }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateGoalMarketProbs, getDerivedPredictedScore, getRecommendedScoreConstraints } from "@/components/ai-predictions/utils/marketDerivation";
+import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
@@ -198,12 +198,11 @@ export default function MatchPreviewDetail() {
   const risk = prediction ? getRiskLabel(prediction.confidence) : getRiskLabel(null);
   const heroPick = prediction ? getTopMatchPreviewPick(prediction as AIPrediction) : null;
   const aiPicks = prediction && unlocked ? deriveMatchPreviewAIPicks(prediction as AIPrediction) : [];
-  // Predicted score must respect the same Over/Under + BTTS signals shown in AI Picks,
-  // so we never display e.g. "1-2" next to an "Under 2.5 / BTTS No" recommendation.
+  // Show the score produced and stored by the prediction engine. The frontend
+  // must not replace the system prediction with a separately derived score.
   const consistentScore = useMemo(() => {
     if (!prediction) return null;
-    const pred = prediction as AIPrediction;
-    return getDerivedPredictedScore(pred, getRecommendedScoreConstraints(pred));
+    return prediction.predicted_score;
   }, [prediction]);
   const statsGrid = prediction && unlocked ? deriveStatsGrid(prediction, consistentScore) : [];
 
