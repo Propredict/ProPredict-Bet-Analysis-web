@@ -91,45 +91,119 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           <X className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
 
-        {/* Step 1: Pre-filter */}
+        {/* Step 1: Pre-filter + inline stars */}
         {step === "prefilter" && (
-          <div className="px-5 pt-7 pb-5 text-center space-y-4">
-            <span className="text-4xl inline-block">⭐</span>
-            <DialogTitle className="text-base font-extrabold text-foreground">
-              Enjoying the predictions? ⭐
-            </DialogTitle>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Help us improve — it takes 5 seconds
-            </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-xs font-extrabold text-amber-400">Get +50 points after rating</span>
+          <div className="relative px-5 pt-10 pb-5 text-center">
+            {/* Hero star medallion */}
+            <div className="absolute left-1/2 -translate-x-1/2 -top-1 flex items-center justify-center gap-1">
+              <span className="text-lg opacity-70">🌿</span>
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{
+                  background: 'radial-gradient(circle at 50% 40%, rgba(251,191,36,0.25), rgba(2,6,23,0.9))',
+                  border: '1px solid rgba(20,184,166,0.45)',
+                  boxShadow: '0 0 22px rgba(20,184,166,0.35)',
+                }}
+              >
+                <span className="text-3xl">⭐</span>
+              </div>
+              <span className="text-lg opacity-70 scale-x-[-1]">🌿</span>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="pt-14 space-y-1">
+              <DialogTitle className="text-lg font-extrabold text-foreground">
+                Enjoying the predictions?
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground">
+                Your feedback helps us improve and grow! <span className="text-primary">💚</span>
+              </p>
+            </div>
+
+            <p className="mt-4 text-xs font-medium text-muted-foreground">
+              How would you rate your experience?
+            </p>
+
+            {/* Inline stars — 4-5 goes straight to Google Play */}
+            <div className="flex justify-center gap-1.5 mt-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onMouseEnter={() => setHoveredStars(star)}
+                  onMouseLeave={() => setHoveredStars(0)}
+                  onClick={() => handleStarSelect(star)}
+                  disabled={submitting}
+                  className="transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+                  aria-label={`Rate ${star} stars`}
+                >
+                  <Star
+                    className={`h-9 w-9 transition-all duration-200 ${
+                      star <= displayStars
+                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+                        : "text-amber-400/80 fill-amber-400/80"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-between px-2 mt-1.5 text-[10px]">
+              <span className="text-muted-foreground">Not great</span>
+              <span className="text-primary font-semibold">Amazing</span>
+            </div>
+
+            {/* Reward banner */}
+            <div
+              className="mt-4 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl"
+              style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)' }}
+            >
+              <Gift className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium text-foreground">
+                Get <span className="font-extrabold text-amber-400">+50 points</span> after rating
+              </span>
+              <span className="text-sm">🌟</span>
+            </div>
+
+            {/* Quick choice buttons */}
+            <div className="flex gap-2.5 mt-4">
               <button
-                onClick={() => setStep("stars")}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-teal-600 text-white text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
+                onClick={() => handleStarSelect(5)}
+                className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-teal-600 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
               >
-                <ThumbsUp className="h-4 w-4" />
-                Yes 😍
+                <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <ThumbsUp className="h-4 w-4" />
+                </span>
+                <span className="text-left leading-tight">
+                  <span className="block text-sm font-bold">Yes 😍</span>
+                  <span className="block text-[10px] opacity-90">Love it!</span>
+                </span>
               </button>
               <button
                 onClick={() => { setSelectedStars(2); setStep("feedback"); }}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary/50 hover:bg-secondary/70 text-muted-foreground text-sm font-medium transition-all active:scale-95"
+                className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/50 hover:bg-secondary/70 text-muted-foreground transition-all active:scale-95"
               >
-                <ThumbsDown className="h-4 w-4" />
-                Not really 😐
+                <span className="w-8 h-8 rounded-full bg-background/60 flex items-center justify-center shrink-0">
+                  <ThumbsDown className="h-4 w-4" />
+                </span>
+                <span className="text-left leading-tight">
+                  <span className="block text-sm font-bold text-foreground">Not really 😐</span>
+                  <span className="block text-[10px]">Needs work</span>
+                </span>
               </button>
             </div>
 
-            <button
-              className="w-full py-1.5 text-xs font-medium text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-              onClick={handleClose}
-            >
-              Maybe later
-            </button>
+            {/* Maybe later with dividers */}
+            <div className="flex items-center gap-3 mt-4">
+              <span className="h-px flex-1 bg-border/50" />
+              <button
+                className="text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+                onClick={handleClose}
+              >
+                Maybe later
+              </button>
+              <span className="h-px flex-1 bg-border/50" />
+            </div>
           </div>
         )}
+
 
         {/* Step 2: Star rating (shown after "Yes") */}
         {step === "stars" && (
