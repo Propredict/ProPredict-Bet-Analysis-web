@@ -34,6 +34,8 @@ function parseScore(predictedScore: string | null): { home: number; away: number
   const match = predictedScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
   if (!match) return null;
   return { home: parseInt(match[1], 10), away: parseInt(match[2], 10) };
+}
+
 
 /**
  * Normalized 1X2 probabilities (same values shown on the card).
