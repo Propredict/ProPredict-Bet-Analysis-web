@@ -34,7 +34,23 @@ function parseScore(predictedScore: string | null): { home: number; away: number
   const match = predictedScore.match(/^(\d+)\s*[-:]\s*(\d+)$/);
   if (!match) return null;
   return { home: parseInt(match[1], 10), away: parseInt(match[2], 10) };
+
+/**
+ * Normalized 1X2 probabilities (same values shown on the card).
+ * Raw DB values do not always sum to 100, so every consistency check must
+ * use the normalized set or it silently fails (e.g. 40/20/14 -> 54/27/19).
+ */
+export function getNormalized1x2(prediction: AIPrediction): { hw: number; d: number; aw: number } {
+  const rawH = Math.max(0, prediction.home_win ?? 0);
+  const rawA = Math.max(0, prediction.away_win ?? 0);
+  const rawD = Math.max(0, prediction.draw ?? 0);
+  const total = rawH + rawA + rawD;
+  if (total <= 0) return { hw: 33, d: 34, aw: 33 };
+  const hw = Math.round((rawH / total) * 100);
+  const aw = Math.round((rawA / total) * 100);
+  return { hw, aw, d: 100 - hw - aw };
 }
+
 
 /**
  * Poisson probability function: P(k) = (λ^k * e^-λ) / k!
