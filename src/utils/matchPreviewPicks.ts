@@ -1,5 +1,8 @@
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
+import {
+  calculateGoalMarketProbs,
+  getBestMarketPickWithLabel,
+} from "@/components/ai-predictions/utils/marketDerivation";
 
 export interface MatchPreviewAIPick {
   emoji: string;
@@ -95,27 +98,8 @@ export const MIN_PICK_CONFIDENCE = 65;
  * Ignores the 65% display gate so ranking/eligibility logic still has a value.
  */
 export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
-  const picks = deriveMatchPreviewAIPicks(pred);
-  if (picks.length > 0) return picks[0];
-  // Fallback for ranking only — the caller decides whether to display it.
-  const goalProbs = calculateGoalMarketProbs(pred);
-  const best = Math.max(
-    pred.home_win ?? 0,
-    pred.away_win ?? 0,
-    pred.draw ?? 0,
-    goalProbs.over25,
-    goalProbs.under25,
-    goalProbs.bttsYes,
-    goalProbs.bttsNo,
-    pred.confidence ?? 0,
-  );
-  const label =
-    best === goalProbs.over25 ? "Over 2.5"
-      : best === goalProbs.under25 ? "Under 2.5"
-      : best === goalProbs.bttsYes ? "BTTS Yes"
-      : best === goalProbs.bttsNo ? "BTTS No"
-      : best === (pred.home_win ?? 0) ? "Home Win"
-      : best === (pred.away_win ?? 0) ? "Away Win"
-      : "Draw";
-  return makePick(label, best);
+  // Top 30 and AI Predictions must never calculate a different headline pick.
+  // Both surfaces consume the same centralized market-selection result.
+  const pick = getBestMarketPickWithLabel(pred);
+  return makePick(pick.label, pick.pct);
 }
