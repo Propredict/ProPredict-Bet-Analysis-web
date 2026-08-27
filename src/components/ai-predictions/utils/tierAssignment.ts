@@ -26,13 +26,20 @@ export function assignTiers(predictions: Array<any>): {
     // there is never missing from AI Predictions.
     const previewPickProb = getTopMatchPreviewPick(p).confidence;
     const effectiveStrength = Math.max(p.confidence ?? 0, bestPickProb, previewPickProb);
+    let baseTier = getTierFromConfidence(effectiveStrength) as Tier;
+    // Premium must be the SAFEST picks: a strong derived market (e.g. Double
+    // Chance 88%) is not enough if the model's own AI confidence is weak.
+    // Require solid AI confidence too, otherwise cap the match at Pro.
+    const aiConfidence = p.confidence ?? 0;
+    if (baseTier === "premium" && aiConfidence < 75) baseTier = "pro";
     return {
       id: p.id!,
       strength: effectiveStrength,
-      baseTier: getTierFromConfidence(effectiveStrength) as Tier,
+      baseTier,
       prediction: p,
     };
   });
+
 
   const sorted = [...scored].sort((a, b) => {
     if (b.strength !== a.strength) return b.strength - a.strength;
