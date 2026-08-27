@@ -273,12 +273,13 @@ export default function AIPredictions() {
 
     // Hide predictions below 50% confidence — but keep matches that have already kicked off.
     let result = predictions.filter(
-      (p) => hasStarted(p) || (p.confidence != null ? p.confidence >= 50 : true)
+      (p) => p.confidence == null || p.confidence >= 50
     );
 
-    // Drop predictions that exceed tier caps (Premium 10 + Pro 20 + Free 15 = 45 max)
-    // — but keep already-started matches even if they'd be cut by the cap.
-    result = result.filter((p) => hasStarted(p) || getPredictionTier(p) !== null);
+    // Never show "AI Insight only" cards (no concrete pick) or matches that
+    // exceed the tier caps — even if the match has already started.
+    result = result.filter((p) => getPredictionTier(p) !== null);
+
 
     // Filter by tier if not "all"
     if (tierFilter !== "all") {
