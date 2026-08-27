@@ -111,14 +111,12 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
     awayXg = Math.max(0.3, lastAwayGoals);
   } else {
     const score = parseScore(prediction.predicted_score);
+    const norm = getNormalized1x2(prediction);
     if (score) {
       // Fallback score-derived xG must be calibrated, not literal.
-      // Old logic mapped 1-0 to ~1.20 total xG, producing 85-90% Under 2.5
-      // across many cards. A predicted score is only the most likely scoreline,
-      // so keep a realistic attacking floor for both teams.
-      const hw = prediction.home_win ?? 40;
-      const aw = prediction.away_win ?? 30;
-      const dr = prediction.draw ?? 30;
+      const hw = norm.hw;
+      const aw = norm.aw;
+      const dr = norm.d;
 
       homeXg = Math.max(0.65, score.home * 0.62 + 0.38);
       awayXg = Math.max(0.55, score.away * 0.62 + 0.35);
@@ -128,22 +126,22 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
       if (score.away === 0 && aw + dr >= 45) awayXg = Math.max(awayXg, 0.75);
       if (score.home === 0 && hw + dr >= 45) homeXg = Math.max(homeXg, 0.75);
     } else {
-      const hw = prediction.home_win ?? 40;
-      const aw = prediction.away_win ?? 30;
-      homeXg = Math.max(0.5, hw / 30);
-      awayXg = Math.max(0.4, aw / 30);
+      homeXg = Math.max(0.5, norm.hw / 30);
+      awayXg = Math.max(0.4, norm.aw / 30);
     }
   }
 
   // Consistency guard: if 1X2 has a clear favorite, ensure xG reflects it.
-  // Prevents contradictions like Lyon 65% home but xG suggesting Rennes win.
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  if (hw >= 55 && hw - aw >= 20 && homeXg <= awayXg) {
-    homeXg = Math.max(awayXg + 0.4, 1.6);
-  } else if (aw >= 55 && aw - hw >= 20 && awayXg <= homeXg) {
-    awayXg = Math.max(homeXg + 0.4, 1.6);
+  // Uses NORMALIZED probabilities — raw DB values rarely sum to 100, which
+  // previously made this guard never fire and produced scorelines (0-1/0-2)
+  // that contradicted the displayed 1X2 / Double Chance pick.
+  const { hw, aw } = getNormalized1x2(prediction);
+  if (hw >= 45 && hw - aw >= 12 && homeXg <= awayXg) {
+    homeXg = Math.max(awayXg + 0.35, 1.5);
+  } else if (aw >= 45 && aw - hw >= 12 && awayXg <= homeXg) {
+    awayXg = Math.max(homeXg + 0.35, 1.5);
   }
+
 
   return { homeXg, awayXg };
 }
