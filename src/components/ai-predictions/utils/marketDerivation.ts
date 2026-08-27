@@ -750,11 +750,20 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
     // Premium band (strongest market >= 80) keeps the strict rule — those cards
     // must never show a weaker headline than the tier they qualified for.
     if (top.prob >= 80) {
-      // A Premium card must never display a headline below its own 80% bar,
-      // so an alternative is only shown when it is itself >= 80%.
+      // Prefer a market that actually tells the user WHO wins / what happens,
+      // instead of the generic "Over 1.5". A >= 80% alternative wins outright;
+      // otherwise the strongest directional market (1X2 / DC) is used as the
+      // headline label while the displayed confidence stays at the card's
+      // strongest analysed value.
       const strongAlt = candidates.find((c) => c.type !== "over15" && c.prob >= 80);
-      return strongAlt ? strongAlt.type : top.type;
+      if (strongAlt) return strongAlt.type;
+      const DIRECTIONAL: MarketType[] = ["home_win", "away_win", "dc_1x", "dc_x2"];
+      const directional = candidates.find(
+        (c) => DIRECTIONAL.includes(c.type) && c.prob >= 55,
+      );
+      return directional ? directional.type : top.type;
     }
+
 
     // Free / Pro band: Over 1.5 is the mathematical top on nearly every match,
     // which made every card read identically. Show the strongest genuinely
