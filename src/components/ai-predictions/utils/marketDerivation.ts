@@ -689,8 +689,7 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
  * Get the RAW (display) probability for the best pick — without bonuses/penalties.
  * This is what users see AND what determines the tier.
  */
-export function getBestMarketProbability(prediction: AIPrediction): number {
-  const bestType = getBestPickType(prediction);
+function getRawProbMap(prediction: AIPrediction): Record<MarketType, number> {
   let hw = Math.max(5, prediction.home_win ?? 33);
   let aw = Math.max(5, prediction.away_win ?? 33);
   let d = Math.max(5, prediction.draw ?? 34);
@@ -701,16 +700,36 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
 
   const probs = calculateGoalMarketProbs(prediction);
 
-  const rawProbs: Record<MarketType, number> = {
+  return {
     home_win: hw, away_win: aw, draw: d,
     dc_1x: hw + d, dc_x2: d + aw, dc_12: hw + aw,
     over15: probs.over15, over25: probs.over25, over35: probs.over35,
     under25: probs.under25, under35: probs.under35,
     btts_yes: probs.bttsYes, btts_no: probs.bttsNo,
   };
-
-  return rawProbs[bestType];
 }
+
+export function getBestMarketProbability(prediction: AIPrediction): number {
+  return getRawProbMap(prediction)[getBestPickType(prediction)];
+}
+
+/**
+ * Strength used for tier eligibility.
+ *
+ * The headline pick is chosen with boosts/penalties (for diversity), so its RAW
+ * probability can be e.g. 51% even when the match also has a perfectly valid
+ * Over 1.5 88% or Under 2.5 84% pick. Using only the headline value silently
+ * dropped most matches below the 65% quality gate. Eligibility therefore uses
+ * the strongest RAW probability among all markets that are actually displayable.
+ */
+export function getBestEligibleProbability(prediction: AIPrediction): number {
+  const raw = getRawProbMap(prediction);
+  const eligible = getMarketCandidates(prediction).filter((c) => c.prob > 0);
+  const best = eligible.reduce((max, c) => Math.max(max, raw[c.type]), 0);
+  // Over 1.5 / Under 3.5 are valid safety markets even when not headline-worthy.
+  return Math.max(best, raw.over15 >= 85 ? raw.over15 : 0, raw.under35 >= 85 ? raw.under35 : 0);
+}
+
 
 /**
  * Tier assignment based on confidence score (v3):
