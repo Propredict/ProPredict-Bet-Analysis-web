@@ -270,7 +270,7 @@ export function calculateTopCorrectScores(prediction: AIPrediction): CorrectScor
 
 export function getRecommendedScoreConstraints(
   prediction: AIPrediction
-): Pick<ScoreConstraintOptions, "minTotalGoals" | "maxTotalGoals" | "requireBothTeamsToScore" | "marketType"> {
+): Pick<ScoreConstraintOptions, "minTotalGoals" | "maxTotalGoals" | "requireBothTeamsToScore" | "marketType" | "extraMarketTypes"> {
   const goalProbs = calculateGoalMarketProbs(prediction);
 
   let minTotalGoals: number | undefined;
@@ -305,14 +305,36 @@ export function getRecommendedScoreConstraints(
     else if (aw >= 45 && aw - hw >= 12) marketType = "away_win";
   }
 
+  // The scoreline must ALWAYS agree with the pick actually displayed on the
+  // card (Best Pick). E.g. "1X" can never sit next to a predicted 0-2.
+  const displayed = getBestPickType(prediction);
+  const DIRECTIONAL: MarketType[] = ["home_win", "away_win", "draw", "dc_1x", "dc_x2", "dc_12"];
+
+  if (DIRECTIONAL.includes(displayed)) {
+    // Displayed direction wins over any inferred one to avoid contradictions.
+    marketType = displayed;
+  } else {
+    switch (displayed) {
+      case "over15": minTotalGoals = Math.max(minTotalGoals ?? 0, 2); break;
+      case "over25": minTotalGoals = Math.max(minTotalGoals ?? 0, 3); break;
+      case "over35": minTotalGoals = Math.max(minTotalGoals ?? 0, 4); break;
+      case "under25": maxTotalGoals = 2; minTotalGoals = undefined; break;
+      case "under35": maxTotalGoals = Math.min(maxTotalGoals ?? Number.POSITIVE_INFINITY, 3); break;
+      case "btts_yes": requireBothTeamsToScore = true; break;
+      case "btts_no": requireBothTeamsToScore = false; break;
+      default: break;
+    }
+  }
 
   return {
     minTotalGoals,
     maxTotalGoals: Number.isFinite(maxTotalGoals ?? Number.NaN) ? maxTotalGoals : undefined,
     requireBothTeamsToScore,
     marketType,
+    extraMarketTypes: [displayed],
   };
 }
+
 
 
 /**
