@@ -40,9 +40,9 @@ export function assignTiers(predictions: Array<any>): {
   });
 
   const PREMIUM_CAP = 10;
-  const PRO_CAP = 15;
-  // Free shows only the 5 strongest remaining verified overflow picks.
-  const FREE_CAP = 5;
+  const PRO_CAP = 10;
+  // Free shows up to 10 strongest remaining verified overflow picks.
+  const FREE_CAP = 10;
   let premiumCount = 0;
   let proCount = 0;
   let freeCount = 0;
