@@ -21,12 +21,8 @@ export function assignTiers(predictions: Array<any>): {
   const fallbackIds = new Set<string>();
 
   const scored = predictions.map((p) => {
-    // Strength = strongest RAW probability among displayable markets, not just
-    // the headline pick (whose raw value can be low after diversity boosts).
-    const verifiedStrength = Math.max(
-      getBestEligibleProbability(p),
-      getBestMarketProbability(p),
-    );
+    // The same concrete market and percentage shown in Main determines tier.
+    const verifiedStrength = getBestEligibleProbability(p);
     const baseTier = getTierFromConfidence(verifiedStrength) as Tier;
     return {
       id: p.id!,
