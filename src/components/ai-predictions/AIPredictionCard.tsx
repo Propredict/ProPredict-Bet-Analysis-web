@@ -376,8 +376,8 @@ const AIPredictionCardInner = ({
           </div>
         )}
 
-        {/* AI Analysis - Pro/Premium only */}
-        {hasAccess && displayTier !== "free" && prediction.analysis &&
+        {/* AI Analysis - all tiers */}
+        {hasAccess && prediction.analysis &&
           !/Pending data|Not found in API|Limited team-form data|Fallback to bookmaker|Form data limited/i.test(prediction.analysis) && (
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
