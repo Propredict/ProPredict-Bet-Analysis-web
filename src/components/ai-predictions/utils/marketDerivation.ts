@@ -750,7 +750,9 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
     // Premium band (strongest market >= 80) keeps the strict rule — those cards
     // must never show a weaker headline than the tier they qualified for.
     if (top.prob >= 80) {
-      const strongAlt = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+      // A Premium card must never display a headline below its own 80% bar,
+      // so an alternative is only shown when it is itself >= 80%.
+      const strongAlt = candidates.find((c) => c.type !== "over15" && c.prob >= 80);
       return strongAlt ? strongAlt.type : top.type;
     }
 
