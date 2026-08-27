@@ -124,6 +124,17 @@ function getFreePick(prediction: AIPrediction): PickCandidate {
   return getBestPick(prediction);
 }
 
+/**
+ * Premium cards keep the informative headline pick (e.g. "Panathinaikos Win")
+ * but display the card's strongest analysed probability as AI Confidence,
+ * so a Premium card never shows a value below its qualifying strength.
+ */
+function getPremiumPick(prediction: AIPrediction): PickCandidate {
+  const pick = getBestPick(prediction);
+  const strongest = getBestEligibleProbability(prediction);
+  return { ...pick, conf: Math.max(pick.conf, strongest) };
+}
+
 interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
@@ -131,7 +142,13 @@ interface Props {
 }
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
-  const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
+  const pick =
+    displayTier === "premium"
+      ? getPremiumPick(prediction)
+      : displayTier === "free"
+      ? getFreePick(prediction)
+      : getBestPick(prediction);
+
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const allProbs = getAllRawProbs(prediction);
