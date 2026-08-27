@@ -553,8 +553,12 @@ export default function AIPredictions() {
     return predictions.filter((p) => p.is_live).length;
   }, [predictions]);
 
-  // Total matches analyzed
-  const totalAnalyzed = dayStats.analyzed;
+  // Total matches analyzed today (all fixtures with a generated analysis)
+  const totalAnalyzed = predictions.length;
+
+  // Active = picks actually published across the tiers (same as the "All" count)
+  const activeCount = tierCounts.free + tierCounts.pro + tierCounts.premium;
+
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
@@ -687,7 +691,7 @@ export default function AIPredictions() {
               <div className="min-w-0">
                 <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Active</p>
                 <p className="text-sm md:text-xl font-extrabold text-primary leading-none">
-                  {loading ? "..." : dayStats.pending}
+                  {loading ? "..." : activeCount}
                 </p>
                 <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Picks running now</p>
               </div>
