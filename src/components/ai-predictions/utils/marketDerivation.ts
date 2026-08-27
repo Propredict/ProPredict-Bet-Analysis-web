@@ -645,7 +645,7 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   // It must never beat a clear favourite (e.g. Home 51% / Away 31% must not
   // resolve to "12 (Home or Away)", which carries no analytical value).
   const maxSingle = Math.max(hw, aw, d);
-  const dcEligible = maxSingle < 55 && d >= 25;
+  const dcEligible = maxSingle < 55 && d >= 18;
 
   const candidates: MarketCandidate[] = [
     { type: "home_win", prob: hw },
@@ -653,8 +653,9 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "draw", prob: d },
     // Double Chance remains limited to genuinely tight matches so a broad
     // mathematical sum cannot displace a more useful concrete prediction.
-    { type: "dc_1x", prob: dcEligible && dc1x >= 76 ? dc1x : 0 },
-    { type: "dc_x2", prob: dcEligible && dcx2 >= 76 ? dcx2 : 0 },
+    { type: "dc_1x", prob: dcEligible && dc1x >= 62 ? dc1x : 0 },
+    { type: "dc_x2", prob: dcEligible && dcx2 >= 62 ? dcx2 : 0 },
+
     // "12" (Home or Away) is never shown as a main pick — it tells the user nothing.
     { type: "dc_12", prob: 0 },
 
