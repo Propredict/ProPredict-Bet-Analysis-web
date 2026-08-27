@@ -826,8 +826,9 @@ function getFavouriteMarket(
   prediction: AIPrediction,
   candidates: MarketCandidate[],
 ): MarketType | null {
-  // Free tier only.
-  if (!prediction.id || !freeTierIds.has(prediction.id)) return null;
+  // Applies to every tier: whenever a weak Under 2.5 would be the headline,
+  // show the favourite (or 1X / X2 when the sides are close) instead.
+
 
   const { hw, aw } = getNormalized1x2(prediction);
   const gap = Math.abs(hw - aw);
