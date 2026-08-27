@@ -266,6 +266,16 @@ export function getRecommendedScoreConstraints(
   else if (raw === "2" || raw === "away" || raw === "away win") marketType = "away_win";
   else if (raw === "x" || raw === "draw") marketType = "draw";
 
+  // No explicit 1X2 text: infer direction from the model when one side is a
+  // clear favourite, so we never show "0-1 / 0-2" next to Home 51% vs Away 31%.
+  if (!marketType) {
+    const hw = prediction.home_win ?? 0;
+    const aw = prediction.away_win ?? 0;
+    if (hw >= 45 && hw - aw >= 12) marketType = "home_win";
+    else if (aw >= 45 && aw - hw >= 12) marketType = "away_win";
+  }
+
+
   return {
     minTotalGoals,
     maxTotalGoals: Number.isFinite(maxTotalGoals ?? Number.NaN) ? maxTotalGoals : undefined,
