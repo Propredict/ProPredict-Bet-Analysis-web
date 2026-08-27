@@ -705,7 +705,7 @@ export default function AIPredictions() {
               <div className="min-w-0">
                 <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Accuracy</p>
                 <p className="text-sm md:text-xl font-extrabold text-amber-400 leading-none">
-                  {loading ? "..." : `${Math.max(dayStats.accuracy, 67)}%`}
+                  {loading ? "..." : `${dayStats.accuracy}%`}
                 </p>
                 <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">AI success rate</p>
               </div>
