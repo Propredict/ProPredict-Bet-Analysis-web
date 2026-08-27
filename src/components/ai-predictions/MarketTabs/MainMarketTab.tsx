@@ -5,6 +5,8 @@ import {
   calculateGoalMarketProbs,
   getBestPickType,
   getRawProbMap,
+  getBestEligibleProbability,
+
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   getRecommendedScoreConstraints,
