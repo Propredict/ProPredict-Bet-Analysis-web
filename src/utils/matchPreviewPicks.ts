@@ -33,10 +33,11 @@ function makePick(label: string, confidence: number): MatchPreviewAIPick {
  * as the AI Predictions page (calculateGoalMarketProbs).
  */
 export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPick[] {
-  const homeWin = pred.home_win ?? 0;
-  const awayWin = pred.away_win ?? 0;
-  const draw = pred.draw ?? 0;
+  // Always use NORMALIZED 1X2 (raw DB values rarely sum to 100), so every
+  // page shows the same percentages as the AI Predictions card.
+  const { hw: homeWin, d: draw, aw: awayWin } = getNormalized1x2(pred);
   const confidence = pred.confidence ?? 60;
+
 
   // Use the unified Poisson model for goals/BTTS — same as AI Predictions page
   const goalProbs = calculateGoalMarketProbs(pred);
