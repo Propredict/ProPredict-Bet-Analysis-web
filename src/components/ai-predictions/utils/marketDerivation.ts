@@ -682,7 +682,7 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
  *   0-64% → Free
  */
 export function getTierFromConfidence(confidence: number): "free" | "pro" | "premium" {
-  if (confidence >= 85) return "premium";
+  if (confidence >= 80) return "premium";
   if (confidence >= 65) return "pro";
   return "free";
 }
@@ -691,7 +691,7 @@ export function getTierFromConfidence(confidence: number): "free" | "pro" | "pre
  * Simple tier from market probability (fallback when confidence not available)
  */
 export function getTierFromMarketProbability(bestProb: number): "free" | "pro" | "premium" {
-  if (bestProb >= 85) return "premium";
+  if (bestProb >= 80) return "premium";
   if (bestProb >= 65) return "pro";
   return "free";
 }
