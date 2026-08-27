@@ -28,7 +28,7 @@ import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, Refre
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
-import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, setFreeTierIds, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
+import { getBestMarketProbability, getTierFromConfidence, getBestPickType, calculateGoalMarketProbs, applyPickDiversity, type MarketType } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers } from "@/components/ai-predictions/utils/tierAssignment";
 
 type SortOption = "confidence" | "kickoff";
@@ -132,17 +132,12 @@ export default function AIPredictions() {
 
   // Only verified concrete picks of at least 65% are assigned. Strongest
   // market picks go to Premium (≥85%), then
-  // overflow cascades into Pro (max 15) and Free (max 10).
+  // overflow cascades into Pro (max 10) and Free (max 10).
   const { tierMap: tierAssignment } = useMemo(
     () => {
       // Spread headline picks so the same market never repeats on every card.
       applyPickDiversity(predictions);
-      const result = assignTiers(predictions);
-      // Free-only rule: clear favourite is shown instead of a generic goals pick.
-      setFreeTierIds(
-        [...result.tierMap.entries()].filter(([, t]) => t === "free").map(([id]) => id),
-      );
-      return result;
+      return assignTiers(predictions);
     },
     [predictions],
   );
