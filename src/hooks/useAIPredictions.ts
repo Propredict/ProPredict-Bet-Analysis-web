@@ -105,11 +105,33 @@ async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
 
   // Exclude World Cup 2026 matches — they live on their dedicated WC AI Picks page
   // to keep the main AI Predictions list focused on club football.
-  return allData.filter((p) => {
+  const filtered = allData.filter((p) => {
     const league = (p.league || "").toLowerCase();
     return !league.includes("world cup");
   });
+
+  // Deduplicate by match: the generator can leave more than one row per fixture
+  // (e.g. after a regeneration). Two rows for the same match produce two cards
+  // with DIFFERENT probabilities (one Top Pick 75%, one Free 55%), which looks
+  // like the app contradicts itself. Keep the freshest/strongest row per match.
+  const byMatch = new Map<string, AIPrediction>();
+  for (const p of filtered) {
+    const key = String(p.match_id ?? `${p.home_team}|${p.away_team}|${p.match_date}`);
+    const current = byMatch.get(key);
+    if (!current) {
+      byMatch.set(key, p);
+      continue;
+    }
+    const newer =
+      new Date(((p as any).updated_at ?? (p as any).created_at ?? 0) as string).getTime() >
+      new Date(((current as any).updated_at ?? (current as any).created_at ?? 0) as string).getTime();
+    const stronger = (p.confidence ?? 0) > (current.confidence ?? 0);
+    if (newer || (!newer && stronger && !(current as any).updated_at)) byMatch.set(key, p);
+  }
+
+  return Array.from(byMatch.values());
 }
+
 
 /**
  * React Query hook for AI predictions with caching and prefetch.
