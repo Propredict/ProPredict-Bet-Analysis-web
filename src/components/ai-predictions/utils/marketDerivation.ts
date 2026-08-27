@@ -676,7 +676,24 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
     // informative alternative instead (>= 55), so the list reflects the real
     // per-match analysis (BTTS, Over/Under 2.5, 1X2, DC...) with variety.
     const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 55);
-    if (alternative) return alternative.type;
+    if (alternative) {
+      // Avoid the whole list collapsing onto the same generic goals market:
+      // when a match-specific market (1X2 / DC / BTTS) is essentially as
+      // strong, show that instead.
+      const GENERIC: MarketType[] = ["under25", "over25", "over35"];
+      if (GENERIC.includes(alternative.type)) {
+        const specific = candidates.find(
+          (c) =>
+            !GENERIC.includes(c.type) &&
+            c.type !== "over15" &&
+            c.prob >= 58 &&
+            alternative.prob - c.prob <= 8,
+        );
+        if (specific) return specific.type;
+      }
+      return alternative.type;
+    }
+
   }
 
   return top.type;
