@@ -9,8 +9,8 @@ export type Tier = "free" | "pro" | "premium";
  * Used by both the AI Predictions page and the dashboard so a match
  * classified as Pro on /ai-predictions is also Pro on the dashboard.
  *
- * A prediction is eligible only when both the AI confidence and its concrete
- * displayed market pick are at least 65%. Tier caps cascade
+ * A prediction is eligible when its concrete displayed market pick is at
+ * least 65%. Tier caps cascade
  * Premium → Pro → Free, strongest verified predictions first.
  */
 export function assignTiers(predictions: Array<any>): {
@@ -22,11 +22,10 @@ export function assignTiers(predictions: Array<any>): {
 
   const scored = predictions.map((p) => {
     const bestPickProb = getBestMarketProbability(p);
-    const aiConfidence = p.confidence ?? 0;
-    // The weaker of model confidence and the actual displayed pick determines
-    // quality. This prevents a 90% model row with a 41% concrete pick from
-    // becoming an empty "AI Insight" card in Premium/Pro/Free.
-    const verifiedStrength = Math.min(aiConfidence, bestPickProb);
+    // The strongest concrete prediction shown to the user determines its tier.
+    // For example, BTTS Yes 87% or Over 2.5 86% belongs in Premium even when
+    // the separate overall AI confidence value is lower.
+    const verifiedStrength = bestPickProb;
     const baseTier = getTierFromConfidence(verifiedStrength) as Tier;
     return {
       id: p.id!,

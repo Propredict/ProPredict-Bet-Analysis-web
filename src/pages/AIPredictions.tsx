@@ -124,8 +124,8 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Only verified cards are assigned: both model confidence and the concrete
-  // displayed pick must be at least 65%. Strongest go to Premium (≥85%), then
+  // Only verified concrete picks of at least 65% are assigned. Strongest
+  // market picks go to Premium (≥85%), then
   // overflow cascades into Pro (max 15) and Free (max 10).
   const { tierMap: tierAssignment } = useMemo(
     () => assignTiers(predictions),
