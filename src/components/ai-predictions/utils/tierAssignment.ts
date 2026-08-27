@@ -1,4 +1,4 @@
-import { getBestMarketProbability, getTierFromConfidence } from "./marketDerivation";
+import { getBestEligibleProbability, getBestMarketProbability, getTierFromConfidence } from "./marketDerivation";
 import { leagueTier } from "./topPicksRanking";
 
 export type Tier = "free" | "pro" | "premium";
