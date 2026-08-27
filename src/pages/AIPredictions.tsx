@@ -553,8 +553,12 @@ export default function AIPredictions() {
     return predictions.filter((p) => p.is_live).length;
   }, [predictions]);
 
-  // Total matches analyzed
-  const totalAnalyzed = dayStats.analyzed;
+  // Total matches analyzed today (all fixtures with a generated analysis)
+  const totalAnalyzed = predictions.length;
+
+  // Active = picks actually published across the tiers (same as the "All" count)
+  const activeCount = tierCounts.free + tierCounts.pro + tierCounts.premium;
+
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
