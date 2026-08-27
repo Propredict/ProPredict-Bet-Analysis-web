@@ -107,8 +107,8 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
 }
 
 /** Best pick across all markets (Pro/Premium) */
-function getBestPick(prediction: AIPrediction, tier?: "free" | "pro" | "premium"): PickCandidate {
-  const bestType = getBestPickType(prediction, tier);
+function getBestPick(prediction: AIPrediction): PickCandidate {
+  const bestType = getBestPickType(prediction);
   const rawProbs = getAllRawProbs(prediction);
   const meta = MARKET_META[bestType];
   return { label: meta.getLabel(prediction), conf: rawProbs[bestType], icon: meta.icon, type: bestType };
@@ -119,7 +119,7 @@ function getBestPick(prediction: AIPrediction, tier?: "free" | "pro" | "premium"
  * This ensures diverse picks like Draw, BTTS, Under 2.5 instead of always Home/Away Win.
  */
 function getFreePick(prediction: AIPrediction): PickCandidate {
-  const bestType = getBestPickType(prediction, "free");
+  const bestType = getBestPickType(prediction);
   const rawProbs = getAllRawProbs(prediction);
   const meta = MARKET_META[bestType];
   // Use the actual market probability for display
@@ -134,7 +134,7 @@ interface Props {
 }
 
 export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
-  const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction, displayTier);
+  const pick = displayTier === "free" ? getFreePick(prediction) : getBestPick(prediction);
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const allProbs = getAllRawProbs(prediction);
