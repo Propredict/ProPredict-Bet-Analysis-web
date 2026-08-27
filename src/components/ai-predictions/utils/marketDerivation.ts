@@ -781,6 +781,8 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
       // strong, show that instead.
       const GENERIC: MarketType[] = ["under25", "over25", "over35"];
       if (GENERIC.includes(alternative.type)) {
+        const favourite = getFavouriteMarket(prediction, candidates);
+        if (favourite) return favourite;
         const specific = candidates.find(
           (c) =>
             !GENERIC.includes(c.type) &&
@@ -797,6 +799,34 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
 
   return demoteWeakUnder(prediction, top.type);
 }
+
+/**
+ * When one side is clearly stronger (home_win vs away_win gap is meaningful),
+ * the card should say WHO is expected to win rather than a generic goals line.
+ * Only when the two sides are close do we fall back to Under 2.5 / Double Chance.
+ */
+const FAVOURITE_GAP = 12;
+
+function getFavouriteMarket(
+  prediction: AIPrediction,
+  candidates: MarketCandidate[],
+): MarketType | null {
+  const { hw, aw } = getNormalized1x2(prediction);
+  const gap = Math.abs(hw - aw);
+  if (gap < FAVOURITE_GAP) return null;
+
+  const homeFavourite = hw > aw;
+  const order: MarketType[] = homeFavourite
+    ? ["home_win", "dc_1x"]
+    : ["away_win", "dc_x2"];
+
+  for (const type of order) {
+    const match = candidates.find((c) => c.type === type && c.prob >= 65);
+    if (match) return match.type;
+  }
+  return null;
+}
+
 
 /**
  * "Under 2.5" only holds up when the model is genuinely confident there will be
