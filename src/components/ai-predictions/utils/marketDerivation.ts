@@ -844,10 +844,14 @@ function demoteWeakUnder(prediction: AIPrediction, type: MarketType): MarketType
   const current = candidates.find((c) => c.type === type);
   if (!current || !isWeakUnder(type, current.prob)) return type;
 
+  const favourite = getFavouriteMarket(prediction, candidates);
+  if (favourite) return favourite;
+
   const replacement = candidates.find(
     (c) => c.type !== "under25" && c.type !== "over15" && c.prob >= 65,
   );
   if (replacement) return replacement.type;
+
 
   const overFifteen = candidates.find((c) => c.type === "over15" && c.prob >= 65);
   return overFifteen ? overFifteen.type : type;
