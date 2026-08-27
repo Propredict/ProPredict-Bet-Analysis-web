@@ -689,8 +689,11 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
  * percentage rendered in Main so a Premium card can never show a weaker pick.
  */
 export function getBestEligibleProbability(prediction: AIPrediction): number {
-  return getBestMarketProbability(prediction);
+  // Unchanged tier logic: always the strongest raw market probability,
+  // regardless of which pick is displayed as headline.
+  return getMarketCandidates(prediction)[0].prob;
 }
+
 
 
 /**
