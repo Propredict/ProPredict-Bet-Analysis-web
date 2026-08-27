@@ -122,15 +122,14 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
 }
 
 /**
- * All tiers: keep the informative headline pick, but display the card's
- * strongest analysed probability as AI Confidence so the shown value is
- * always the highest percentage from the analysis.
+ * AI Confidence must match the pick that is actually displayed. Using the
+ * card's strongest market instead made every Free/Pro card read the same
+ * value (usually Over 1.5 ≈ 71%), even when the headline pick differed.
  */
 function getStrongestConfidencePick(prediction: AIPrediction): PickCandidate {
-  const pick = getBestPick(prediction);
-  const strongest = getBestEligibleProbability(prediction);
-  return { ...pick, conf: Math.max(pick.conf, strongest) };
+  return getBestPick(prediction);
 }
+
 
 interface Props {
   prediction: AIPrediction;
