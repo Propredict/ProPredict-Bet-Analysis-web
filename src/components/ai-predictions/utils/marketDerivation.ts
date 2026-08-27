@@ -594,18 +594,22 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const dc1x = hw + d;
   const dcx2 = d + aw;
   const dc12 = hw + aw;
-  // DC is only attractive when no single outcome dominates AND combined ≥ 80%
+  // DC is only a genuine pick for tight matches with a real draw risk.
+  // It must never beat a clear favourite (e.g. Home 51% / Away 31% must not
+  // resolve to "12 (Home or Away)", which carries no analytical value).
   const maxSingle = Math.max(hw, aw, d);
-  const dcEligible = maxSingle < 62;
+  const dcEligible = maxSingle < 55 && d >= 25;
 
   const candidates: MarketCandidate[] = [
     { type: "home_win", prob: hw + (hw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
     { type: "away_win", prob: aw + (aw >= 45 ? PRIMARY_BOOST : PRIMARY_SOFT_BOOST) },
     { type: "draw", prob: d >= 30 ? d + PRIMARY_SOFT_BOOST : 0 },
-    // Double Chance — safe pick fallback for tight matches
+    // Double Chance — safe pick fallback for genuinely tight matches only
     { type: "dc_1x", prob: dcEligible && dc1x >= 76 ? dc1x - 2 : 0 },
     { type: "dc_x2", prob: dcEligible && dcx2 >= 76 ? dcx2 - 2 : 0 },
-    { type: "dc_12", prob: dcEligible && dc12 >= 78 ? dc12 - 3 : 0 },
+    // "12" (Home or Away) is never shown as a main pick — it tells the user nothing.
+    { type: "dc_12", prob: 0 },
+
     // Over 1.5 is too generic to headline most cards; use it only when the
     // sharper Over 2.5 signal is not strong enough.
     { type: "over15", prob: probs.over15 >= 86 && probs.over25 < 58 ? probs.over15 - COMMON_PENALTY : 0 },
