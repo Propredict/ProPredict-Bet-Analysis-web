@@ -52,9 +52,8 @@ export function assignTiers(predictions: Array<any>): {
     // Quality rule: no tier contains a card without a concrete verified pick.
     if (s.strength < 65) continue;
 
-    // Soft cap: a genuinely strong pick (>= 75%) must never be pushed down to
-    // Free just because the Pro cap is already full.
-    const proHasRoom = proCount < PRO_CAP || s.strength >= 75;
+    // Hard cap: Pro never exceeds PRO_CAP, overflow cascades to Free.
+    const proHasRoom = proCount < PRO_CAP;
 
     if (tier === "premium") {
       if (premiumCount < PREMIUM_CAP) premiumCount++;
