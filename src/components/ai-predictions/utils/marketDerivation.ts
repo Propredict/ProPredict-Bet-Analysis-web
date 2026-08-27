@@ -649,15 +649,24 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
   const candidates = getMarketCandidates(prediction);
   const top = candidates[0];
   if (top.type === "over15") {
-    // Prefer a different strong market so cards don't all read "Over 1.5",
-    // but never downgrade the shown confidence: the alternative must itself
-    // be a high-probability pick (>= 65%), otherwise keep the strongest one.
-    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+    // Premium band (strongest market >= 80) keeps the strict rule — those cards
+    // must never show a weaker headline than the tier they qualified for.
+    if (top.prob >= 80) {
+      const strongAlt = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+      return strongAlt ? strongAlt.type : top.type;
+    }
+
+    // Free / Pro band: Over 1.5 is the mathematical top on nearly every match,
+    // which made every card read identically. Show the strongest genuinely
+    // informative alternative instead (>= 55), so the list reflects the real
+    // per-match analysis (BTTS, Over/Under 2.5, 1X2, DC...) with variety.
+    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 55);
     if (alternative) return alternative.type;
   }
 
   return top.type;
 }
+
 
 
 
