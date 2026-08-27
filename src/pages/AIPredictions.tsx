@@ -124,28 +124,16 @@ export default function AIPredictions() {
   const isPremiumUser = plan === "premium";
   const isProUser = plan === "basic"; // Pro plan is stored as "basic" in DB
 
-  // Tier assignment: based on the MAX of confidence and the best market probability
-  // (the % actually shown on the card). This ensures a card displaying e.g. "85% BTTS No"
-  // lands in Premium, not Pro — matching what the user sees.
-  // Tier is determined by the STRONGEST market (Best Pick probability),
-  // not just 1X2 confidence. This ensures matches with strong Under/Over/BTTS
-  // picks (e.g., Under 2.5 @ 83%) are correctly placed in Pro/Premium.
-  //   < 65 → Free, 65-84 → Pro, ≥ 85 → Premium
-  // Tier caps applied: Premium max 10, Pro max 20, Free max 15.
-  // Overflow drops down one tier (Premium→Pro→Free) so quality is preserved.
-  // SMART FALLBACK: if Free tier ends up empty (e.g. only high-quality matches
-  // generated today), promote up to 3 of the safest "below threshold" matches
-  // (effective strength 58–64 + variance_stable !== false) into Free so users
-  // always see something. Promoted matches are tracked in safeFallbackIds.
-  const { tierMap: tierAssignment, safeFallbackIds } = useMemo(
+  // Only verified cards are assigned: both model confidence and the concrete
+  // displayed pick must be at least 65%. Strongest go to Premium (≥85%), then
+  // overflow cascades into Pro (max 15) and Free (max 10).
+  const { tierMap: tierAssignment } = useMemo(
     () => assignTiers(predictions),
     [predictions],
   );
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
-    // Tier is determined purely by displayed confidence (Premium ≥85%, Pro ≥65%, Free <65%)
-    // Returns null for predictions that exceed the tier caps — these are filtered out below
-    // so we never show 300+ Free predictions when FREE_CAP = 15.
+    // Null means the row has no verified concrete pick or exceeds all tier caps.
     return tierAssignment.get(prediction.id!) ?? null;
   };
 
@@ -1523,15 +1511,6 @@ export default function AIPredictions() {
                 </div>
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-emerald-500/40 to-emerald-500/60" />
               </div>
-              {/* Smart Fallback notice — shown when Free tier is populated only via fallback */}
-              {safeFallbackIds.size > 0 && regularPredictions.some((p) => safeFallbackIds.has(p.id!) && !allExcludedIds.has(p.id!)) && (
-                <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 max-w-md mx-auto">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                  <p className="text-[10px] md:text-xs text-emerald-300/90 leading-tight text-left">
-                    No free picks met today's strict data gate. Showing the safest available alternatives instead.
-                  </p>
-                </div>
-              )}
             </div>
 
             {!isAuthenticated && !planLoading ? (
