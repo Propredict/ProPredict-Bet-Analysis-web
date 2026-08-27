@@ -1,13 +1,13 @@
 ---
 name: AI Prediction Tier Caps
-description: Hard caps per tier on AI Predictions page (Free 50, Pro 20, Premium 10) with overflow drop
+description: Hard caps per tier on AI Predictions page (Premium 10, Pro 15, Free 5) with overflow cascade
 type: feature
 ---
-AIPredictions.tsx applies hard caps per tier after sorting by effective strength, then league tier:
-- PREMIUM_CAP = 10 (≥78% confidence)
-- PRO_CAP = 20 (65–77%)
-- FREE_CAP = 20 (<65%, smart fallback if empty)
+`tierAssignment.ts` applies hard caps per tier after sorting by effective strength (best eligible market ≥65%), then league tier:
+- PREMIUM_CAP = 10 (≥80%)
+- PRO_CAP = 15 (65–79%, soft cap: picks ≥75% never demoted)
+- FREE_CAP = 5 — only the strongest overflow picks that cascade down from Pro
 
-Sort: strength DESC, then leagueTier ASC (Tier 1 → 2 → 3). Overflow cascades down (Premium → Pro → Free) so Free fills first with Pro overflow (safest), then top-league native Free picks, then the rest. Anything beyond all caps gets `null` tier from `getPredictionTier` and is filtered OUT of `filteredPredictions`. Total visible per day capped at 50.
+Sort: strength DESC, then leagueTier ASC. Overflow cascades Premium → Pro → Free. Anything beyond all caps gets no tier and is filtered out.
 
-Why FREE_CAP=20: keep Free tier curated to the highest-quality picks instead of 50 mid-tier matches.
+Why FREE_CAP=5: keep Free tier limited to the very safest overflow picks.
