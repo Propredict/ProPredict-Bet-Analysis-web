@@ -75,22 +75,42 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
     bttsPick,
   ];
 
-  const finalPicks = candidatePicks
-    .filter((pick) => pick.confidence >= 55)
+  // Only verified picks are shown — anything under 65% is confusing noise
+  // (e.g. "DNB Away 59%") and is hidden completely.
+  return candidatePicks
+    .filter((pick) => pick.confidence >= MIN_PICK_CONFIDENCE)
     .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 6);
-
-  const included = new Set(finalPicks.map((p) => p.label));
-  if (!included.has(goalsPick.label)) finalPicks.push(goalsPick);
-  if (!included.has(bttsPick.label)) finalPicks.push(bttsPick);
-
-  return finalPicks.slice(0, 7);
+    .slice(0, 7);
 }
+
+export const MIN_PICK_CONFIDENCE = 65;
 
 /**
  * Get the single best market pick — uses unified Poisson model.
+ * Ignores the 65% display gate so ranking/eligibility logic still has a value.
  */
 export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
   const picks = deriveMatchPreviewAIPicks(pred);
-  return picks.reduce((best, pick) => (pick.confidence > best.confidence ? pick : best), picks[0]);
+  if (picks.length > 0) return picks[0];
+  // Fallback for ranking only — the caller decides whether to display it.
+  const goalProbs = calculateGoalMarketProbs(pred);
+  const best = Math.max(
+    pred.home_win ?? 0,
+    pred.away_win ?? 0,
+    pred.draw ?? 0,
+    goalProbs.over25,
+    goalProbs.under25,
+    goalProbs.bttsYes,
+    goalProbs.bttsNo,
+    pred.confidence ?? 0,
+  );
+  const label =
+    best === goalProbs.over25 ? "Over 2.5"
+      : best === goalProbs.under25 ? "Under 2.5"
+      : best === goalProbs.bttsYes ? "BTTS Yes"
+      : best === goalProbs.bttsNo ? "BTTS No"
+      : best === (pred.home_win ?? 0) ? "Home Win"
+      : best === (pred.away_win ?? 0) ? "Away Win"
+      : "Draw";
+  return makePick(label, best);
 }
