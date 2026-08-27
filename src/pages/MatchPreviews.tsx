@@ -184,8 +184,10 @@ export default function MatchPreviews() {
     //   3) Tie-break: general AI confidence, then sub-league priority
     // We then take only top MAX_MATCHES, which naturally hides minor leagues
     // when there are enough strong matches from top leagues.
+    // Same quality gate as the AI Predictions page: only verified picks
+    // (best market strength >= 65%) are eligible. Fewer than 30 cards is fine.
     const enriched = valid
-      .filter(p => (p.confidence ?? 0) >= 50)
+      .filter(p => Math.max(p.confidence ?? 0, getTopMatchPreviewPick(p as any).confidence) >= 65)
       .map(p => ({
         p,
         bestPct: getTopMatchPreviewPick(p as any).confidence,
