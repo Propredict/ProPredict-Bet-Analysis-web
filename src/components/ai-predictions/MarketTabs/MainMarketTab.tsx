@@ -4,6 +4,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
   getBestPickType,
+  getRawProbMap,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   getRecommendedScoreConstraints,
