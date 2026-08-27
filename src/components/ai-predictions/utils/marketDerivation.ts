@@ -626,7 +626,7 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const maxSingle = Math.max(hw, aw, d);
   const dcEligible = maxSingle < 55 && d >= 25;
 
-  const candidates: MarketCandidate[] = [
+  const raw: { type: MarketType; prob: number }[] = [
     { type: "home_win", prob: hw },
     { type: "away_win", prob: aw },
     { type: "draw", prob: d },
@@ -647,8 +647,14 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "under35", prob: 0 },
   ];
 
-  candidates.sort((a, b) => b.prob - a.prob);
+  const candidates: MarketCandidate[] = raw.map((c) => ({
+    ...c,
+    score: c.prob <= 0 ? 0 : c.prob - (SELECTION_PENALTY[c.type] ?? 0),
+  }));
+
+  candidates.sort((a, b) => b.score - a.score || b.prob - a.prob);
   return candidates;
+
 }
 
 /**
