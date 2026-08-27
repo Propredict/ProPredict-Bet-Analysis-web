@@ -137,10 +137,16 @@ export default function AIPredictions() {
     () => {
       // Spread headline picks so the same market never repeats on every card.
       applyPickDiversity(predictions);
-      return assignTiers(predictions);
+      const result = assignTiers(predictions);
+      // Free-only rule: clear favourite is shown instead of a generic goals pick.
+      setFreeTierIds(
+        [...result.tierMap.entries()].filter(([, t]) => t === "free").map(([id]) => id),
+      );
+      return result;
     },
     [predictions],
   );
+
 
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
