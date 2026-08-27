@@ -742,7 +742,7 @@ export function applyPickDiversity(predictions: AIPrediction[]): void {
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
   const override = diversityOverrides.get(getPredictionKey(prediction));
-  if (override) return override;
+  if (override) return demoteWeakUnder(prediction, override);
   const candidates = getMarketCandidates(prediction);
 
   const top = candidates[0];
@@ -770,7 +770,9 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
     // informative alternative instead (>= 55), so the list reflects the real
     // per-match analysis (BTTS, Over/Under 2.5, 1X2, DC...) with variety.
     // Never display a headline pick below 65% — that is the minimum safety bar.
-    const alternative = candidates.find((c) => c.type !== "over15" && c.prob >= 65);
+    const alternative = candidates.find(
+      (c) => c.type !== "over15" && c.prob >= 65 && !isWeakUnder(c.type, c.prob),
+    );
     if (alternative) {
       // Avoid the whole list collapsing onto the same generic goals market:
       // when a match-specific market (1X2 / DC / BTTS) is essentially as
@@ -791,8 +793,34 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
 
   }
 
-  return top.type;
+  return demoteWeakUnder(prediction, top.type);
 }
+
+/**
+ * "Under 2.5" only holds up when the model is genuinely confident there will be
+ * few goals. Below 80% it is the weakest performing headline, so any other
+ * analysed market at >= 65% is preferred (Over/BTTS/1X2/DC).
+ */
+const UNDER_MIN_CONFIDENCE = 80;
+
+function isWeakUnder(type: MarketType, prob: number): boolean {
+  return type === "under25" && prob < UNDER_MIN_CONFIDENCE;
+}
+
+function demoteWeakUnder(prediction: AIPrediction, type: MarketType): MarketType {
+  const candidates = getMarketCandidates(prediction);
+  const current = candidates.find((c) => c.type === type);
+  if (!current || !isWeakUnder(type, current.prob)) return type;
+
+  const replacement = candidates.find(
+    (c) => c.type !== "under25" && c.type !== "over15" && c.prob >= 65,
+  );
+  if (replacement) return replacement.type;
+
+  const overFifteen = candidates.find((c) => c.type === "over15" && c.prob >= 65);
+  return overFifteen ? overFifteen.type : type;
+}
+
 
 
 
