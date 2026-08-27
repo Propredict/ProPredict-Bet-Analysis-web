@@ -4,6 +4,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { 
   calculateGoalMarketProbs,
   getBestPickType,
+  getRawProbMap,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   getRecommendedScoreConstraints,
@@ -106,25 +107,21 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
   };
 }
 
-/** Best pick across all markets (Pro/Premium) */
+/**
+ * Displayed AI Confidence ALWAYS equals the probability of the pick that is
+ * shown as Best Pick (e.g. Under 2.5 at 70% -> AI Confidence 70%).
+ * Uses the canonical probability map so Main matches the market tabs exactly.
+ */
 function getBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
-  const rawProbs = getAllRawProbs(prediction);
+  const probs = getRawProbMap(prediction);
   const meta = MARKET_META[bestType];
-  return { label: meta.getLabel(prediction), conf: rawProbs[bestType], icon: meta.icon, type: bestType };
+  return { label: meta.getLabel(prediction), conf: probs[bestType], icon: meta.icon, type: bestType };
 }
 
-/** 
- * Free tier: pick the best market across ALL types (not just 1X2).
- * This ensures diverse picks like Draw, BTTS, Under 2.5 instead of always Home/Away Win.
- */
+/** Free tier uses the same rule: confidence = selected pick's probability. */
 function getFreePick(prediction: AIPrediction): PickCandidate {
-  const bestType = getBestPickType(prediction);
-  const rawProbs = getAllRawProbs(prediction);
-  const meta = MARKET_META[bestType];
-  // Use the actual market probability for display
-  const displayConf = rawProbs[bestType] || prediction.confidence || 50;
-  return { label: meta.getLabel(prediction), conf: displayConf, icon: meta.icon, type: bestType };
+  return getBestPick(prediction);
 }
 
 interface Props {

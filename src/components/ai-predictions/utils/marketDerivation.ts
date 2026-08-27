@@ -674,7 +674,7 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
  * Get the RAW (display) probability for the best pick — without bonuses/penalties.
  * This is what users see AND what determines the tier.
  */
-function getRawProbMap(prediction: AIPrediction): Record<MarketType, number> {
+export function getRawProbMap(prediction: AIPrediction): Record<MarketType, number> {
   let hw = Math.max(5, prediction.home_win ?? 33);
   let aw = Math.max(5, prediction.away_win ?? 33);
   let d = Math.max(5, prediction.draw ?? 34);
