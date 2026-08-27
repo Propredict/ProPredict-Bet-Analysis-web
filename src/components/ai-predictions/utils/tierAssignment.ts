@@ -36,8 +36,9 @@ export function assignTiers(predictions: Array<any>): {
   });
 
   const PREMIUM_CAP = 10;
-  const PRO_CAP = 20;
-  const FREE_CAP = 15;
+  const PRO_CAP = 15;
+  // Free takes ALL remaining verified picks (>= 65%), strongest first.
+  const FREE_CAP = 30;
   let premiumCount = 0;
   let proCount = 0;
   let freeCount = 0;
