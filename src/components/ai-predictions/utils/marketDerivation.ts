@@ -121,10 +121,25 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
       homeXg = Math.max(0.65, score.home * 0.62 + 0.38);
       awayXg = Math.max(0.55, score.away * 0.62 + 0.35);
 
+      // Without real xG the score alone is far too coarse: every 1-0 / 0-1
+      // prediction produced the exact same goal probabilities (all cards read
+      // "Under 2.5 71%"). Modulate the fallback xG with the actual per-match
+      // 1X2 shape so each match keeps its own goal profile.
+      const favouriteEdge = Math.abs(hw - aw) / 100;   // 0 .. ~0.6
+      const openness = (100 - dr) / 100;               // low draw prob = more open game
+      homeXg = homeXg * (0.85 + openness * 0.3) + (hw - 33) / 120;
+      awayXg = awayXg * (0.85 + openness * 0.3) + (aw - 33) / 120;
+      // Very tight matches trend lower scoring, clear favourites slightly higher.
+      homeXg += favouriteEdge * (hw >= aw ? 0.25 : -0.1);
+      awayXg += favouriteEdge * (aw > hw ? 0.25 : -0.1);
+      homeXg = Math.min(2.9, Math.max(0.5, homeXg));
+      awayXg = Math.min(2.6, Math.max(0.4, awayXg));
+
       // If a team is predicted to be kept scoreless but the 1X2 model still
       // gives it/draw a realistic path, do not collapse its xG to near-zero.
       if (score.away === 0 && aw + dr >= 45) awayXg = Math.max(awayXg, 0.75);
       if (score.home === 0 && hw + dr >= 45) homeXg = Math.max(homeXg, 0.75);
+
     } else {
       homeXg = Math.max(0.5, norm.hw / 30);
       awayXg = Math.max(0.4, norm.aw / 30);
