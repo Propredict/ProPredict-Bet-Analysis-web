@@ -358,14 +358,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
             { label: prediction.away_team, pct: prediction.away_win, outcome: "away" as const },
           ].map((item) => {
+            // Highlight the outcome with the highest probability. The previous
+            // string matching on `prediction.prediction` mis-flagged nearly every
+            // card as "away" even when the home side was the clear favourite.
             const predictedOutcome = (() => {
-              const p = (prediction.prediction || "").toLowerCase();
-              const home = (prediction.home_team || "").toLowerCase();
-              const away = (prediction.away_team || "").toLowerCase();
-              if (p === "1" || p.includes("home") || (home && p.includes(home))) return "home";
-              if (p === "2" || p.includes("away") || (away && p.includes(away))) return "away";
-              if (p === "x" || p.includes("draw")) return "draw";
-              // Fallback: pick highest probability
               const h = prediction.home_win ?? 0;
               const d = prediction.draw ?? 0;
               const a = prediction.away_win ?? 0;
@@ -374,6 +370,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               return "draw";
             })();
             const isSelected = predictedOutcome === item.outcome;
+
             return (
               <div key={item.outcome} className={cn(
                 "text-center py-1.5 rounded-md border",
