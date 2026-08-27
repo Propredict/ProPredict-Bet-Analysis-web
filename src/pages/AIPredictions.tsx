@@ -548,7 +548,7 @@ export default function AIPredictions() {
   }, [predictions]);
 
   // Total matches analyzed
-  const totalAnalyzed = dayStats.won + dayStats.lost + dayStats.pending;
+  const totalAnalyzed = dayStats.analyzed;
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["ai-predictions"] });
