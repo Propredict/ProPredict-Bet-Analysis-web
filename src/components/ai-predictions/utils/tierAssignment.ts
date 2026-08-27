@@ -40,9 +40,9 @@ export function assignTiers(predictions: Array<any>): {
   });
 
   const PREMIUM_CAP = 10;
-  const PRO_CAP = 15;
-  // Free shows only the 5 strongest remaining verified overflow picks.
-  const FREE_CAP = 5;
+  const PRO_CAP = 10;
+  // Free shows up to 10 strongest remaining verified overflow picks.
+  const FREE_CAP = 10;
   let premiumCount = 0;
   let proCount = 0;
   let freeCount = 0;
@@ -52,9 +52,8 @@ export function assignTiers(predictions: Array<any>): {
     // Quality rule: no tier contains a card without a concrete verified pick.
     if (s.strength < 65) continue;
 
-    // Soft cap: a genuinely strong pick (>= 75%) must never be pushed down to
-    // Free just because the Pro cap is already full.
-    const proHasRoom = proCount < PRO_CAP || s.strength >= 75;
+    // Hard cap: Pro never exceeds PRO_CAP, overflow cascades to Free.
+    const proHasRoom = proCount < PRO_CAP;
 
     if (tier === "premium") {
       if (premiumCount < PREMIUM_CAP) premiumCount++;
