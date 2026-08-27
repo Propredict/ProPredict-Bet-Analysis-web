@@ -52,16 +52,21 @@ export function assignTiers(predictions: Array<any>): {
     // Quality rule: no tier contains a card without a concrete verified pick.
     if (s.strength < 65) continue;
 
+    // Soft cap: a genuinely strong pick (>= 75%) must never be pushed down to
+    // Free just because the Pro cap is already full.
+    const proHasRoom = proCount < PRO_CAP || s.strength >= 75;
+
     if (tier === "premium") {
       if (premiumCount < PREMIUM_CAP) premiumCount++;
-      else if (proCount < PRO_CAP) { tier = "pro"; proCount++; }
+      else if (proHasRoom) { tier = "pro"; proCount++; }
       else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
       else continue;
     } else if (tier === "pro") {
-      if (proCount < PRO_CAP) proCount++;
+      if (proHasRoom) proCount++;
       else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
       else continue;
     } else continue;
+
     map.set(s.id, tier);
   }
 
