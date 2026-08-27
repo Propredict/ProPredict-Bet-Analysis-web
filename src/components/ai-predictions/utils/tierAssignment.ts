@@ -44,6 +44,8 @@ export function assignTiers(predictions: Array<any>): {
 
   for (const s of sorted) {
     let tier: Tier = s.baseTier;
+    // Quality rule: Free NEVER contains sub-65% picks. Free is filled only with
+    // overflow from Premium/Pro (i.e. verified picks with strength >= 65).
     if (tier === "premium") {
       if (premiumCount < PREMIUM_CAP) premiumCount++;
       else if (proCount < PRO_CAP) { tier = "pro"; proCount++; }
@@ -54,28 +56,15 @@ export function assignTiers(predictions: Array<any>): {
       else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
       else continue;
     } else {
-      if (freeCount < FREE_CAP) freeCount++;
-      else continue;
+      // strength < 65 → not shown at all
+      continue;
     }
     map.set(s.id, tier);
   }
 
-  // Fallback: empty Free → promote safest 58–64 strength
+  // Fallback: if Free ended up empty (few matches today), move the weakest
+  // qualified Pro picks (still >= 65%) down to Free so users always see picks.
   if (freeCount === 0) {
-    const candidates = sorted
-      .filter((s) => !map.has(s.id))
-      .filter((s) => s.strength >= 58 && s.strength < 65)
-      .filter((s) => (s.prediction as any).variance_stable !== false)
-      .slice(0, 3);
-    for (const c of candidates) {
-      map.set(c.id, "free");
-      fallbackIds.add(c.id);
-      freeCount++;
-    }
-  }
-
-  // Secondary fallback: borrow weakest Pro
-  if (freeCount === 0 && fallbackIds.size === 0) {
     const proCandidates = sorted
       .filter((s) => map.get(s.id) === "pro")
       .filter((s) => (s.prediction as any).variance_stable !== false)
