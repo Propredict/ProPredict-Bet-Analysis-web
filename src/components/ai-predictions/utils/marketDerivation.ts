@@ -36,6 +36,24 @@ function parseScore(predictedScore: string | null): { home: number; away: number
   return { home: parseInt(match[1], 10), away: parseInt(match[2], 10) };
 }
 
+
+/**
+ * Normalized 1X2 probabilities (same values shown on the card).
+ * Raw DB values do not always sum to 100, so every consistency check must
+ * use the normalized set or it silently fails (e.g. 40/20/14 -> 54/27/19).
+ */
+export function getNormalized1x2(prediction: AIPrediction): { hw: number; d: number; aw: number } {
+  const rawH = Math.max(0, prediction.home_win ?? 0);
+  const rawA = Math.max(0, prediction.away_win ?? 0);
+  const rawD = Math.max(0, prediction.draw ?? 0);
+  const total = rawH + rawA + rawD;
+  if (total <= 0) return { hw: 33, d: 34, aw: 33 };
+  const hw = Math.round((rawH / total) * 100);
+  const aw = Math.round((rawA / total) * 100);
+  return { hw, aw, d: 100 - hw - aw };
+}
+
+
 /**
  * Poisson probability function: P(k) = (λ^k * e^-λ) / k!
  */
@@ -93,14 +111,12 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
     awayXg = Math.max(0.3, lastAwayGoals);
   } else {
     const score = parseScore(prediction.predicted_score);
+    const norm = getNormalized1x2(prediction);
     if (score) {
       // Fallback score-derived xG must be calibrated, not literal.
-      // Old logic mapped 1-0 to ~1.20 total xG, producing 85-90% Under 2.5
-      // across many cards. A predicted score is only the most likely scoreline,
-      // so keep a realistic attacking floor for both teams.
-      const hw = prediction.home_win ?? 40;
-      const aw = prediction.away_win ?? 30;
-      const dr = prediction.draw ?? 30;
+      const hw = norm.hw;
+      const aw = norm.aw;
+      const dr = norm.d;
 
       homeXg = Math.max(0.65, score.home * 0.62 + 0.38);
       awayXg = Math.max(0.55, score.away * 0.62 + 0.35);
@@ -110,22 +126,22 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
       if (score.away === 0 && aw + dr >= 45) awayXg = Math.max(awayXg, 0.75);
       if (score.home === 0 && hw + dr >= 45) homeXg = Math.max(homeXg, 0.75);
     } else {
-      const hw = prediction.home_win ?? 40;
-      const aw = prediction.away_win ?? 30;
-      homeXg = Math.max(0.5, hw / 30);
-      awayXg = Math.max(0.4, aw / 30);
+      homeXg = Math.max(0.5, norm.hw / 30);
+      awayXg = Math.max(0.4, norm.aw / 30);
     }
   }
 
   // Consistency guard: if 1X2 has a clear favorite, ensure xG reflects it.
-  // Prevents contradictions like Lyon 65% home but xG suggesting Rennes win.
-  const hw = prediction.home_win ?? 0;
-  const aw = prediction.away_win ?? 0;
-  if (hw >= 55 && hw - aw >= 20 && homeXg <= awayXg) {
-    homeXg = Math.max(awayXg + 0.4, 1.6);
-  } else if (aw >= 55 && aw - hw >= 20 && awayXg <= homeXg) {
-    awayXg = Math.max(homeXg + 0.4, 1.6);
+  // Uses NORMALIZED probabilities — raw DB values rarely sum to 100, which
+  // previously made this guard never fire and produced scorelines (0-1/0-2)
+  // that contradicted the displayed 1X2 / Double Chance pick.
+  const { hw, aw } = getNormalized1x2(prediction);
+  if (hw >= 45 && hw - aw >= 12 && homeXg <= awayXg) {
+    homeXg = Math.max(awayXg + 0.35, 1.5);
+  } else if (aw >= 45 && aw - hw >= 12 && awayXg <= homeXg) {
+    awayXg = Math.max(homeXg + 0.35, 1.5);
   }
+
 
   return { homeXg, awayXg };
 }
@@ -269,8 +285,7 @@ export function getRecommendedScoreConstraints(
   // No explicit 1X2 text: infer direction from the model when one side is a
   // clear favourite, so we never show "0-1 / 0-2" next to Home 51% vs Away 31%.
   if (!marketType) {
-    const hw = prediction.home_win ?? 0;
-    const aw = prediction.away_win ?? 0;
+    const { hw, aw } = getNormalized1x2(prediction);
     if (hw >= 45 && hw - aw >= 12) marketType = "home_win";
     else if (aw >= 45 && aw - hw >= 12) marketType = "away_win";
   }
@@ -289,17 +304,25 @@ export function getRecommendedScoreConstraints(
  * Check if a scoreline is consistent with a given market type.
  */
 function scoreMatchesMarket(home: number, away: number, market: MarketType): boolean {
+  const total = home + away;
   switch (market) {
     case "home_win": return home > away;
     case "away_win": return away > home;
     case "draw": return home === away;
-    case "over25": return (home + away) > 2;
-    case "under25": return (home + away) <= 2;
+    case "dc_1x": return home >= away;
+    case "dc_x2": return away >= home;
+    case "dc_12": return home !== away;
+    case "over15": return total > 1;
+    case "over25": return total > 2;
+    case "over35": return total > 3;
+    case "under25": return total <= 2;
+    case "under35": return total <= 3;
     case "btts_yes": return home > 0 && away > 0;
     case "btts_no": return home === 0 || away === 0;
     default: return true;
   }
 }
+
 
 function scoreMatchesConstraintOptions(home: number, away: number, options: ScoreConstraintOptions): boolean {
   const total = home + away;
