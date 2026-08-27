@@ -576,7 +576,23 @@ export type MarketType =
 interface MarketCandidate {
   type: MarketType;
   prob: number;
+  /** Ranking score only — the displayed percentage always stays the raw prob. */
+  score: number;
 }
+
+/**
+ * Selection penalties keep the Main pick informative and varied.
+ * Over 1.5 is mathematically the highest market in almost every match, so
+ * without a penalty every single card would show "Over 1.5". It is only
+ * selected when it is clearly stronger than any other market.
+ */
+const SELECTION_PENALTY: Partial<Record<MarketType, number>> = {
+  over15: 16,
+  under35: 14,
+  dc_1x: 6,
+  dc_x2: 6,
+};
+
 
 /**
  * Get every concrete market that may be shown as the Main pick.
@@ -610,7 +626,7 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
   const maxSingle = Math.max(hw, aw, d);
   const dcEligible = maxSingle < 55 && d >= 25;
 
-  const candidates: MarketCandidate[] = [
+  const raw: { type: MarketType; prob: number }[] = [
     { type: "home_win", prob: hw },
     { type: "away_win", prob: aw },
     { type: "draw", prob: d },
@@ -631,8 +647,14 @@ function getMarketCandidates(prediction: AIPrediction): MarketCandidate[] {
     { type: "under35", prob: 0 },
   ];
 
-  candidates.sort((a, b) => b.prob - a.prob);
+  const candidates: MarketCandidate[] = raw.map((c) => ({
+    ...c,
+    score: c.prob <= 0 ? 0 : c.prob - (SELECTION_PENALTY[c.type] ?? 0),
+  }));
+
+  candidates.sort((a, b) => b.score - a.score || b.prob - a.prob);
   return candidates;
+
 }
 
 /**
