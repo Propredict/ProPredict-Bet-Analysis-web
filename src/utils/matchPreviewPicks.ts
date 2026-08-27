@@ -69,9 +69,9 @@ export function deriveMatchPreviewAIPicks(pred: AIPrediction): MatchPreviewAIPic
   const dnbConf = clamp(((favorsAway ? nAway : nHome) / dnbBase) * 100, 5, 95);
 
   const candidatePicks: MatchPreviewAIPick[] = [
-    ...(favorsAway ? [] : [makePick("Home Win", homePickConf)]),
-    makePick("Draw", drawPickConf),
-    ...(favorsHome ? [] : [makePick("Away Win", awayPickConf)]),
+    ...(favorsAway ? [] : [makePick("Home Win", nHome)]),
+    makePick("Draw", nDraw),
+    ...(favorsHome ? [] : [makePick("Away Win", nAway)]),
     ...(favorsAway ? [] : [makePick("1X (Home/Draw)", dc1x)]),
     ...(favorsHome ? [] : [makePick("X2 (Draw/Away)", dcx2)]),
     makePick(favorsAway ? "DNB Away" : "DNB Home", dnbConf),
