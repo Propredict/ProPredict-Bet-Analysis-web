@@ -134,9 +134,14 @@ export default function AIPredictions() {
   // market picks go to Premium (≥85%), then
   // overflow cascades into Pro (max 15) and Free (max 10).
   const { tierMap: tierAssignment } = useMemo(
-    () => assignTiers(predictions),
+    () => {
+      // Spread headline picks so the same market never repeats on every card.
+      applyPickDiversity(predictions);
+      return assignTiers(predictions);
+    },
     [predictions],
   );
+
 
   const getPredictionTier = (prediction: typeof predictions[0]): "free" | "pro" | "premium" | null => {
     // Null means the row has no verified concrete pick or exceeds all tier caps.
