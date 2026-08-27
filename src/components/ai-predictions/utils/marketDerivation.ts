@@ -718,8 +718,10 @@ export function applyPickDiversity(predictions: AIPrediction[]): void {
         c.type !== natural &&
         c.type !== "over15" &&
         c.prob >= 65 &&
+        !isWeakUnder(c.type, c.prob) &&
         (counts.get(c.type) ?? 0) < MAX_SAME_PICK,
     );
+
 
     if (alternative) {
       diversityOverrides.set(getPredictionKey(prediction), alternative.type);
