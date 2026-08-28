@@ -8771,24 +8771,39 @@ async function handleBatchRegenerate(
   const clubTier12Count = allFixtures.filter(
     (f) => !isWorldCupFixture(f) && getLeagueTier(f?.league?.id) <= 2,
   ).length;
-  const allowTier3 = clubTier12Count < TIER_FALLBACK_THRESHOLD;
+  // Tier 2B (extra European leagues) is a TOP-UP only: used when the primary
+  // Tier 1+2 pool is too small to fill Free 10 / Pro 10 / Premium 10.
+  const isTier2B = (f: any) =>
+    !isWorldCupFixture(f) &&
+    getLeagueTier(f?.league?.id) === 3 &&
+    TIER_2B_EUROPEAN_LEAGUE_IDS.has(Number(f?.league?.id));
+  const allowTier2B = clubTier12Count < DAILY_TARGET_POOL;
+  const tier2bCount = allFixtures.filter(isTier2B).length;
+  // Tier 3 (rest of the world) only when even Tier 1+2+2B stays tiny.
+  const allowTier3 =
+    clubTier12Count + (allowTier2B ? tier2bCount : 0) < TIER_FALLBACK_THRESHOLD;
 
   let filteredOut = 0;
   for (const f of allFixtures) {
     const idStr = String(f?.fixture?.id ?? "");
     if (!idStr) continue;
     const tier = getLeagueTier(f?.league?.id);
-    if (tier === 3 && !allowTier3) {
-      filteredOut++;
-      continue;
+    if (tier === 3) {
+      const tier2b = isTier2B(f);
+      if (tier2b ? !allowTier2B : !allowTier3) {
+        filteredOut++;
+        continue;
+      }
     }
     fixtureById.set(idStr, f);
   }
 
   console.log(
     `[TIER FILTER] ${matchDate}: total=${allFixtures.length}, T1=${tier1Count}, T1+T2=${tier12Count}, ` +
-    `clubT1+T2=${clubTier12Count}, T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
+    `clubT1+T2=${clubTier12Count}, T2B=${tier2bCount} allowed=${allowTier2B} (target=${DAILY_TARGET_POOL}), ` +
+    `T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
   );
+
 
   if (offset === 0) {
     const fixtureIds = Array.from(fixtureById.keys());
