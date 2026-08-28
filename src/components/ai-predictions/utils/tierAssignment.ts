@@ -64,7 +64,11 @@ export function assignTiers(predictions: Array<any>): {
       if (proHasRoom) proCount++;
       else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
       else continue;
-    } else continue;
+    } else {
+      // Remaining verified picks (>=65%) fill Free directly.
+      if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
+      else continue;
+    }
 
     map.set(s.id, tier);
   }
