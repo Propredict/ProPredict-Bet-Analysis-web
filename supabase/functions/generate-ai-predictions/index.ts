@@ -64,9 +64,39 @@ const TIER_2_LEAGUE_IDS = new Set<number>([
   62,   // Ligue 2 (France)
 ]);
 
+// Tier 2B: additional European leagues used ONLY as a top-up when the main
+// Tier 1+2 pool cannot fill the daily target (10 Free + 10 Pro + 10 Premium).
+// Priority always stays with Tier 1 and Tier 2 above.
+const TIER_2B_EUROPEAN_LEAGUE_IDS = new Set<number>([
+  197,  // Super League (Greece)
+  106,  // Ekstraklasa (Poland)
+  119,  // Superliga (Denmark)
+  103,  // Eliteserien (Norway)
+  113,  // Allsvenskan (Sweden)
+  207,  // Super League (Switzerland)
+  218,  // Bundesliga (Austria)
+  345,  // Fortuna Liga (Czechia)
+  210,  // HNL (Croatia)
+  283,  // Liga I (Romania)
+  333,  // Premier League (Ukraine)
+  286,  // Super Liga (Serbia)
+  172,  // First League (Bulgaria)
+  271,  // NB I (Hungary)
+  332,  // Super Liga (Slovakia)
+  373,  // PrvaLiga (Slovenia)
+  244,  // Veikkausliiga (Finland)
+  357,  // Premier Division (Ireland)
+]);
+
 // Minimum Tier 1+2 matches per day to consider day "well-stocked".
 // Below this threshold (e.g., midweek with no top leagues), we allow Tier 3 fallback.
 const TIER_FALLBACK_THRESHOLD = 8;
+
+// Daily publishing target across tiers (Free 10 + Pro 10 + Premium 10).
+// Roughly half of analyzed fixtures pass the >=65% quality gate, so we aim for
+// a pool of ~60 fixtures before falling back to Tier 2B / Tier 3.
+const DAILY_TARGET_POOL = 60;
+
 
 function getLeagueTier(leagueId: number | null | undefined): 1 | 2 | 3 {
   if (!leagueId) return 3;
