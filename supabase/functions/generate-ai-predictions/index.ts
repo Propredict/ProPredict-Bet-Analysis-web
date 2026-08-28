@@ -64,9 +64,39 @@ const TIER_2_LEAGUE_IDS = new Set<number>([
   62,   // Ligue 2 (France)
 ]);
 
+// Tier 2B: additional European leagues used ONLY as a top-up when the main
+// Tier 1+2 pool cannot fill the daily target (10 Free + 10 Pro + 10 Premium).
+// Priority always stays with Tier 1 and Tier 2 above.
+const TIER_2B_EUROPEAN_LEAGUE_IDS = new Set<number>([
+  197,  // Super League (Greece)
+  106,  // Ekstraklasa (Poland)
+  119,  // Superliga (Denmark)
+  103,  // Eliteserien (Norway)
+  113,  // Allsvenskan (Sweden)
+  207,  // Super League (Switzerland)
+  218,  // Bundesliga (Austria)
+  345,  // Fortuna Liga (Czechia)
+  210,  // HNL (Croatia)
+  283,  // Liga I (Romania)
+  333,  // Premier League (Ukraine)
+  286,  // Super Liga (Serbia)
+  172,  // First League (Bulgaria)
+  271,  // NB I (Hungary)
+  332,  // Super Liga (Slovakia)
+  373,  // PrvaLiga (Slovenia)
+  244,  // Veikkausliiga (Finland)
+  357,  // Premier Division (Ireland)
+]);
+
 // Minimum Tier 1+2 matches per day to consider day "well-stocked".
 // Below this threshold (e.g., midweek with no top leagues), we allow Tier 3 fallback.
 const TIER_FALLBACK_THRESHOLD = 8;
+
+// Daily publishing target across tiers (Free 10 + Pro 10 + Premium 10).
+// Roughly half of analyzed fixtures pass the >=65% quality gate, so we aim for
+// a pool of ~60 fixtures before falling back to Tier 2B / Tier 3.
+const DAILY_TARGET_POOL = 60;
+
 
 function getLeagueTier(leagueId: number | null | undefined): 1 | 2 | 3 {
   if (!leagueId) return 3;
@@ -8741,24 +8771,39 @@ async function handleBatchRegenerate(
   const clubTier12Count = allFixtures.filter(
     (f) => !isWorldCupFixture(f) && getLeagueTier(f?.league?.id) <= 2,
   ).length;
-  const allowTier3 = clubTier12Count < TIER_FALLBACK_THRESHOLD;
+  // Tier 2B (extra European leagues) is a TOP-UP only: used when the primary
+  // Tier 1+2 pool is too small to fill Free 10 / Pro 10 / Premium 10.
+  const isTier2B = (f: any) =>
+    !isWorldCupFixture(f) &&
+    getLeagueTier(f?.league?.id) === 3 &&
+    TIER_2B_EUROPEAN_LEAGUE_IDS.has(Number(f?.league?.id));
+  const allowTier2B = clubTier12Count < DAILY_TARGET_POOL;
+  const tier2bCount = allFixtures.filter(isTier2B).length;
+  // Tier 3 (rest of the world) only when even Tier 1+2+2B stays tiny.
+  const allowTier3 =
+    clubTier12Count + (allowTier2B ? tier2bCount : 0) < TIER_FALLBACK_THRESHOLD;
 
   let filteredOut = 0;
   for (const f of allFixtures) {
     const idStr = String(f?.fixture?.id ?? "");
     if (!idStr) continue;
     const tier = getLeagueTier(f?.league?.id);
-    if (tier === 3 && !allowTier3) {
-      filteredOut++;
-      continue;
+    if (tier === 3) {
+      const tier2b = isTier2B(f);
+      if (tier2b ? !allowTier2B : !allowTier3) {
+        filteredOut++;
+        continue;
+      }
     }
     fixtureById.set(idStr, f);
   }
 
   console.log(
     `[TIER FILTER] ${matchDate}: total=${allFixtures.length}, T1=${tier1Count}, T1+T2=${tier12Count}, ` +
-    `clubT1+T2=${clubTier12Count}, T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
+    `clubT1+T2=${clubTier12Count}, T2B=${tier2bCount} allowed=${allowTier2B} (target=${DAILY_TARGET_POOL}), ` +
+    `T3 allowed=${allowTier3} (threshold=${TIER_FALLBACK_THRESHOLD}), kept=${fixtureById.size}, dropped=${filteredOut}`
   );
+
 
   if (offset === 0) {
     const fixtureIds = Array.from(fixtureById.keys());
