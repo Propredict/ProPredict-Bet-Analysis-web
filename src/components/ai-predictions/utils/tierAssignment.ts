@@ -41,13 +41,31 @@ export function assignTiers(predictions: Array<any>): {
 
   const PREMIUM_CAP = 10;
   const PRO_CAP = 10;
-  // Free shows up to 10 strongest remaining verified overflow picks.
+  // Free shows up to 10 verified picks (overflow + reserved weakest qualified).
   const FREE_CAP = 10;
+  // Free is never empty: reserve the weakest qualified picks for Free when
+  // there are not enough picks to overflow out of Premium/Pro.
+  const FREE_MIN = 5;
   let premiumCount = 0;
   let proCount = 0;
   let freeCount = 0;
 
+  const qualified = sorted.filter((s) => s.strength >= 65);
+  const reservedFree = new Set<string>();
+  if (qualified.length > FREE_MIN && qualified.length <= PREMIUM_CAP + PRO_CAP) {
+    const reserveSize = Math.min(FREE_MIN, Math.max(1, Math.floor(qualified.length / 3)));
+    for (const s of qualified.slice(-reserveSize)) reservedFree.add(s.id);
+  }
+
   for (const s of sorted) {
+    if (reservedFree.has(s.id)) {
+      if (freeCount < FREE_CAP) {
+        freeCount++;
+        map.set(s.id, "free");
+      }
+      continue;
+    }
+
     let tier: Tier = s.baseTier;
     // Quality rule: no tier contains a card without a concrete verified pick.
     if (s.strength < 65) continue;
