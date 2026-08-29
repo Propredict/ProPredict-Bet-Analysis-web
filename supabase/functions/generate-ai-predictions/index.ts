@@ -4652,8 +4652,16 @@ function calculatePrediction(
   const xgAwayScore = totalXg > 0 ? (awayXg / totalXg) * 100 : 50;
 
   // === FINAL WEIGHTED TOTAL: Form 60% + Odds 25% + xG 15% ===
-  const homeTotal = homeFormComposite * WEIGHT_1X2_FORM + oddsHomeProb * WEIGHT_1X2_ODDS + xgHomeScore * WEIGHT_1X2_XG;
-  const awayTotal = awayFormComposite * WEIGHT_1X2_FORM + oddsAwayProb * WEIGHT_1X2_ODDS + xgAwayScore * WEIGHT_1X2_XG;
+  // When no odds are available we must NOT fall back to the placeholder
+  // 50/25/25 split — that injects a fake +25pp home edge and can rate a weak
+  // home side above a far stronger visitor. Instead redistribute the odds
+  // weight proportionally onto Form and xG (the only real signals we have).
+  const wForm = hasOdds ? WEIGHT_1X2_FORM : WEIGHT_1X2_FORM / (WEIGHT_1X2_FORM + WEIGHT_1X2_XG);
+  const wOdds = hasOdds ? WEIGHT_1X2_ODDS : 0;
+  const wXg = hasOdds ? WEIGHT_1X2_XG : WEIGHT_1X2_XG / (WEIGHT_1X2_FORM + WEIGHT_1X2_XG);
+  const homeTotal = homeFormComposite * wForm + oddsHomeProb * wOdds + xgHomeScore * wXg;
+  const awayTotal = awayFormComposite * wForm + oddsAwayProb * wOdds + xgAwayScore * wXg;
+
 
   // === PROBABILITIES ===
   const diff = homeTotal - awayTotal;
