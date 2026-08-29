@@ -149,11 +149,12 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const allProbs = getAllRawProbs(prediction);
-  const topScores = displayTier === "premium"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo: parsedTags.safeCombo }, 3)
-    : displayTier === "pro"
-    ? getConsistentTopCorrectScores(prediction, { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type }, 1)
-    : [];
+  // Top correct scores now shown on every tier (Free/Pro/Premium) — same as Premium card
+  const topScores = getConsistentTopCorrectScores(
+    prediction,
+    { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo: parsedTags.safeCombo },
+    3
+  );
 
 
   return (
