@@ -976,3 +976,59 @@ export function getBestMarketPickWithLabel(prediction: AIPrediction): { label: s
   const meta = MARKET_LABELS[bestType];
   return { label: meta.label, pct, emoji: meta.emoji };
 }
+
+/**
+ * Reconcile the backend-generated SAFE_COMBO tag with the Poisson-derived
+ * goals/BTTS probabilities shown in the Goals & BTTS tabs.
+ * Prevents contradictions like "2 + Under 3.5" on a card whose Goals tab
+ * recommends Over 2.5 (77%) and Over 3.5 (61%).
+ */
+export function getConsistentSafeCombo(
+  prediction: AIPrediction,
+  rawCombo?: string | null
+): string | null {
+  if (!rawCombo) return null;
+
+  const probs = calculateGoalMarketProbs(prediction);
+  const under35 = 100 - probs.over35;
+
+  const goalsProb: Record<string, number> = {
+    "Over 1.5": probs.over15,
+    "Over 2.5": probs.over25,
+    "Over 3.5": probs.over35,
+    "Under 2.5": probs.under25,
+    "Under 3.5": under35,
+  };
+
+  const bestGoalsLeg = () => {
+    const candidates = ["Over 2.5", "Over 1.5", "Under 2.5", "Under 3.5"];
+    return candidates
+      .slice()
+      .sort((a, b) => goalsProb[b] - goalsProb[a])
+      .find((l) => goalsProb[l] >= 55) ?? "Over 1.5";
+  };
+
+  const parts = rawCombo.split(/\s*(?:\+|&)\s*/).map((s) => s.trim()).filter(Boolean);
+
+  const fixed = parts.map((part) => {
+    const key = Object.keys(goalsProb).find(
+      (k) => k.toLowerCase() === part.toLowerCase().replace(" goals", "")
+    );
+    if (key) {
+      return goalsProb[key] >= 50 ? key : bestGoalsLeg();
+    }
+    const upper = part.toUpperCase();
+    if (upper.includes("BTTS")) {
+      const isYes = upper.includes("YES") || upper.includes("GG");
+      const ok = isYes ? probs.bttsYes >= 50 : probs.bttsNo >= 50;
+      if (ok) return part;
+      return probs.bttsYes >= probs.bttsNo ? "BTTS Yes" : "BTTS No";
+    }
+    return part;
+  });
+
+  // De-duplicate legs (e.g. after replacing a bad leg with an existing one)
+  const unique = fixed.filter((p, i) => fixed.findIndex((q) => q.toLowerCase() === p.toLowerCase()) === i);
+
+  return unique.join(" + ");
+}
