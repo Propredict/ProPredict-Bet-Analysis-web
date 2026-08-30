@@ -302,8 +302,7 @@ const AIPredictionCardInner = ({
         <div className="px-2 md:px-3 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
-              "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded",
-              displayTier === "premium" ? "grid grid-cols-5" : "grid grid-cols-4"
+              "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded grid grid-cols-5"
             )}>
               <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 Main
@@ -317,11 +316,9 @@ const AIPredictionCardInner = ({
               <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
                 DC
               </TabsTrigger>
-              {displayTier === "premium" && (
-                <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
-                  Combo
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+                Combo
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
@@ -341,11 +338,9 @@ const AIPredictionCardInner = ({
             </TabsContent>
 
 
-            {displayTier === "premium" && (
-              <TabsContent value="combos" className="mt-2 md:mt-3">
-                <CombosMarketTab prediction={prediction} hasAccess={hasAccess} />
-              </TabsContent>
-            )}
+            <TabsContent value="combos" className="mt-2 md:mt-3">
+              <CombosMarketTab prediction={prediction} hasAccess={hasAccess} />
+            </TabsContent>
           </Tabs>
         </div>
 

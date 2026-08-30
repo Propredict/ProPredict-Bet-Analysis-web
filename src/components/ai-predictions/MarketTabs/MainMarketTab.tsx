@@ -328,10 +328,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* SAFE COMBO — Premium tier only, and only for users with access.
-              For locked Pro/Premium cards we replace it with a generic teaser
-              so the actual combo (e.g. "DC 1X + Over 1.5") doesn't leak through the blur. */}
-          {parsedTags.safeCombo && displayTier === "premium" && hasAccess && (
+          {/* SAFE COMBO — shown on all tiers for users with access. */}
+          {parsedTags.safeCombo && hasAccess && (
             <div className="flex flex-col items-center justify-center gap-1 pt-2 pb-1">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-fuchsia-400" />
@@ -340,7 +338,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               <span className="text-lg md:text-xl font-bold text-foreground text-center">{parsedTags.safeCombo}</span>
             </div>
           )}
-          {parsedTags.safeCombo && displayTier === "premium" && !hasAccess && (
+          {parsedTags.safeCombo && !hasAccess && (
             <div className="flex items-center gap-1.5 pt-1 pb-0.5">
               <Sparkles className="w-3 h-3 text-fuchsia-400" />
               <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400 uppercase tracking-wider">
@@ -348,7 +346,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </span>
               <Badge className="ml-1 bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
                 <Lock className="w-2.5 h-2.5" />
-                PREMIUM
+                {displayTier === "premium" ? "PREMIUM" : "PRO"}
               </Badge>
             </div>
           )}
@@ -395,8 +393,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           })}
       </div>
 
-      {/* ===== Top Correct Scores — Premium only ===== */}
-      {displayTier === "premium" && topScores.length > 0 && (
+      {/* ===== Top Correct Scores — all tiers ===== */}
+      {topScores.length > 0 && (
         <div className="pt-1">
           <div className="flex items-center gap-1.5 mb-2">
             <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
