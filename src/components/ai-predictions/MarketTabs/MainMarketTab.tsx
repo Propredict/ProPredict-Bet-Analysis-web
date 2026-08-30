@@ -6,7 +6,7 @@ import {
   getBestPickType,
   getRawProbMap,
   getBestEligibleProbability,
-
+  getConsistentSafeCombo,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
   getRecommendedScoreConstraints,
@@ -147,12 +147,13 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
 
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
+  const safeCombo = getConsistentSafeCombo(prediction, parsedTags.safeCombo);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const allProbs = getAllRawProbs(prediction);
   // Top correct scores now shown on every tier (Free/Pro/Premium) — same as Premium card
   const topScores = getConsistentTopCorrectScores(
     prediction,
-    { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo: parsedTags.safeCombo },
+    { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo },
     3
   );
 
@@ -329,16 +330,16 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           )}
 
           {/* SAFE COMBO — shown on all tiers for users with access. */}
-          {parsedTags.safeCombo && hasAccess && (
+          {safeCombo && hasAccess && (
             <div className="flex flex-col items-center justify-center gap-1 pt-2 pb-1">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-fuchsia-400" />
                 <span className="text-sm md:text-base font-semibold text-fuchsia-400 uppercase tracking-wider">Risk Combo</span>
               </div>
-              <span className="text-lg md:text-xl font-bold text-foreground text-center">{parsedTags.safeCombo}</span>
+              <span className="text-lg md:text-xl font-bold text-foreground text-center">{safeCombo}</span>
             </div>
           )}
-          {parsedTags.safeCombo && !hasAccess && (
+          {safeCombo && !hasAccess && (
             <div className="flex items-center gap-1.5 pt-1 pb-0.5">
               <Sparkles className="w-3 h-3 text-fuchsia-400" />
               <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400 uppercase tracking-wider">
