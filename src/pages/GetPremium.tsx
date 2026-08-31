@@ -703,8 +703,8 @@ export default function GetPremium() {
       {!isAndroidApp && (
         <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg overflow-hidden">
           <div className="text-center space-y-2">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Download the App</h2>
-            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile</p>
+            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Download the App / Preuzmi aplikaciju</h2>
+            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile / Doživi pun ProPredict doživljaj na mobilnom</p>
           </div>
 
           {/* App Banner Image */}
@@ -719,9 +719,9 @@ export default function GetPremium() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { emoji: "⚡", title: "Faster predictions", desc: "Instant push notifications" },
-              { emoji: "📊", title: "Full match insights", desc: "Live stats & analysis" },
-              { emoji: "🔒", title: "Exclusive PRO tips", desc: "Daily & Premium access" },
+              { emoji: "⚡", title: "Faster predictions / Brže predikcije", desc: "Instant push notifications / Trenutna push obaveštenja" },
+              { emoji: "📊", title: "Full match insights / Puni uvidi utakmica", desc: "Live stats & analysis / Uživo statistika i analiza" },
+              { emoji: "🔒", title: "Exclusive PRO tips / Ekskluzivni PRO tipovi", desc: "Daily & Premium access / Dnevni i Premium pristup" },
             ].map((f) => (
               <div key={f.title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
                 <span className="text-xl mt-0.5">{f.emoji}</span>
@@ -738,7 +738,7 @@ export default function GetPremium() {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 text-warning fill-warning" />
               ))}
-              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users</span>
+              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users / Poverenje 1,000+ korisnika</span>
             </div>
 
             <a
@@ -747,7 +747,7 @@ export default function GetPremium() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm transition-opacity shadow-lg shadow-violet-500/20"
             >
-              👉 Download Now
+              👉 Download Now / Preuzmi odmah
             </a>
           </div>
         </div>
