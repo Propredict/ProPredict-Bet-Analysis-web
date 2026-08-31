@@ -549,7 +549,7 @@ export default function GetPremium() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Monthly
+            Monthly / Mesečno
           </button>
           <button
             onClick={() => setBillingPeriod("annual")}
@@ -559,8 +559,8 @@ export default function GetPremium() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Annual
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33%</Badge>
+            Annual / Godišnje
+            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33% / Uštedi 33%</Badge>
           </button>
         </div>
       </div>
