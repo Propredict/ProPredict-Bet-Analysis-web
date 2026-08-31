@@ -281,7 +281,7 @@ const Login = () => {
               onClick={() => navigate("/")}
               disabled={isLoading}
             >
-              Continue as guest
+              Continue as guest / Produži kao gost
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           )}
