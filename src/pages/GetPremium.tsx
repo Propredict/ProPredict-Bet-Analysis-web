@@ -786,20 +786,20 @@ export default function GetPremium() {
               if (android?.restorePurchases) {
                 console.log("[Android] restorePurchases called");
                 android.restorePurchases();
-                toast.info("Restoring purchases…");
+                toast.info("Restoring purchases… / Obnavljanje kupovina…");
               } else {
-                toast.error("Restore not available on this device.");
+                toast.error("Restore not available on this device. / Obnavljanje nije dostupno na ovom uređaju.");
               }
             }}
           >
-            Restore Purchases
+            Restore Purchases / Obnovi kupovine
           </Button>
         </div>
       )}
 
       {/* Footer CTA */}
       <p className="text-center text-xs text-muted-foreground">
-        Choose package and unlock premium features.
+        Choose package and unlock premium features. / Izaberi paket i otključaj premium funkcije.
       </p>
     </div>
     </>
