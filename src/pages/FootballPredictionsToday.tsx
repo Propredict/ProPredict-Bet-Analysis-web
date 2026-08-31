@@ -93,10 +93,27 @@ export default function FootballPredictionsToday() {
   const joinedThisWeek = useLiveCount(2100, 300);
 
   const { confirmAndEnter } = useWebGate();
+  const [autoEnterIn, setAutoEnterIn] = useState(12);
 
   const handleContinueWeb = () => {
     confirmAndEnter();
   };
+
+  // Auto-continue to web after 12s for guests who don't interact
+  useEffect(() => {
+    if (user) return;
+    const iv = setInterval(() => {
+      setAutoEnterIn((s) => {
+        if (s <= 1) {
+          clearInterval(iv);
+          confirmAndEnter();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [user, confirmAndEnter]);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -161,7 +178,7 @@ export default function FootballPredictionsToday() {
                 onClick={handleContinueWeb}
                 className="px-6 py-2.5 rounded-xl border border-gray-600 hover:border-emerald-500/50 text-gray-300 hover:text-white text-sm font-medium transition-colors"
               >
-                Continue on Web →
+                Continue on Web →{!user && autoEnterIn > 0 ? ` (${autoEnterIn}s)` : ""}
               </button>
             </div>
             <p className="text-[10px] text-gray-600">Free access • No signup required</p>
