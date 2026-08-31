@@ -11,7 +11,7 @@ export function BottomCTA() {
       {/* Urgency + Premium CTA */}
       <div className="flex flex-col items-center gap-2">
         <p className="text-[9px] sm:text-[10px] text-warning/80 font-medium">
-          🔥 Limited daily premium picks available
+          🔥 Limited daily premium picks available / Ograničen broj dnevnih premium izbora
         </p>
         <Button
           size="sm"
@@ -19,10 +19,10 @@ export function BottomCTA() {
           onClick={() => navigate("/get-premium")}
         >
           <Crown className="h-3.5 w-3.5 mr-1" />
-          Upgrade to Premium 🔥
+          Upgrade to Premium / Preuzmi Premium 🔥
         </Button>
         <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-          Unlock highest confidence picks & VIP insights
+          Unlock highest confidence picks & VIP insights / Otključaj najsigurnije izbore i VIP uvide
         </p>
       </div>
 
