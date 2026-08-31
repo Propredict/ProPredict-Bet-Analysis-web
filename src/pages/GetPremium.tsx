@@ -225,19 +225,19 @@ const webPlans = {
 };
 
 const benefits = [
-  { icon: Target, title: "Premium AI Predictions", description: "AI analysis with 90%+ historical accuracy" },
-  { icon: Zap, title: "VIP Tickets", description: "Curated multi-match AI analysis and insights" },
-  { icon: Brain, title: "Full AI Analysis", description: "Complete AI-powered match analysis and insights" },
-  { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new predictions" },
-  { icon: Clock, title: "Priority Access", description: "Get insights before match kickoff" },
-  { icon: Shield, title: "Flexible & Risk-Free", description: "Cancel or switch plans anytime, no questions asked" },
+  { icon: Target, title: "Premium AI Predictions / Premium AI predikcije", description: "AI analysis with 90%+ historical accuracy / AI analiza sa 90%+ tačnosti" },
+  { icon: Zap, title: "VIP Tickets / VIP tiketi", description: "Curated multi-match AI analysis and insights / Odabrana multi-match AI analiza i uvidi" },
+  { icon: Brain, title: "Full AI Analysis / Puna AI analiza", description: "Complete AI-powered match analysis and insights / Kompletna AI analiza utakmica i uvidi" },
+  { icon: Bell, title: "Real-time Alerts / Obaveštenja uživo", description: "Instant notifications for new predictions / Trenutna obaveštenja za nove predikcije" },
+  { icon: Clock, title: "Priority Access / Prioritetan pristup", description: "Get insights before match kickoff / Uvidi pre početka utakmice" },
+  { icon: Shield, title: "Flexible & Risk-Free / Fleksibilno i bez rizika", description: "Cancel or switch plans anytime, no questions asked / Otkaži ili promeni plan u bilo kom trenutku" },
 ];
 
 const stats = [
-  { value: "92%", label: "Prediction Accuracy" },
-  { value: "10K+", label: "Active Users" },
-  { value: "500+", label: "Daily Analyses" },
-  { value: "4.9", label: "User Rating", isStar: true },
+  { value: "92%", label: "Prediction Accuracy / Tačnost predikcija" },
+  { value: "10K+", label: "Active Users / Aktivnih korisnika" },
+  { value: "500+", label: "Daily Analyses / Dnevnih analiza" },
+  { value: "4.9", label: "User Rating / Ocena korisnika", isStar: true },
 ];
 
 const testimonials = [
