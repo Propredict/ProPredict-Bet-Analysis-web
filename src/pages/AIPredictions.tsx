@@ -783,7 +783,7 @@ export default function AIPredictions() {
                   className="w-full h-10 md:h-14 text-xs md:text-lg font-bold bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(217,70,239,0.35)] relative"
                 >
                   <Crown className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current" />
-                  Upgrade to unlock stronger predictions
+                  Upgrade to unlock stronger predictions / Nadogradi za jače predikcije
                   <ChevronRight className="w-4 h-4 md:w-5 md:h-5 absolute right-4 opacity-80" />
                 </Button>
               </div>
