@@ -65,7 +65,7 @@ export function DiamondPickSection() {
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
                 onClick={() => { setHighlightPlan("premium"); setShowPricingModal(true); }}
               >
-                <Crown className="h-3.5 w-3.5 mr-1" /> Get Premium
+                <Crown className="h-3.5 w-3.5 mr-1" /> Get Premium / Kupi Premium
               </Button>
               <button
                 onClick={() => navigate("/diamond-pick")}
