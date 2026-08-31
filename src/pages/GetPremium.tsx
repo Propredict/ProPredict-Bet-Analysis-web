@@ -454,11 +454,11 @@ export default function GetPremium() {
 
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Crown className="h-6 w-6 text-warning" />
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience / Nadogradi svoje iskustvo</h1>
-        </div>
-        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you / Izaberi plan koji ti odgovara</p>
+          <div className="flex items-center justify-center gap-2">
+            <Crown className="h-6 w-6 text-warning" />
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade to Premium / Nadogradi na Premium</h1>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">Choose Premium Plan / Izaberi Premium plan</p>
       </div>
 
       {/* Cross-platform subscription protection banners */}
