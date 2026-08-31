@@ -265,10 +265,10 @@ export function DashboardAIPredictions() {
         <div className="text-center space-y-1 pt-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
             <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-            Daily Predictions made by AI
+            Daily Predictions made by AI / AI Dnevne predikcije
           </h2>
           <p className="text-[11px] text-muted-foreground">
-            AI-powered match analysis{predictions.length > 0 ? ` · ${predictions.length} matches` : ""}
+            AI-powered match analysis / AI analiza utakmica{predictions.length > 0 ? ` · ${predictions.length} matches` : ""}
           </p>
         </div>
 
@@ -285,7 +285,7 @@ export function DashboardAIPredictions() {
               badgeIcon={Sparkles}
               badgeLabel="Free"
               tone="free"
-              ctaLabel="See all Free Picks / Pogledaj sve Free Picks"
+              ctaLabel="See all Free Picks / Pogledaj sve Free AI Predikcije"
               onCta={() => navigate("/ai-predictions?tier=free")}
               empty="No free picks available today"
               picks={freePicks}
@@ -301,7 +301,7 @@ export function DashboardAIPredictions() {
               badgeIcon={Star}
               badgeLabel="⭐ Top Picks"
               tone="pro"
-              ctaLabel="See all Top Picks / Pogledaj sve Top Picks"
+              ctaLabel="See all Top Picks / Pogledaj sve Top AI Predikcije"
               onCta={() => navigate("/ai-predictions?tier=pro")}
               empty="No top picks available today"
               picks={proPicks}
