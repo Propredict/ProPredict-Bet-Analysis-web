@@ -145,21 +145,21 @@ export function FreeUserUpsellModal() {
               className="block text-xl font-black bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(180deg,#fde68a,#f59e0b)' }}
             >
-              DAILY TICKET
+              DAILY TICKET / DNEVNI TIKET
             </span>
           </DialogTitle>
 
           <p className="text-xs text-muted-foreground italic">
-            High-confidence picks • Odds <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span>
+            High-confidence picks • Odds <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span> / Sigurni izbori • Kvota <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span>
           </p>
 
           {/* Feature grid */}
           <div className="w-full grid grid-cols-4 gap-px rounded-xl border border-amber-500/25 bg-black/40 overflow-hidden">
             {[
-              { icon: "🎯", top: "HIGH ODDS", bottom: "> 2.00", accent: true },
-              { icon: "🛡️", top: "CAREFULLY", bottom: "SELECTED" },
-              { icon: "📊", top: "FULL MATCH", bottom: "ANALYSIS" },
-              { icon: "🔥", top: "HOT PICKS", bottom: "DAILY" },
+              { icon: "🎯", top: "HIGH ODDS / VISOKA KVOTA", bottom: "> 2.00", accent: true },
+              { icon: "🛡️", top: "CAREFULLY / PAŽLJIVO", bottom: "SELECTED / IZABRANO" },
+              { icon: "📊", top: "FULL MATCH / PUNA", bottom: "ANALYSIS / ANALIZA" },
+              { icon: "🔥", top: "HOT PICKS / VRUĆI IZBORI", bottom: "DAILY / DNEVNO" },
             ].map((f) => (
               <div key={f.top} className="flex flex-col items-center gap-1 py-2.5 px-1">
                 <span className="text-base leading-none">{f.icon}</span>
@@ -175,16 +175,16 @@ export function FreeUserUpsellModal() {
           <div className="w-full rounded-xl border border-amber-500/40 bg-black/40 px-3 py-2.5 flex items-center gap-3">
             <div className="flex-1 text-left">
               <p className="text-[11px] font-bold text-foreground">
-                🔥 <span className="text-amber-400">{socialCount} users</span> unlocked this
+                🔥 <span className="text-amber-400">{socialCount} users</span> unlocked this / {socialCount} korisnika je otključalo
               </p>
-              <p className="text-[10px] text-muted-foreground">Join winners. Get your edge today.</p>
+              <p className="text-[10px] text-muted-foreground">Join winners. Get your edge today. / Pridruži se pobeđivačima. Uzmi prednost danas.</p>
             </div>
             <div
               className="h-12 w-12 shrink-0 rounded-full border-2 border-emerald-400 flex flex-col items-center justify-center"
               style={{ boxShadow: '0 0 15px rgba(52,211,153,0.35)' }}
             >
               <span className="text-xs font-black text-amber-300 leading-none">85%</span>
-              <span className="text-[7px] font-bold text-amber-200/70 leading-none mt-0.5">ACCURACY</span>
+              <span className="text-[7px] font-bold text-amber-200/70 leading-none mt-0.5">ACCURACY / TAČNOST</span>
             </div>
           </div>
 
@@ -199,10 +199,10 @@ export function FreeUserUpsellModal() {
                 >
                   {SURE_ODDS_PRICE_LABEL}
                 </span>
-                <span className="text-[9px] font-semibold text-muted-foreground tracking-wide">ONE-TIME ACCESS</span>
+                <span className="text-[9px] font-semibold text-muted-foreground tracking-wide">ONE-TIME ACCESS / JEDNOKRATAN PRISTUP</span>
               </div>
               <div className="h-11 w-11 rounded-full border border-amber-400/70 flex flex-col items-center justify-center">
-                <span className="text-[9px] font-black text-amber-300 leading-none">SAVE</span>
+                <span className="text-[9px] font-black text-amber-300 leading-none">SAVE / UŠTEDA</span>
                 <span className="text-[10px] font-black text-amber-300 leading-none">50%</span>
               </div>
             </div>
@@ -215,12 +215,12 @@ export function FreeUserUpsellModal() {
                 boxShadow: '0 0 25px rgba(245,158,11,0.35)',
               }}
             >
-              GET TODAY'S TICKET 🚀
+              GET TODAY'S TICKET / UZMI DANAŠNJI TIKET 🚀
             </Button>
 
             <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
               <Lock className="h-3 w-3" />
-              INSTANT ACCESS AFTER PAYMENT
+              INSTANT ACCESS AFTER PAYMENT / TRENUTAN PRISTUP NAKON PLAĆANJA
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export function FreeUserUpsellModal() {
             onClick={handleClose}
             className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors pb-1"
           >
-            Continue Free
+            Continue Free / Nastavi besplatno
           </button>
         </div>
       </DialogContent>
