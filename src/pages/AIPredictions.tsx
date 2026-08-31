@@ -780,10 +780,13 @@ export default function AIPredictions() {
 
                 <Button
                   onClick={() => navigate("/get-premium")}
-                  className="w-full h-10 md:h-14 text-xs md:text-lg font-bold bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(217,70,239,0.35)] relative"
+                  className="w-full h-auto py-2 md:h-14 md:py-0 text-xs md:text-lg font-bold bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(217,70,239,0.35)] relative whitespace-normal"
                 >
-                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current" />
-                  Upgrade to unlock stronger predictions / Nadogradi za jače predikcije
+                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current shrink-0" />
+                  <span className="flex flex-col items-center leading-tight">
+                    <span>Upgrade to unlock stronger predictions</span>
+                    <span className="text-[10px] md:text-sm font-semibold opacity-90">Nadogradi za jače predikcije</span>
+                  </span>
                   <ChevronRight className="w-4 h-4 md:w-5 md:h-5 absolute right-4 opacity-80" />
                 </Button>
               </div>
@@ -1060,11 +1063,14 @@ export default function AIPredictions() {
                       {/* Unlock CTA */}
                       <Button
                         onClick={() => navigate("/get-premium")}
-                        className="w-full mt-3 md:mt-4 h-11 md:h-12 text-sm md:text-base font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-95 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-xl gap-2 animate-cta-blink"
+                        className="w-full mt-3 md:mt-4 h-auto py-2.5 md:h-12 md:py-0 text-sm md:text-base font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-95 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-xl gap-2 animate-cta-blink whitespace-normal"
                       >
-                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
-                        Unlock this Diamond Pick / Otključaj ovaj Diamond Pick
-                        <span className="ml-auto text-lg">💎</span>
+                        <Lock className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                        <span className="flex flex-col items-center leading-tight">
+                          <span>Unlock this Diamond Pick</span>
+                          <span className="text-[10px] md:text-xs font-bold opacity-90">Otključaj ovaj Diamond Pick</span>
+                        </span>
+                        <span className="ml-auto text-lg shrink-0">💎</span>
                       </Button>
 
                       {/* Social proof */}
