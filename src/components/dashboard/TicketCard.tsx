@@ -296,7 +296,7 @@ function TicketCard({
                     className="w-full text-[10px] text-primary/80 hover:text-primary font-medium flex items-center justify-center gap-1 py-1 transition-colors"
                     onClick={(e) => { e.stopPropagation(); onSecondaryUnlock?.(); }}
                   >
-                    🎥 or unlock FREE in app
+                    🎥 or unlock FREE in app / ili otključaj BESPLATNO u aplikaciji
                   </button>
                 )}
               </div>

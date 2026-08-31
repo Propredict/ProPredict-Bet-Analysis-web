@@ -490,7 +490,7 @@ const AIPredictionCardInner = ({
                 ) : (
                   <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
                 )}
-                {unlockMethod.type === "upgrade_basic" ? "Get Full Access" : "Premium Access Required / Potreban je Premium pristup"}
+                {unlockMethod.type === "upgrade_basic" ? "Get Full Access / Otključaj pun pristup" : "Premium Access Required / Potreban je Premium pristup"}
               </Button>
             )}
           </div>
