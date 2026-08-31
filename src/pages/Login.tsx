@@ -227,12 +227,12 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
+                  Please wait / Molimo sačekajte
                 </>
               ) : isSignUp ? (
-                "Sign Up"
+                "Sign Up / Kreiraj profil"
               ) : (
-                "Sign In"
+                "Sign In / Uloguj se"
               )}
             </Button>
           </form>
