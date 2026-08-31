@@ -242,7 +242,7 @@ export function MatchPredictions() {
                   className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
                   onClick={() => navigate("/top-picks")}
                 >
-                  <span>See all Top Picks / Pogledaj sve Top Picks</span>
+                  <span>See all Top Picks / Pogledaj sve Top AI Predikcije</span>
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>

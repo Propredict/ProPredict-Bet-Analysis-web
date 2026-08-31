@@ -188,7 +188,7 @@ export function BettingTickets() {
               badgeIcon={Sparkles}
               badgeLabel="Free"
               tone="free"
-              ctaLabel="See all Free Picks / Pogledaj sve Free Picks"
+              ctaLabel="See all Free Picks / Pogledaj sve Free AI Predikcije"
               onCta={() => navigate("/daily-predictions")}
               empty="No Daily AI Combos available"
               tickets={dailyTickets}
