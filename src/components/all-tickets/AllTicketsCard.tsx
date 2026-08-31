@@ -59,7 +59,7 @@ function getTierBadge(tier: string) {
 
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
-  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock / Otključaj posle reklame";
   if (unlockMethod.type === "upgrade_basic") return "Sure Odds 2+ Ticket Required";
   if (unlockMethod.type === "upgrade_premium") return "Premium Access Required / Potreban je Premium pristup";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock / Logiraj se i otključaj";
