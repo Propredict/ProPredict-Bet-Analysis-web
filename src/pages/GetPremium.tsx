@@ -456,9 +456,9 @@ export default function GetPremium() {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Crown className="h-6 w-6 text-warning" />
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience / Nadogradi svoje iskustvo</h1>
         </div>
-        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you / Izaberi plan koji ti odgovara</p>
       </div>
 
       {/* Cross-platform subscription protection banners */}
