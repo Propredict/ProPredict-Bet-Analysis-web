@@ -644,7 +644,7 @@ export default function GetPremium() {
       {/* Why Go Premium Section */}
       <div className="space-y-3">
         <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">
-          Why Go Premium?
+          Why Go Premium? / Zašto Premium?
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {benefits.map((benefit, index) => (
