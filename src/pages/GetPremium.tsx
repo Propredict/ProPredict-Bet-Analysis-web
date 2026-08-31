@@ -250,9 +250,9 @@ const testimonials = [
 ];
 
 const faqs = [
-  { question: "Can I cancel anytime?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period." },
-  { question: "How do Premium AI Predictions work?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics." },
-  { question: "Can I change my plan anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly." },
+  { question: "Can I cancel anytime? / Mogu li otkazati u bilo kom trenutku?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period. / Da, možeš otkazati pretplatu u bilo kom trenutku. Pristup ostaje do kraja obračunskog perioda." },
+  { question: "How do Premium AI Predictions work? / Kako rade Premium AI predikcije?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics. / Naši AI modeli pružaju pažljivo odabrane predikcije sa detaljnom analizom za dublje razumevanje utakmica." },
+  { question: "Can I change my plan anytime? / Mogu li promeniti plan u bilo kom trenutku?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly. / Da, možeš nadograditi ili sniziti plan u bilo kom trenutku. Promene stupaju na snagu odmah." },
 ];
 
 function TestimonialsSlider() {
