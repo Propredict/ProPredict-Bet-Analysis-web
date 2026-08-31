@@ -627,7 +627,7 @@ export default function MatchPreviewDetail() {
                 onClick={() => navigate("/get-premium")}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                💎 Get This Winning Pick
+                💎 Get This Winning Pick / Pogledaj Celosnu Analizu i Tip
               </Button>
             )}
           </div>
