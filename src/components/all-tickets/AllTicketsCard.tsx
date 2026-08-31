@@ -158,7 +158,7 @@ export function AllTicketsCard({
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "Watch Ad to Unlock";
     if (unlockMethod.type === "upgrade_basic") return "Sure Odds 2+ Ticket Required";
     if (unlockMethod.type === "upgrade_premium") return "Premium Access Required / Potreban je Premium pristup";
-    if (unlockMethod.type === "android_premium_only") return "Get Premium";
+    if (unlockMethod.type === "android_premium_only") return "Get Premium / Kupi Premium";
     return "";
   };
 
@@ -296,7 +296,7 @@ export function AllTicketsCard({
                 }}
               >
                 <Crown className="h-3.5 w-3.5" />
-                Get Premium
+                Get Premium / Kupi Premium
               </Button>
             ) : (
               /* Web fallback - original button */

@@ -74,7 +74,7 @@ const androidPlans = {
       price: "€14.99",
       period: "/month / /mesecno",
        description: "Full access to all predictions / Potpun pristup svim predikcijama",
-      buttonText: "Get Premium / Preuzmi Premium",
+      buttonText: "Get Premium / Kupi Premium",
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
@@ -117,7 +117,7 @@ const androidPlans = {
       period: "/year / /godišnje",
       savings: "€10.00/mo · Save 33% / €10.00/mes · Uštedi 33%",
       description: "Full access to all predictions / Potpun pristup svim predikcijama",
-      buttonText: "Get Premium / Preuzmi Premium",
+      buttonText: "Get Premium / Kupi Premium",
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
@@ -163,7 +163,7 @@ const webPlans = {
       price: "€14.99",
       period: "/month / /mesecno",
       description: "Full access to all content / Potpun pristup svim sadržajima",
-      buttonText: "Get Premium / Preuzmi Premium",
+      buttonText: "Get Premium / Kupi Premium",
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
@@ -206,7 +206,7 @@ const webPlans = {
       period: "/year / /godišnje",
       savings: "€10.00/mo · Save 33% / €10.00/mes · Uštedi 33%",
       description: "Full access to all content / Potpun pristup svim sadržajima",
-      buttonText: "Get Premium / Preuzmi Premium",
+      buttonText: "Get Premium / Kupi Premium",
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
