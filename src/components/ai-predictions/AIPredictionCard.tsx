@@ -473,7 +473,7 @@ const AIPredictionCardInner = ({
                 ) : (
                   <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5" />
                 )}
-                Watch Ad to Unlock
+                Watch Ad to Unlock / Otključaj posle reklame
               </Button>
             ) : (
               <Button
