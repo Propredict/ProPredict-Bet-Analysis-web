@@ -147,7 +147,7 @@ const Login = () => {
           <CardDescription>
             {isSignUp
               ? "Enter your email to create your account"
-              : "Sign In and get FREE access to AI predictions"}
+              : "Logiraj se i pogledaj besplatne predikcije"}
           </CardDescription>
         </CardHeader>
 
@@ -281,7 +281,7 @@ const Login = () => {
               onClick={() => navigate("/")}
               disabled={isLoading}
             >
-              Continue as guest
+              Continue as guest / Produži kao gost
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           )}
