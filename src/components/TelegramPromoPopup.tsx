@@ -106,14 +106,18 @@ export function TelegramPromoPopup() {
           </div>
 
           <h3 className="text-2xl font-black tracking-tight leading-tight">
-            FREE PREMIUM TIPS
+            FREE PREMIUM TIPS / Besplatni premium tipovi
           </h3>
           <p className="mt-1 text-sm font-medium text-white/85">
-            Join our Telegram channel — exclusive picks every day
+            Join our Telegram channel — exclusive picks every day / Pridruži se našem Telegram kanalu — ekskluzivni tipovi svaki dan
           </p>
 
           <ul className="mt-5 space-y-2 text-left text-sm">
-            {["Daily premium picks", "Early access to value bets", "100% free — no signup"].map((t) => (
+            {[
+              "Daily premium picks / Dnevni premium tipovi",
+              "Early access to value bets / Rani pristup value opkladama",
+              "100% free — no signup / 100% besplatno — bez registracije",
+            ].map((t) => (
               <li key={t} className="flex items-center gap-2 text-white/95">
                 <Check className="h-4 w-4 text-emerald-300 shrink-0" />
                 <span>{t}</span>
@@ -138,14 +142,14 @@ export function TelegramPromoPopup() {
             className="mt-6 flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-white text-[#0c5d9e] font-extrabold text-base hover:bg-white/95 transition-all shadow-lg hover:scale-[1.02] active:scale-[0.99]"
           >
             <Send className="h-4 w-4" />
-            JOIN NOW
+            JOIN NOW / PRIDRUŽI SE
           </a>
 
           <button
             onClick={() => setOpen(false)}
             className="mt-3 text-xs text-white/70 hover:text-white transition-colors"
           >
-            Maybe later
+            Maybe later / Možda kasnije
           </button>
         </div>
       </div>

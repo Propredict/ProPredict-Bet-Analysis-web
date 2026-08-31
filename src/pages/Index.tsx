@@ -151,7 +151,7 @@ const Index = () => {
             }
           }}
           className="group relative flex items-center w-full h-full overflow-hidden rounded-3xl border-b-4 border-[#006699] bg-[#229ED9] text-white shadow-2xl shadow-[#229ED9]/50 transition-all hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(34,158,217,0.55)] active:translate-y-0.5 active:border-b-2 active:shadow-lg"
-          aria-label="FREE PREMIUM TIPS — Join us on Telegram"
+          aria-label="FREE PREMIUM TIPS / Besplatni premium tipovi — Join us on Telegram / Pridruži se na Telegramu"
         >
           {/* base gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#2AABEE] via-[#229ED9] to-[#0088CC]" />
@@ -180,14 +180,14 @@ const Index = () => {
                   FREE PREMIUM TIPS
                 </p>
                 <p className="mt-1.5 text-sm sm:text-base text-white/95 font-semibold">
-                  Join us on Telegram — exclusive tips & bonuses
+                  Join us on Telegram — exclusive tips & bonuses / Pridruži se na Telegramu — ekskluzivni tipovi i bonusi
                 </p>
               </div>
             </div>
             {/* 3D Join Now button */}
             <div className="hidden sm:flex flex-col items-center shrink-0">
               <div className="relative px-5 py-3 rounded-xl bg-white text-[#0088CC] font-black uppercase tracking-wide shadow-[0_6px_0_0_#006699,0_10px_20px_-5px_rgba(0,0,0,0.25)] group-hover:shadow-[0_4px_0_0_#006699,0_8px_16px_-4px_rgba(0,0,0,0.25)] group-hover:-translate-y-0.5 transition-all duration-200">
-                Join Now
+                Join Now / Pridruži se
                 <span className="absolute -right-3 -top-3 text-xl">🚀</span>
               </div>
             </div>
