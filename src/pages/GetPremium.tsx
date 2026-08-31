@@ -670,7 +670,7 @@ export default function GetPremium() {
 
       {/* Animated Social Proof Text */}
       <p className="text-center text-xs sm:text-sm text-primary/90 font-medium animate-fade-in">
-        Join 10,000+ smart users improving their prediction accuracy daily.
+        Join 10,000+ smart users improving their prediction accuracy daily. / Pridruži se 10,000+ pametnih korisnika koji unapređuju tačnost predikcija svaki dan.
       </p>
 
       {/* Stats Row */}
