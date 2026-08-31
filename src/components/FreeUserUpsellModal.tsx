@@ -145,12 +145,12 @@ export function FreeUserUpsellModal() {
               className="block text-xl font-black bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(180deg,#fde68a,#f59e0b)' }}
             >
-              DAILY TICKET
+              DAILY TICKET / DNEVNI TIKET
             </span>
           </DialogTitle>
 
           <p className="text-xs text-muted-foreground italic">
-            High-confidence picks • Odds <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span>
+            High-confidence picks • Odds <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span> / Sigurni izbori • Kvota <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span>
           </p>
 
           {/* Feature grid */}
