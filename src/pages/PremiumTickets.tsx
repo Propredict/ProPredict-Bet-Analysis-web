@@ -72,8 +72,8 @@ export default function PremiumTickets() {
   });
   
   const isRiskTicket = (ticket: any) =>
-    ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(ticket.category) ||
-    /risk/i.test(ticket.title ?? "");
+    ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(ticket.category);
+
 
   const premiumTickets = tickets.filter(
     ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRiskTicket(ticket)
