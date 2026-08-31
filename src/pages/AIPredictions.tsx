@@ -1538,10 +1538,10 @@ export default function AIPredictions() {
                   </div>
                   <div>
                     <h3 className="text-base md:text-lg font-bold text-foreground mb-1">
-                      Sign In to View Free Predictions
+                      Sign In to View Free Predictions / Uloguj se da vidiš besplatne predikcije
                     </h3>
                     <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
-                      Create a free account or sign in to access {regularPredictions.length} free AI-powered match predictions.
+                      Create a free account or sign in to access {regularPredictions.length} free AI-powered match predictions. / Napravi besplatan nalog ili se uloguj za pristup {regularPredictions.length} besplatnih AI predikcija utakmica.
                     </p>
                   </div>
                   <Button
@@ -1549,10 +1549,10 @@ export default function AIPredictions() {
                     className="gap-2 px-6 h-10 text-sm font-semibold"
                   >
                     <LogIn className="w-4 h-4" />
-                    Sign In for FREE Access
+                    Sign In for FREE Access / Uloguj se za BESPLATAN pristup
                   </Button>
                   <p className="text-[10px] text-muted-foreground/60">
-                    Free predictions available instantly after sign in
+                    Free predictions available instantly after sign in / Besplatne predikcije dostupne odmah nakon prijave
                   </p>
                 </div>
               </Card>
