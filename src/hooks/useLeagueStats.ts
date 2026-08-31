@@ -201,6 +201,10 @@ type LeagueStatsResponse =
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
+// Daily cache key: queries are keyed by calendar day so each user hits the API
+// at most once per league per day, and tables refresh automatically next morning.
+const dayKey = new Date().toISOString().slice(0, 10);
+
 async function fetchLeagueStats(
   leagueId: string,
   type: LeagueStatsType,
