@@ -613,11 +613,11 @@ export default function GetPremium() {
                 onClick={() => handleSubscribe(plan.id)}
               >
                 {isLoading
-                  ? "Loading..."
+                  ? "Loading... / Učitavanje..."
                   : isCurrentPlan
-                  ? "Current Plan"
+                  ? "Current Plan / Trenutni plan"
                   : isFree
-                  ? (currentPlan === "free" ? "Current Plan" : "Free Plan")
+                  ? (currentPlan === "free" ? "Current Plan / Trenutni plan" : "Free Plan / Besplatan plan")
                   : plan.buttonText
                 }
               </Button>
