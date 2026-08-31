@@ -245,7 +245,7 @@ export function AllTicketsCard({
                 ) : (
                   <>
                     <Play className="h-3.5 w-3.5" />
-                    Watch Ad to Unlock
+                    Watch Ad to Unlock / Otključaj posle reklame
                   </>
                 )}
               </Button>
@@ -269,7 +269,7 @@ export function AllTicketsCard({
                   ) : (
                     <>
                       <Play className="h-3.5 w-3.5" />
-                      Watch Ad to Unlock
+                       Watch Ad to Unlock / Otključaj posle reklame
                     </>
                   )}
                 </Button>
