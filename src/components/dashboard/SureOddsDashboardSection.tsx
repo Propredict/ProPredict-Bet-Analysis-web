@@ -133,7 +133,7 @@ export function SureOddsDashboardSection() {
             )}
             onClick={() => navigate("/sure-odds")}
           >
-            See all Sure Odds Tickets →
+            See all Sure Odds Tickets / Pogledaj sve Sure Odds Tickets →
           </Button>
         </div>
       </div>

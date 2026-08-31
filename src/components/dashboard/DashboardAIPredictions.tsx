@@ -285,7 +285,7 @@ export function DashboardAIPredictions() {
               badgeIcon={Sparkles}
               badgeLabel="Free"
               tone="free"
-              ctaLabel="See all Free Picks"
+              ctaLabel="See all Free Picks / Pogledaj sve Free Picks"
               onCta={() => navigate("/ai-predictions?tier=free")}
               empty="No free picks available today"
               picks={freePicks}
@@ -301,7 +301,7 @@ export function DashboardAIPredictions() {
               badgeIcon={Star}
               badgeLabel="⭐ Top Picks"
               tone="pro"
-              ctaLabel="See all Top Picks"
+              ctaLabel="See all Top Picks / Pogledaj sve Top Picks"
               onCta={() => navigate("/ai-predictions?tier=pro")}
               empty="No top picks available today"
               picks={proPicks}
@@ -315,7 +315,7 @@ export function DashboardAIPredictions() {
               badgeIcon={Crown}
               badgeLabel="👑 Premium"
               tone="premium"
-              ctaLabel="See all Premium Picks"
+              ctaLabel="See all Premium Picks / Pogledaj sve Premium Picks"
               onCta={() => navigate("/ai-predictions?tier=premium")}
               empty="No Premium picks available today"
               picks={premiumPicks}

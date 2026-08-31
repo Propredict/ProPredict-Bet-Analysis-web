@@ -89,7 +89,7 @@ export function DashboardDailyTips() {
             className="px-5 group bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white text-xs border-0 rounded-full"
             onClick={() => navigate("/daily-analysis")}
           >
-            <span>See all Daily Tips</span>
+            <span>See all Daily Tips / Pogledaj sve Daily Tips</span>
             <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
           </Button>
         </div>

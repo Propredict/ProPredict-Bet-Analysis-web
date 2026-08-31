@@ -83,7 +83,7 @@ export default function DailyTickets() {
   const renderTickets = () => {
     return dailyTickets.map((ticket, idx) => {
       const unlockMethod = !isAuthenticated 
-        ? { type: "login_required" as const, message: "Sign in to Unlock" }
+        ? { type: "login_required" as const, message: "Sign in to Unlock / Logiraj se i otključaj" }
         : getUnlockMethod("daily", "ticket", ticket.id);
       const isLocked = unlockMethod?.type !== "unlocked";
       const isUnlocking = unlockingId === ticket.id;

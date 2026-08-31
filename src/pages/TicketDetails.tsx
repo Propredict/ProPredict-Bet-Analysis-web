@@ -254,7 +254,7 @@ export default function TicketDetails() {
     const buttonConfig = {
       login_required: {
         icon: LogIn,
-        text: "Sign in to Unlock",
+        text: "Sign in to Unlock / Logiraj se i otključaj",
         className: "",
         variant: "outline" as const,
       },
