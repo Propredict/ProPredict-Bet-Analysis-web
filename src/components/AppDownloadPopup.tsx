@@ -56,15 +56,15 @@ export function AppDownloadPopup() {
 
           {/* Headline */}
           <h3 className="text-2xl font-black uppercase tracking-tight leading-none text-foreground">
-            Don't miss today's
+            Don't miss today's / Ne propusti današnje
           </h3>
           <h3 className="text-3xl font-black uppercase tracking-tight leading-none mt-1">
             <span className="text-primary">FREE</span>
-            <span className="text-foreground"> tips!</span>
+            <span className="text-foreground"> tips! / tipove!</span>
           </h3>
 
           <p className="mt-3 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
-            Get instant access on mobile
+            Get instant access on mobile / Odmah pristupi na telefonu
             <Smartphone className="h-4 w-4 text-primary" />
           </p>
 
@@ -95,7 +95,7 @@ export function AppDownloadPopup() {
             className="mt-5 flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-warning via-warning to-accent text-warning-foreground font-black text-lg uppercase tracking-wide hover:opacity-95 transition-opacity shadow-lg shadow-warning/25 animate-cta-blink"
           >
             <Smartphone className="h-5 w-5" />
-            <span>Download App</span>
+            <span>Download App / Preuzmi app</span>
           </a>
 
           {/* Skip */}
@@ -103,7 +103,7 @@ export function AppDownloadPopup() {
             onClick={dismiss}
             className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-muted-foreground/30"
           >
-            No thanks, I'll continue browsing
+            No thanks, I'll continue browsing / Produži na website
           </button>
         </div>
 
