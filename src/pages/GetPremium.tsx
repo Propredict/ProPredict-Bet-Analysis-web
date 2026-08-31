@@ -51,85 +51,85 @@ const androidPlans = {
   monthly: [
     {
       id: "free",
-      name: "Free",
+      name: "Free / Besplatno",
       price: "€0",
-      period: "/forever",
-       description: "Watch ads to access daily predictions",
-      buttonText: "Current Plan",
+      period: "/forever / /zauvek",
+       description: "Watch ads to access daily predictions / Gledaj reklame za dnevne predikcije",
+      buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Daily Predictions (watch ads to access)", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "Basic predictions", included: true },
-        { text: "Match Previews", included: false },
-        { text: "Premium Insights", included: false },
-        { text: "Premium Ticket", included: false },
-        { text: "Ad-free experience", included: false },
+        { text: "Daily Predictions (watch ads to access) / Dnevne predikcije (gledaj reklame)", included: true },
+        { text: "Live scores / Rezultati uživo", included: true },
+        { text: "League standings / Tabela liga", included: true },
+        { text: "Basic predictions / Osnovne predikcije", included: true },
+        { text: "Match Previews / Pregledi utakmica", included: false },
+        { text: "Premium Insights / Premium uvidi", included: false },
+        { text: "Premium Ticket / Premium tiket", included: false },
+        { text: "Ad-free experience / Bez reklama", included: false },
       ],
     },
     {
       id: "premium",
       name: "Premium",
       price: "€14.99",
-      period: "/month",
-       description: "Full access to all predictions",
-      buttonText: "Get Premium",
+      period: "/month / /mesecno",
+       description: "Full access to all predictions / Potpun pristup svim predikcijama",
+      buttonText: "Get Premium / Preuzmi Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Premium Features", included: true },
-        { text: "All Free & Premium Predictions", included: true },
-        { text: "Daily Free & Premium Tickets", included: true },
-        { text: "Live Scores & League Standings", included: true },
-        { text: "All Free & Premium Tips", included: true },
-        { text: "VIP Match Analysis", included: true },
-        { text: "Full AI Analysis", included: true },
-        { text: "Unlimited Match Previews", included: true },
-        { text: "Priority Support", included: true },
-        { text: "Ad-Free Experience", included: true },
+        { text: "All Premium Features / Sve Premium funkcije", included: true },
+        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
+        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
+        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
+        { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
+        { text: "Full AI Analysis / Puna AI analiza", included: true },
+        { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
+        { text: "Priority Support / Prioritetna podrška", included: true },
+        { text: "Ad-Free Experience / Bez reklama", included: true },
       ],
     },
   ],
   annual: [
     {
       id: "free",
-      name: "Free",
+      name: "Free / Besplatno",
       price: "€0",
-      period: "/forever",
-      description: "Watch ads to access daily predictions",
-      buttonText: "Current Plan",
+      period: "/forever / /zauvek",
+      description: "Watch ads to access daily predictions / Gledaj reklame za dnevne predikcije",
+      buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Daily Predictions (watch ads to access)", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "Basic predictions", included: true },
-        { text: "Match Previews", included: false },
-        { text: "Premium Insights", included: false },
-        { text: "Premium Ticket", included: false },
-        { text: "Ad-free experience", included: false },
+        { text: "Daily Predictions (watch ads to access) / Dnevne predikcije (gledaj reklame)", included: true },
+        { text: "Live scores / Rezultati uživo", included: true },
+        { text: "League standings / Tabela liga", included: true },
+        { text: "Basic predictions / Osnovne predikcije", included: true },
+        { text: "Match Previews / Pregledi utakmica", included: false },
+        { text: "Premium Insights / Premium uvidi", included: false },
+        { text: "Premium Ticket / Premium tiket", included: false },
+        { text: "Ad-free experience / Bez reklama", included: false },
       ],
     },
     {
       id: "premium",
       name: "Premium",
       price: "€119.99",
-      period: "/year",
-      savings: "€10.00/mo · Save 33%",
-      description: "Full access to all predictions",
-      buttonText: "Get Premium",
+      period: "/year / /godišnje",
+      savings: "€10.00/mo · Save 33% / €10.00/mes · Uštedi 33%",
+      description: "Full access to all predictions / Potpun pristup svim predikcijama",
+      buttonText: "Get Premium / Preuzmi Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Premium Features", included: true },
-        { text: "All Free & Premium Predictions", included: true },
-        { text: "Daily Free & Premium Tickets", included: true },
-        { text: "Live Scores & League Standings", included: true },
-        { text: "All Free & Premium Tips", included: true },
-        { text: "VIP Match Analysis", included: true },
-        { text: "Full AI Analysis", included: true },
-        { text: "Unlimited Match Previews", included: true },
-        { text: "Priority Support", included: true },
-        { text: "Ad-Free Experience", included: true },
+        { text: "All Premium Features / Sve Premium funkcije", included: true },
+        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
+        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
+        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
+        { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
+        { text: "Full AI Analysis / Puna AI analiza", included: true },
+        { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
+        { text: "Priority Support / Prioritetna podrška", included: true },
+        { text: "Ad-Free Experience / Bez reklama", included: true },
       ],
     },
   ],
@@ -140,104 +140,104 @@ const webPlans = {
   monthly: [
     {
       id: "free",
-      name: "Free",
+      name: "Free / Besplatno",
       price: "€0",
-      period: "/forever",
-      description: "Basic access to get started",
-      buttonText: "Current Plan",
+      period: "/forever / /zauvek",
+      description: "Basic access to get started / Osnovni pristup za početak",
+      buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-         { text: "Full access to Daily Predictions", included: true },
-        { text: "Free AI Basic predictions", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "Ads supported", included: true },
-        { text: "Match Previews", included: false },
-        { text: "Exclusive content", included: false },
-        { text: "Premium content", included: false },
+         { text: "Full access to Daily Predictions / Potpun pristup dnevnim predikcijama", included: true },
+        { text: "Free AI Basic predictions / Besplatne osnovne AI predikcije", included: true },
+        { text: "Live scores / Rezultati uživo", included: true },
+        { text: "League standings / Tabela liga", included: true },
+        { text: "Ads supported / Podržano reklamama", included: true },
+        { text: "Match Previews / Pregledi utakmica", included: false },
+        { text: "Exclusive content / Ekskluzivni sadržaj", included: false },
+        { text: "Premium content / Premium sadržaj", included: false },
       ],
     },
     {
       id: "premium",
       name: "Premium",
       price: "€14.99",
-      period: "/month",
-      description: "Full access to all content",
-      buttonText: "Get Premium",
+      period: "/month / /mesecno",
+      description: "Full access to all content / Potpun pristup svim sadržajima",
+      buttonText: "Get Premium / Preuzmi Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Premium Features", included: true },
-        { text: "All Free & Premium Predictions", included: true },
-        { text: "Daily Free & Premium Tickets", included: true },
-        { text: "Live Scores & League Standings", included: true },
-        { text: "All Free & Premium Tips", included: true },
-        { text: "VIP Match Analysis", included: true },
-        { text: "Full AI Analysis", included: true },
-        { text: "Unlimited Match Previews", included: true },
-        { text: "Priority Support", included: true },
-        { text: "Ad-Free Experience", included: true },
+        { text: "All Premium Features / Sve Premium funkcije", included: true },
+        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
+        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
+        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
+        { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
+        { text: "Full AI Analysis / Puna AI analiza", included: true },
+        { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
+        { text: "Priority Support / Prioritetna podrška", included: true },
+        { text: "Ad-Free Experience / Bez reklama", included: true },
       ],
     },
   ],
   annual: [
     {
       id: "free",
-      name: "Free",
+      name: "Free / Besplatno",
       price: "€0",
-      period: "/forever",
-      description: "Basic access to get started",
-      buttonText: "Current Plan",
+      period: "/forever / /zauvek",
+      description: "Basic access to get started / Osnovni pristup za početak",
+      buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Full access to Daily Predictions", included: true },
-        { text: "Free AI Basic predictions", included: true },
-        { text: "Live scores", included: true },
-        { text: "League standings", included: true },
-        { text: "Ads supported", included: true },
-        { text: "Match Previews", included: false },
-        { text: "Exclusive content", included: false },
-        { text: "Premium content", included: false },
+        { text: "Full access to Daily Predictions / Potpun pristup dnevnim predikcijama", included: true },
+        { text: "Free AI Basic predictions / Besplatne osnovne AI predikcije", included: true },
+        { text: "Live scores / Rezultati uživo", included: true },
+        { text: "League standings / Tabela liga", included: true },
+        { text: "Ads supported / Podržano reklamama", included: true },
+        { text: "Match Previews / Pregledi utakmica", included: false },
+        { text: "Exclusive content / Ekskluzivni sadržaj", included: false },
+        { text: "Premium content / Premium sadržaj", included: false },
       ],
     },
     {
       id: "premium",
       name: "Premium",
       price: "€119.99",
-      period: "/year",
-      savings: "€10.00/mo · Save 33%",
-      description: "Full access to all content",
-      buttonText: "Get Premium",
+      period: "/year / /godišnje",
+      savings: "€10.00/mo · Save 33% / €10.00/mes · Uštedi 33%",
+      description: "Full access to all content / Potpun pristup svim sadržajima",
+      buttonText: "Get Premium / Preuzmi Premium",
       buttonVariant: "default" as const,
       features: [
-        { text: "All Premium Features", included: true },
-        { text: "All Free & Premium Predictions", included: true },
-        { text: "Daily Free & Premium Tickets", included: true },
-        { text: "Live Scores & League Standings", included: true },
-        { text: "All Free & Premium Tips", included: true },
-        { text: "VIP Match Analysis", included: true },
-        { text: "Full AI Analysis", included: true },
-        { text: "Unlimited Match Previews", included: true },
-        { text: "Priority Support", included: true },
-        { text: "Ad-Free Experience", included: true },
+        { text: "All Premium Features / Sve Premium funkcije", included: true },
+        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
+        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
+        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
+        { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
+        { text: "Full AI Analysis / Puna AI analiza", included: true },
+        { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
+        { text: "Priority Support / Prioritetna podrška", included: true },
+        { text: "Ad-Free Experience / Bez reklama", included: true },
       ],
     },
   ],
 };
 
 const benefits = [
-  { icon: Target, title: "Premium AI Predictions", description: "AI analysis with 90%+ historical accuracy" },
-  { icon: Zap, title: "VIP Tickets", description: "Curated multi-match AI analysis and insights" },
-  { icon: Brain, title: "Full AI Analysis", description: "Complete AI-powered match analysis and insights" },
-  { icon: Bell, title: "Real-time Alerts", description: "Instant notifications for new predictions" },
-  { icon: Clock, title: "Priority Access", description: "Get insights before match kickoff" },
-  { icon: Shield, title: "Flexible & Risk-Free", description: "Cancel or switch plans anytime, no questions asked" },
+  { icon: Target, title: "Premium AI Predictions / Premium AI predikcije", description: "AI analysis with 90%+ historical accuracy / AI analiza sa 90%+ tačnosti" },
+  { icon: Zap, title: "VIP Tickets / VIP tiketi", description: "Curated multi-match AI analysis and insights / Odabrana multi-match AI analiza i uvidi" },
+  { icon: Brain, title: "Full AI Analysis / Puna AI analiza", description: "Complete AI-powered match analysis and insights / Kompletna AI analiza utakmica i uvidi" },
+  { icon: Bell, title: "Real-time Alerts / Obaveštenja uživo", description: "Instant notifications for new predictions / Trenutna obaveštenja za nove predikcije" },
+  { icon: Clock, title: "Priority Access / Prioritetan pristup", description: "Get insights before match kickoff / Uvidi pre početka utakmice" },
+  { icon: Shield, title: "Flexible & Risk-Free / Fleksibilno i bez rizika", description: "Cancel or switch plans anytime, no questions asked / Otkaži ili promeni plan u bilo kom trenutku" },
 ];
 
 const stats = [
-  { value: "92%", label: "Prediction Accuracy" },
-  { value: "10K+", label: "Active Users" },
-  { value: "500+", label: "Daily Analyses" },
-  { value: "4.9", label: "User Rating", isStar: true },
+  { value: "92%", label: "Prediction Accuracy / Tačnost predikcija" },
+  { value: "10K+", label: "Active Users / Aktivnih korisnika" },
+  { value: "500+", label: "Daily Analyses / Dnevnih analiza" },
+  { value: "4.9", label: "User Rating / Ocena korisnika", isStar: true },
 ];
 
 const testimonials = [
@@ -250,9 +250,9 @@ const testimonials = [
 ];
 
 const faqs = [
-  { question: "Can I cancel anytime?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period." },
-  { question: "How do Premium AI Predictions work?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics." },
-  { question: "Can I change my plan anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly." },
+  { question: "Can I cancel anytime? / Mogu li otkazati u bilo kom trenutku?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period. / Da, možeš otkazati pretplatu u bilo kom trenutku. Pristup ostaje do kraja obračunskog perioda." },
+  { question: "How do Premium AI Predictions work? / Kako rade Premium AI predikcije?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics. / Naši AI modeli pružaju pažljivo odabrane predikcije sa detaljnom analizom za dublje razumevanje utakmica." },
+  { question: "Can I change my plan anytime? / Mogu li promeniti plan u bilo kom trenutku?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly. / Da, možeš nadograditi ili sniziti plan u bilo kom trenutku. Promene stupaju na snagu odmah." },
 ];
 
 function TestimonialsSlider() {
@@ -456,9 +456,9 @@ export default function GetPremium() {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
           <Crown className="h-6 w-6 text-warning" />
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade Your Experience / Nadogradi svoje iskustvo</h1>
         </div>
-        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that's right for you / Izaberi plan koji ti odgovara</p>
       </div>
 
       {/* Cross-platform subscription protection banners */}
@@ -549,7 +549,7 @@ export default function GetPremium() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Monthly
+            Monthly / Mesečno
           </button>
           <button
             onClick={() => setBillingPeriod("annual")}
@@ -559,8 +559,8 @@ export default function GetPremium() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Annual
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33%</Badge>
+            Annual / Godišnje
+            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33% / Uštedi 33%</Badge>
           </button>
         </div>
       </div>
@@ -586,7 +586,7 @@ export default function GetPremium() {
               {isPremium && (
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
                   <Crown className="h-2.5 w-2.5 mr-1" />
-                  Best Value
+                  Best Value / Najbolja vrednost
                 </Badge>
               )}
 
@@ -613,11 +613,11 @@ export default function GetPremium() {
                 onClick={() => handleSubscribe(plan.id)}
               >
                 {isLoading
-                  ? "Loading..."
+                  ? "Loading... / Učitavanje..."
                   : isCurrentPlan
-                  ? "Current Plan"
+                  ? "Current Plan / Trenutni plan"
                   : isFree
-                  ? (currentPlan === "free" ? "Current Plan" : "Free Plan")
+                  ? (currentPlan === "free" ? "Current Plan / Trenutni plan" : "Free Plan / Besplatan plan")
                   : plan.buttonText
                 }
               </Button>
@@ -644,7 +644,7 @@ export default function GetPremium() {
       {/* Why Go Premium Section */}
       <div className="space-y-3">
         <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">
-          Why Go Premium?
+          Why Go Premium? / Zašto Premium?
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {benefits.map((benefit, index) => (
@@ -670,7 +670,7 @@ export default function GetPremium() {
 
       {/* Animated Social Proof Text */}
       <p className="text-center text-xs sm:text-sm text-primary/90 font-medium animate-fade-in">
-        Join 10,000+ smart users improving their prediction accuracy daily.
+        Join 10,000+ smart users improving their prediction accuracy daily. / Pridruži se 10,000+ pametnih korisnika koji unapređuju tačnost predikcija svaki dan.
       </p>
 
       {/* Stats Row */}
@@ -703,8 +703,8 @@ export default function GetPremium() {
       {!isAndroidApp && (
         <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg overflow-hidden">
           <div className="text-center space-y-2">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Download the App</h2>
-            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile</p>
+            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Download the App / Preuzmi aplikaciju</h2>
+            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile / Doživi pun ProPredict doživljaj na mobilnom</p>
           </div>
 
           {/* App Banner Image */}
@@ -719,9 +719,9 @@ export default function GetPremium() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { emoji: "⚡", title: "Faster predictions", desc: "Instant push notifications" },
-              { emoji: "📊", title: "Full match insights", desc: "Live stats & analysis" },
-              { emoji: "🔒", title: "Exclusive PRO tips", desc: "Daily & Premium access" },
+              { emoji: "⚡", title: "Faster predictions / Brže predikcije", desc: "Instant push notifications / Trenutna push obaveštenja" },
+              { emoji: "📊", title: "Full match insights / Puni uvidi utakmica", desc: "Live stats & analysis / Uživo statistika i analiza" },
+              { emoji: "🔒", title: "Exclusive PRO tips / Ekskluzivni PRO tipovi", desc: "Daily & Premium access / Dnevni i Premium pristup" },
             ].map((f) => (
               <div key={f.title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
                 <span className="text-xl mt-0.5">{f.emoji}</span>
@@ -738,7 +738,7 @@ export default function GetPremium() {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 text-warning fill-warning" />
               ))}
-              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users</span>
+              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users / Poverenje 1,000+ korisnika</span>
             </div>
 
             <a
@@ -747,7 +747,7 @@ export default function GetPremium() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm transition-opacity shadow-lg shadow-violet-500/20"
             >
-              👉 Download Now
+              👉 Download Now / Preuzmi odmah
             </a>
           </div>
         </div>
@@ -755,7 +755,7 @@ export default function GetPremium() {
 
       {/* FAQ Section */}
       <div className="space-y-4">
-        <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions</h2>
+        <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions / Često postavljana pitanja</h2>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq, index) => (
             <AccordionItem
@@ -786,20 +786,20 @@ export default function GetPremium() {
               if (android?.restorePurchases) {
                 console.log("[Android] restorePurchases called");
                 android.restorePurchases();
-                toast.info("Restoring purchases…");
+                toast.info("Restoring purchases… / Obnavljanje kupovina…");
               } else {
-                toast.error("Restore not available on this device.");
+                toast.error("Restore not available on this device. / Obnavljanje nije dostupno na ovom uređaju.");
               }
             }}
           >
-            Restore Purchases
+            Restore Purchases / Obnovi kupovine
           </Button>
         </div>
       )}
 
       {/* Footer CTA */}
       <p className="text-center text-xs text-muted-foreground">
-        Choose package and unlock premium features.
+        Choose package and unlock premium features. / Izaberi paket i otključaj premium funkcije.
       </p>
     </div>
     </>
