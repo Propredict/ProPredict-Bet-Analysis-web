@@ -180,7 +180,7 @@ const Login = () => {
                     to="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    Forgot your password?
+                    Forgot your password? / Zaboravili ste lozinku?
                   </Link>
                 )}
               </div>
