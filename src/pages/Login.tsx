@@ -147,7 +147,7 @@ const Login = () => {
           <CardDescription>
             {isSignUp
               ? "Enter your email to create your account"
-              : "Sign In and get FREE access to AI predictions"}
+              : "Logiraj se i pogledaj besplatne predikcije"}
           </CardDescription>
         </CardHeader>
 

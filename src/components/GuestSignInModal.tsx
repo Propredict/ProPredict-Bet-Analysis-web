@@ -64,7 +64,7 @@ export const GuestSignInModal = forwardRef<HTMLDivElement>((_, ref) => {
 
         <div className="p-6 pt-8">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 text-center leading-snug mb-6">
-            Sign In and get FREE access to AI predictions
+            Logiraj se i pogledaj besplatne predikcije
           </DialogTitle>
 
           <div className="space-y-3">
@@ -72,14 +72,14 @@ export const GuestSignInModal = forwardRef<HTMLDivElement>((_, ref) => {
               onClick={handleSignIn}
               className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl transition-colors"
             >
-              Sign in
+              Sign in / Logiraj se
             </Button>
 
             <button
               onClick={handleContinueAsGuest}
               className="w-full text-sm text-gray-500 hover:text-gray-700 transition-colors py-2"
             >
-              Continue as guest
+              Continue as guest / Produži kao gost
             </button>
           </div>
         </div>
