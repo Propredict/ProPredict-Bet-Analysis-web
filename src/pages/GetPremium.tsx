@@ -755,7 +755,7 @@ export default function GetPremium() {
 
       {/* FAQ Section */}
       <div className="space-y-4">
-        <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions</h2>
+        <h2 className="text-sm sm:text-base font-semibold text-foreground text-center">Frequently Asked Questions / Često postavljana pitanja</h2>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq, index) => (
             <AccordionItem
