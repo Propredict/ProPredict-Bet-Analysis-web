@@ -77,7 +77,7 @@ export function SureOddsDashboardSection() {
             <div>
               <h2 className="text-sm font-semibold sm:text-lg text-amber-400">Sure Odds 2+</h2>
               <p className="text-[9px] sm:text-[10px] text-foreground/80">
-                Today's high-confidence ticket with 2.00+ total odds
+                Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
               </p>
             </div>
           </div>
