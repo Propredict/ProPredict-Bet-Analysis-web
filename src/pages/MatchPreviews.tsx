@@ -538,7 +538,7 @@ export default function MatchPreviews() {
                       {isFreeUser ? (
                         <>
                           <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                          💎 Get This Winning Pick
+                          💎 Get This Winning Pick / Pogledaj Celosnu Analizu i Tip
                         </>
                       ) : (
                         <>
