@@ -156,10 +156,10 @@ export function FreeUserUpsellModal() {
           {/* Feature grid */}
           <div className="w-full grid grid-cols-4 gap-px rounded-xl border border-amber-500/25 bg-black/40 overflow-hidden">
             {[
-              { icon: "🎯", top: "HIGH ODDS", bottom: "> 2.00", accent: true },
-              { icon: "🛡️", top: "CAREFULLY", bottom: "SELECTED" },
-              { icon: "📊", top: "FULL MATCH", bottom: "ANALYSIS" },
-              { icon: "🔥", top: "HOT PICKS", bottom: "DAILY" },
+              { icon: "🎯", top: "HIGH ODDS / VISOKA KVOTA", bottom: "> 2.00", accent: true },
+              { icon: "🛡️", top: "CAREFULLY / PAŽLJIVO", bottom: "SELECTED / IZABRANO" },
+              { icon: "📊", top: "FULL MATCH / PUNA", bottom: "ANALYSIS / ANALIZA" },
+              { icon: "🔥", top: "HOT PICKS / VRUĆI IZBORI", bottom: "DAILY / DNEVNO" },
             ].map((f) => (
               <div key={f.top} className="flex flex-col items-center gap-1 py-2.5 px-1">
                 <span className="text-base leading-none">{f.icon}</span>
