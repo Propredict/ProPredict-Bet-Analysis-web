@@ -93,10 +93,27 @@ export default function FootballPredictionsToday() {
   const joinedThisWeek = useLiveCount(2100, 300);
 
   const { confirmAndEnter } = useWebGate();
+  const [autoEnterIn, setAutoEnterIn] = useState(12);
 
   const handleContinueWeb = () => {
     confirmAndEnter();
   };
+
+  // Auto-continue to web after 12s for guests who don't interact
+  useEffect(() => {
+    if (user) return;
+    const iv = setInterval(() => {
+      setAutoEnterIn((s) => {
+        if (s <= 1) {
+          clearInterval(iv);
+          confirmAndEnter();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [user, confirmAndEnter]);
 
   useEffect(() => {
     const fetchMatches = async () => {
