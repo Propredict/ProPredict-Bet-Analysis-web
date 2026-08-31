@@ -1293,7 +1293,7 @@ export default function AIPredictions() {
                                 </div>
                                 <div className="flex items-center gap-1.5 py-1 px-2 rounded bg-amber-500/5 border border-amber-500/15">
                                   <Lock className="w-3 h-3 text-amber-400" />
-                                  <span className="text-[9px] font-medium text-amber-400/90">🔒 Unlock this prediction</span>
+                                  <span className="text-[9px] font-medium text-amber-400/90">🔒 Unlock this prediction / Otključaj ovu predikciju</span>
                                 </div>
                                 <p className="text-[8px] text-amber-400/60 pl-0.5">📊 Solid value detected</p>
                                 <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
@@ -1310,14 +1310,14 @@ export default function AIPredictions() {
                                   className="w-full h-7 text-[10px] bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                                 >
                                   <Star className="w-3 h-3 fill-current" />
-                                  👑 Get Full Access
+                                  👑 Get Full Access / Otključaj pun pristup
                                 </Button>
                                 {!isAndroidApp && (
                                   <button
                                     className="w-full text-[10px] text-primary/80 hover:text-primary font-medium flex items-center justify-center gap-1 py-1 mt-1 transition-colors"
                                     onClick={() => setFreeInAppOpen(true)}
                                   >
-                                    🎥 or unlock FREE in app
+                                    🎥 or unlock FREE in app / ili otključaj BESPLATNO u aplikaciji
                                   </button>
                                 )}
                               </div>
@@ -1329,14 +1329,14 @@ export default function AIPredictions() {
                   {/* Web only: show "+X more" and Premium hint */}
                   {!isAndroidApp && tierCounts.pro > 3 && (
                     <p className="text-center text-[10px] text-amber-400/70 mt-2">
-                      +{tierCounts.pro - 3} more premium picks available
+                      +{tierCounts.pro - 3} more premium picks available / +{tierCounts.pro - 3} dodatnih premium izbora dostupno
                     </p>
                   )}
                   {!isAndroidApp && (
                     <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-fuchsia-500/5 border border-fuchsia-500/10">
                       <Crown className="w-3 h-3 text-fuchsia-400" />
                       <span className="text-[9px] md:text-[10px] text-muted-foreground">
-                        💎 <span className="text-fuchsia-400 font-semibold">Premium has higher confidence picks today</span>
+                        💎 <span className="text-fuchsia-400 font-semibold">Premium has higher confidence picks today / Premium ima sigurnije izbore danas</span>
                       </span>
                       <Button
                         variant="ghost"

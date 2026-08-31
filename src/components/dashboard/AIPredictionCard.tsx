@@ -70,7 +70,7 @@ function getTierBadge(tier: ContentTier) {
 function getUnlockButtonText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "unlocked") return "";
   if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
-  if (unlockMethod.type === "upgrade_basic") return "Get Full Access";
+  if (unlockMethod.type === "upgrade_basic") return "Get Full Access / Otključaj pun pristup";
   if (unlockMethod.type === "upgrade_premium") return "Premium Access Required / Potreban je Premium pristup";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock / Logiraj se i otključaj";
   return "";
