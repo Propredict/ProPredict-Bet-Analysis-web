@@ -71,7 +71,7 @@ function getTierBadge(tier: ContentTier) {
 function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string {
   if (unlockMethod.type === "unlocked") return "";
   if (override) return override;
-  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock";
+  if (unlockMethod.type === "watch_ad") return "Watch Ad to Unlock / Otključaj posle reklame";
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";

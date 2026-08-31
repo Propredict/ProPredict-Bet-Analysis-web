@@ -170,7 +170,7 @@ function PredictionCard({
               <Play className="h-3 w-3 text-white fill-current" />
             )}
             <span className="text-[10px] font-bold text-white uppercase tracking-wider">
-              {isUnlocking ? "Loading…" : "Watch Ad to Unlock"}
+              {isUnlocking ? "Loading…" : "Watch Ad to Unlock / Otključaj posle reklame"}
             </span>
           </button>
         </div>

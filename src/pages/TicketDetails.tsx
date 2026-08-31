@@ -260,7 +260,7 @@ export default function TicketDetails() {
       },
       watch_ad: {
         icon: Sparkles,
-        text: "Watch Ad to Unlock",
+        text: "Watch Ad to Unlock / Otključaj posle reklame",
         className: "bg-primary hover:bg-primary/90 text-white border-0",
         variant: "default" as const,
       },

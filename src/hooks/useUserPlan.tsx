@@ -385,15 +385,15 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
         if (plan === "free") {
           // Daily content: Watch Ad only
           if (tier === "daily") {
-            return { type: "watch_ad", message: "Watch Ad to Unlock" };
+            return { type: "watch_ad", message: "Watch Ad to Unlock / Otključaj posle reklame" };
           }
           
           // Exclusive/Pro content: Watch Ad + Get Sure Odds 2+ option
           if (tier === "exclusive") {
             return { 
               type: "android_watch_ad_or_pro", 
-              primaryMessage: "Watch Ad to Unlock",
-              secondaryMessage: "Unlock Tip"
+              primaryMessage: "Watch Ad to Unlock / Otključaj posle reklame",
+              secondaryMessage: "Unlock Tip / Otključaj Tip"
             };
           }
           
