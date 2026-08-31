@@ -150,20 +150,20 @@ export default function ExclusiveTickets() {
           <div>
             <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Sure Odds 2+</h1>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              Today's high-confidence ticket with 2.00+ total odds
+              Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
             </p>
           </div>
         </div>
         {hasTicketAccess ? (
           <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
-            Unlocked today
+            Unlocked today / Otključano danas
           </Badge>
         ) : (
           <Button
             className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
             onClick={handleBuyDailyTicket}
           >
-            One Day Offer – {SURE_ODDS_PRICE_LABEL}
+            One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
           </Button>
         )}
       </div>
