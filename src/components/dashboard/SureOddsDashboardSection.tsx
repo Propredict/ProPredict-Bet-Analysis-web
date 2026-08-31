@@ -88,7 +88,7 @@ export function SureOddsDashboardSection() {
               onClick={() => navigate("/sure-odds")}
             >
               <Ticket className="h-3.5 w-3.5 mr-1" />
-              See Ticket
+              See Ticket / Pogledaj tiket
             </Button>
           ) : (
             <Button
@@ -96,7 +96,7 @@ export function SureOddsDashboardSection() {
               className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
               onClick={handleBuyDailyTicket}
             >
-              One Day Offer – {SURE_ODDS_PRICE_LABEL}
+              One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
             </Button>
           )}
         </div>
