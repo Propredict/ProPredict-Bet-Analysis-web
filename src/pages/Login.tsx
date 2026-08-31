@@ -142,12 +142,14 @@ const Login = () => {
             <img src={logo} alt="ProPredict" className="h-full w-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            {isSignUp ? "Create an account" : "Welcome to ProPredict"}
+            {isSignUp
+              ? "Create an account / Kreiraj profil"
+              : "Welcome to ProPredict / Dobrodošli u ProPredict"}
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Enter your email to create your account"
-              : "Logiraj se i pogledaj besplatne predikcije"}
+              ? "Enter your email to create your account / Unesi email da kreiraš profil"
+              : "Login and check all predictions / Logiraj se i pogledaj sve predikcije"}
           </CardDescription>
         </CardHeader>
 
