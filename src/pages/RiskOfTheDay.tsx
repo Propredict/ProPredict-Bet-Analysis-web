@@ -189,7 +189,7 @@ export default function RiskOfTheDay() {
                       onUnlockClick={() => handleUnlock("tip", tip.id, accessTier)}
                       onSecondaryUnlock={() => setFreeInAppOpen(true)}
                       isUnlocking={isUnlocking}
-                     lockedCTAText="See now / Pogledaj tip"
+                     lockedCTAText="See now / Pogledaj Tip"
                      lockedCTABrand="pro"
                      lockedLabel="Risk of the Day"
                     />

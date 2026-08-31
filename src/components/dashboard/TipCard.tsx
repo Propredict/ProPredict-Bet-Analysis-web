@@ -75,7 +75,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
   if (unlockMethod.type === "android_watch_ad_or_pro") return unlockMethod.primaryMessage;
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "🔓 Unlock this winning pick";
-  if (unlockMethod.type === "upgrade_premium") return "💎 See now / Pogledaj tip";
+  if (unlockMethod.type === "upgrade_premium") return "💎 See now / Pogledaj Tip";
   if (unlockMethod.type === "login_required") return "Sign in to Unlock / Logiraj se i otključaj";
   return "";
 }
