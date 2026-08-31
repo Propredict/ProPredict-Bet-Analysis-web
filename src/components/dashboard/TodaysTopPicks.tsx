@@ -174,7 +174,7 @@ export function TodaysTopPicks() {
                           disabled={isUnlocking}
                         >
                           {isUnlocking ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
-                          Watch Ad to Unlock
+                          Watch Ad to Unlock / Otključaj posle reklame
                         </Button>
                         <button
                           onClick={() => navigate("/get-premium")}
