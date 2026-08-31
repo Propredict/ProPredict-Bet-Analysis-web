@@ -171,7 +171,7 @@ export default function ExclusiveTickets() {
       {/* Description */}
       <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
         <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Sure Odds 2+ is a one-time daily purchase. Unlock today's ticket for {SURE_ODDS_PRICE_LABEL} and it stays open until midnight (Europe/Belgrade). Premium members get it included at no extra cost.
+          Sure Odds 2+ is a one-time daily purchase. Unlock today's ticket for {SURE_ODDS_PRICE_LABEL} and it stays open until midnight (Europe/Belgrade). Premium members get it included at no extra cost. / Sure Odds 2+ je jednokratna dnevna kupovina. Otključaj današnji tiket za {SURE_ODDS_PRICE_LABEL} i ostaje otvoren do ponoći (Evropa/Beograd). Premium članovi dobijaju ga uključen bez dodatnog troška.
         </p>
       </Card>
 
