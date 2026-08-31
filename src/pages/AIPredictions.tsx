@@ -1046,7 +1046,7 @@ export default function AIPredictions() {
                             PREMIUM ONLY
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-2 leading-tight">
-                            Unlock to see our AI's most confident pick
+                            Unlock to see our AI's most confident pick / Otključaj da vidiš naš najsigurniji AI izbor
                           </p>
                         </div>
                       </div>
@@ -1054,7 +1054,7 @@ export default function AIPredictions() {
                       {/* Mobile-only lock badge */}
                       <div className="md:hidden flex items-center justify-center gap-2 mt-3 py-1.5 rounded-full bg-fuchsia-500/15 border border-fuchsia-400/30 text-fuchsia-200 text-xs font-bold">
                         <Lock className="w-3 h-3" />
-                        PREMIUM ONLY — Unlock to see AI pick
+                        PREMIUM ONLY — Unlock to see AI pick / Otključaj da vidiš AI izbor
                       </div>
 
                       {/* Unlock CTA */}
@@ -1063,7 +1063,7 @@ export default function AIPredictions() {
                         className="w-full mt-3 md:mt-4 h-11 md:h-12 text-sm md:text-base font-black bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-95 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-xl gap-2 animate-cta-blink"
                       >
                         <Lock className="w-4 h-4 md:w-5 md:h-5" />
-                        Unlock this Diamond Pick
+                        Unlock this Diamond Pick / Otključaj ovaj Diamond Pick
                         <span className="ml-auto text-lg">💎</span>
                       </Button>
 
@@ -1115,7 +1115,7 @@ export default function AIPredictions() {
                         className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-full gap-1.5"
                       >
                         <Crown className="w-3.5 h-3.5" />
-                        Unlock with Premium
+                        Unlock with Premium / Otključaj sa Premiumom
                       </Button>
                     </div>
                   </div>
