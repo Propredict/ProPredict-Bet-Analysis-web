@@ -264,7 +264,9 @@ const Login = () => {
         <CardFooter className="flex flex-col gap-4">
           <div className="text-center w-full space-y-1">
             <p className="text-base font-semibold text-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              {isSignUp
+                ? "Already have an account? / Već imaš profil?"
+                : "Don't have an account? / Nemaš profil?"}
             </p>
             <button
               type="button"
@@ -272,7 +274,9 @@ const Login = () => {
               className="text-primary hover:underline font-bold text-base"
               disabled={isLoading}
             >
-              {isSignUp ? "Sign In to your account" : "Sign Up and create account"}
+              {isSignUp
+                ? "Sign In to your account / Uloguj se"
+                : "Sign Up and create account / Kreiraj profil"}
             </button>
           </div>
           
