@@ -295,9 +295,9 @@ export function TopAIPicksSection({
               <Lock className="w-4 h-4 text-fuchsia-400 shrink-0" />
               <p className="text-xs md:text-sm text-foreground">
                 <span className="font-semibold text-fuchsia-300">
-                  +{lockedCount} more elite picks
+                  +{lockedCount} more elite picks / +{lockedCount} dodatnih elite izbora
                 </span>{" "}
-                available with Pro & Premium
+                available with Pro & Premium / dostupno sa Pro & Premium
               </p>
             </div>
             <Button
@@ -306,7 +306,7 @@ export function TopAIPicksSection({
               className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white border-0 shadow-md shadow-fuchsia-500/30 h-8 text-xs"
             >
               <Crown className="w-3 h-3 mr-1 fill-current" />
-              Upgrade for {lockedCount} more
+              Upgrade for {lockedCount} more / Nadogradi za još {lockedCount}
             </Button>
           </div>
         )}
