@@ -586,7 +586,7 @@ export default function GetPremium() {
               {isPremium && (
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
                   <Crown className="h-2.5 w-2.5 mr-1" />
-                  Best Value
+                  Best Value / Najbolja vrednost
                 </Badge>
               )}
 
