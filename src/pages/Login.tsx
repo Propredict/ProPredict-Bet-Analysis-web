@@ -142,12 +142,14 @@ const Login = () => {
             <img src={logo} alt="ProPredict" className="h-full w-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            {isSignUp ? "Create an account" : "Welcome to ProPredict"}
+            {isSignUp
+              ? "Create an account / Kreiraj profil"
+              : "Welcome to ProPredict / Dobrodošli u ProPredict"}
           </CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Enter your email to create your account"
-              : "Logiraj se i pogledaj besplatne predikcije"}
+              ? "Enter your email to create your account / Unesi email da kreiraš profil"
+              : "Login and check all predictions / Logiraj se i pogledaj sve predikcije"}
           </CardDescription>
         </CardHeader>
 
@@ -178,7 +180,7 @@ const Login = () => {
                     to="/forgot-password"
                     className="text-xs text-primary hover:underline"
                   >
-                    Forgot your password?
+                    Forgot your password? / Zaboravili ste lozinku?
                   </Link>
                 )}
               </div>
@@ -225,12 +227,12 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Please wait
+                  Please wait / Molimo sačekajte
                 </>
               ) : isSignUp ? (
-                "Sign Up"
+                "Sign Up / Kreiraj profil"
               ) : (
-                "Sign In"
+                "Sign In / Uloguj se"
               )}
             </Button>
           </form>
@@ -242,7 +244,7 @@ const Login = () => {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with / Ili nastavi sa</span>
                 </div>
               </div>
 
@@ -262,7 +264,9 @@ const Login = () => {
         <CardFooter className="flex flex-col gap-4">
           <div className="text-center w-full space-y-1">
             <p className="text-base font-semibold text-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              {isSignUp
+                ? "Already have an account? / Već imaš profil?"
+                : "Don't have an account? / Nemaš profil?"}
             </p>
             <button
               type="button"
@@ -270,7 +274,9 @@ const Login = () => {
               className="text-primary hover:underline font-bold text-base"
               disabled={isLoading}
             >
-              {isSignUp ? "Sign In to your account" : "Sign Up and create account"}
+              {isSignUp
+                ? "Sign In to your account / Uloguj se"
+                : "Sign Up and create account / Kreiraj profil"}
             </button>
           </div>
           
