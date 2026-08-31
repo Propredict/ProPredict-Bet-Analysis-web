@@ -201,6 +201,10 @@ type LeagueStatsResponse =
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
+// Daily cache key: queries are keyed by calendar day so each user hits the API
+// at most once per league per day, and tables refresh automatically next morning.
+const dayKey = new Date().toISOString().slice(0, 10);
+
 async function fetchLeagueStats(
   leagueId: string,
   type: LeagueStatsType,
@@ -231,7 +235,7 @@ async function fetchLeagueStats(
 
 export function useLeagueStandings(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "standings", leagueId, season],
+    queryKey: ["league-stats", "standings", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "standings", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -242,7 +246,7 @@ export function useLeagueStandings(leagueId: string, season: string = getCurrent
 
 export function useLeagueScorers(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "scorers", leagueId, season],
+    queryKey: ["league-stats", "scorers", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "scorers", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -253,7 +257,7 @@ export function useLeagueScorers(leagueId: string, season: string = getCurrentSe
 
 export function useLeagueAssists(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "assists", leagueId, season],
+    queryKey: ["league-stats", "assists", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "assists", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -264,7 +268,7 @@ export function useLeagueAssists(leagueId: string, season: string = getCurrentSe
 
 export function useLeagueFixtures(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "fixtures", leagueId, season],
+    queryKey: ["league-stats", "fixtures", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "fixtures", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -275,7 +279,7 @@ export function useLeagueFixtures(leagueId: string, season: string = getCurrentS
 
 export function useLeagueRounds(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "rounds", leagueId, season],
+    queryKey: ["league-stats", "rounds", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "rounds", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -286,7 +290,7 @@ export function useLeagueRounds(leagueId: string, season: string = getCurrentSea
 
 export function useLeaguePlayers(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "players", leagueId, season],
+    queryKey: ["league-stats", "players", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "players", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -297,7 +301,7 @@ export function useLeaguePlayers(leagueId: string, season: string = getCurrentSe
 
 export function useLeagueInjuries(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "injuries", leagueId, season],
+    queryKey: ["league-stats", "injuries", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "injuries", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -308,7 +312,7 @@ export function useLeagueInjuries(leagueId: string, season: string = getCurrentS
 
 export function useLeagueYellowCards(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "yellowcards", leagueId, season],
+    queryKey: ["league-stats", "yellowcards", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "yellowcards", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -319,7 +323,7 @@ export function useLeagueYellowCards(leagueId: string, season: string = getCurre
 
 export function useLeagueRedCards(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "redcards", leagueId, season],
+    queryKey: ["league-stats", "redcards", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "redcards", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
@@ -330,7 +334,7 @@ export function useLeagueRedCards(leagueId: string, season: string = getCurrentS
 
 export function useLeagueSquads(leagueId: string, season: string = getCurrentSeason()) {
   return useQuery({
-    queryKey: ["league-stats", "squads", leagueId, season],
+    queryKey: ["league-stats", "squads", leagueId, season, dayKey],
     queryFn: () => fetchLeagueStats(leagueId, "squads", season),
     enabled: !!leagueId && leagueId !== "all",
     staleTime: 24 * 60 * 60 * 1000,
