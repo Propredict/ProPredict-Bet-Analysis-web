@@ -1115,7 +1115,7 @@ export default function AIPredictions() {
                         className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-fuchsia-500/40 rounded-full gap-1.5"
                       >
                         <Crown className="w-3.5 h-3.5" />
-                        Unlock with Premium / Otključaj sa Premiumom
+                        Unlock with Premium / Otključaj sa Premium
                       </Button>
                     </div>
                   </div>
@@ -1424,7 +1424,7 @@ export default function AIPredictions() {
                                   className="w-full h-7 text-[10px] bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded gap-1"
                                 >
                                   <Crown className="w-3 h-3 fill-current" />
-                                  💎 Unlock Premium Picks
+                                  💎 Unlock Premium Picks / Otključaj premium predikciju
                                 </Button>
                               </div>
                             </CardContent>
