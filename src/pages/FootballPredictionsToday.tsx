@@ -178,7 +178,7 @@ export default function FootballPredictionsToday() {
                 onClick={handleContinueWeb}
                 className="px-6 py-2.5 rounded-xl border border-gray-600 hover:border-emerald-500/50 text-gray-300 hover:text-white text-sm font-medium transition-colors"
               >
-                Continue on Web →
+                Continue on Web →{!user && autoEnterIn > 0 ? ` (${autoEnterIn}s)` : ""}
               </button>
             </div>
             <p className="text-[10px] text-gray-600">Free access • No signup required</p>
