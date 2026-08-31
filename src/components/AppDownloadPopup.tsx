@@ -56,11 +56,10 @@ export function AppDownloadPopup() {
 
           {/* Headline */}
           <h3 className="text-2xl font-black uppercase tracking-tight leading-none text-foreground">
-            Don't miss today's / Ne propusti današnje
+            Don't miss today's free tips
           </h3>
-          <h3 className="text-3xl font-black uppercase tracking-tight leading-none mt-1">
-            <span className="text-primary">FREE</span>
-            <span className="text-foreground"> tips! / tipove!</span>
+          <h3 className="text-2xl font-black uppercase tracking-tight leading-none mt-1 text-primary">
+            Ne propustajte današnje free tipove
           </h3>
 
           <p className="mt-3 text-sm text-muted-foreground flex items-center justify-center gap-1.5">
