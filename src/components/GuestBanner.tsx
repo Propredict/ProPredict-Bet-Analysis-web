@@ -30,9 +30,9 @@ export function GuestBanner() {
             <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Full Access</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-foreground">Unlock Full Access / Otključaj pun pristup</h3>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              Sign in to access Daily Predictions, exclusive insights, and save your favorites.
+              Sign in to access Daily Predictions, exclusive insights, and save your favorites. / Uloguj se za pristup dnevnim predikcijama, ekskluzivnim uvidima i čuvanje omiljenih.
             </p>
           </div>
         </div>
@@ -43,7 +43,7 @@ export function GuestBanner() {
           size="sm"
         >
           <LogIn className="h-3 w-3" />
-          Sign In
+          Sign In / Uloguj se
         </Button>
       </div>
     </div>
