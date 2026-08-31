@@ -71,7 +71,7 @@ export function DiamondPickSection() {
                 onClick={() => navigate("/diamond-pick")}
                 className="block w-full text-center text-[11px] text-cyan-300/80 hover:text-cyan-300 font-semibold transition-colors"
               >
-                See all Diamond Picks →
+                See all Diamond Picks / Pogledaj sve Diamond Picks →
               </button>
             </div>
           ) : (
@@ -84,7 +84,7 @@ export function DiamondPickSection() {
                 className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)]"
                 onClick={() => navigate("/diamond-pick")}
               >
-                <Eye className="h-3.5 w-3.5 mr-1" /> See all Diamond Picks
+                <Eye className="h-3.5 w-3.5 mr-1" /> See all Diamond Picks / Pogledaj sve Diamond Picks
               </Button>
             </div>
           )}

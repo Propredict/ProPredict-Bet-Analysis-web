@@ -88,7 +88,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod): string {
   if (unlockMethod.type === "android_premium_only") return unlockMethod.message;
   if (unlockMethod.type === "upgrade_basic") return "Get Sure Odds 2+ or Premium";
   if (unlockMethod.type === "upgrade_premium") return "Get Premium";
-  if (unlockMethod.type === "login_required") return "Sign in to Unlock";
+  if (unlockMethod.type === "login_required") return "Sign in to Unlock / Logiraj se i otključaj";
   return "";
 }
 

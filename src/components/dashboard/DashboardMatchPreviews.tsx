@@ -108,7 +108,7 @@ export function DashboardMatchPreviews() {
             onClick={() => navigate("/match-previews")}
           >
             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            See all Top 30 AI Picks
+            See all Top 30 AI Picks / Pogledaj sve Top 30 AI Picks
             <ChevronRight className="h-3.5 w-3.5 ml-1" />
           </Button>
         </div>

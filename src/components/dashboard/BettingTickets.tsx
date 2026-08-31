@@ -124,9 +124,9 @@ export function BettingTickets() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily Ticket";
-      case "exclusive": return "See all Sure Odds 2+ Tickets";
-      case "premium": return "See all Premium Ticket";
+      case "daily": return "See all Daily Ticket / Pogledaj sve Daily Ticket";
+      case "exclusive": return "See all Sure Odds 2+ Tickets / Pogledaj sve Sure Odds 2+ Tickets";
+      case "premium": return "See all Premium Ticket / Pogledaj sve Premium Ticket";
     }
   };
 
@@ -188,7 +188,7 @@ export function BettingTickets() {
               badgeIcon={Sparkles}
               badgeLabel="Free"
               tone="free"
-              ctaLabel="See all Free Picks"
+              ctaLabel="See all Free Picks / Pogledaj sve Free Picks"
               onCta={() => navigate("/daily-predictions")}
               empty="No Daily AI Combos available"
               tickets={dailyTickets}
@@ -202,7 +202,7 @@ export function BettingTickets() {
               badgeIcon={Star}
               badgeLabel="⭐ Sure Odds 2+"
               tone="pro"
-              ctaLabel="See all Sure Odds 2+"
+              ctaLabel="See all Sure Odds 2+ / Pogledaj sve Sure Odds 2+"
               onCta={() => navigate("/exclusive-tickets")}
               empty="No Sure Odds 2+ Tickets available"
               tickets={proTickets}
@@ -217,7 +217,7 @@ export function BettingTickets() {
               badgeIcon={Crown}
               badgeLabel="👑 Premium"
               tone="premium"
-              ctaLabel="See all Premium Picks"
+              ctaLabel="See all Premium Picks / Pogledaj sve Premium Picks"
               onCta={() => navigate("/premium-predictions")}
               empty="No Premium AI Combos available"
               tickets={premiumTickets}

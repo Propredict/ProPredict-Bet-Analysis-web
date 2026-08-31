@@ -134,9 +134,9 @@ export function MatchPredictions() {
 
   const getCtaLabel = () => {
     switch (activeTab) {
-      case "daily": return "See all Daily Predictions";
-      case "exclusive": return "See all Premium Predictions";
-      case "premium": return "See all Premium Predictions";
+      case "daily": return "See all Daily Predictions / Pogledaj sve Daily Predictions";
+      case "exclusive": return "See all Premium Predictions / Pogledaj sve Premium Predictions";
+      case "premium": return "See all Premium Predictions / Pogledaj sve Premium Predictions";
     }
   };
 
@@ -212,7 +212,7 @@ export function MatchPredictions() {
               badgeIcon={Sparkles}
               badgeLabel="Free"
               tone="free"
-              ctaLabel="See all Daily Tips"
+              ctaLabel="See all Daily Tips / Pogledaj sve Daily Tips"
               onCta={() => navigate("/daily-analysis")}
               empty="No Daily predictions available"
               items={dailyTips}
@@ -242,7 +242,7 @@ export function MatchPredictions() {
                   className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
                   onClick={() => navigate("/top-picks")}
                 >
-                  <span>See all Top Picks</span>
+                  <span>See all Top Picks / Pogledaj sve Top Picks</span>
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </div>
@@ -271,7 +271,7 @@ export function MatchPredictions() {
                     className="px-5 group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-xs border-0 rounded-full"
                     onClick={() => navigate("/risk-of-the-day")}
                   >
-                    <span>See Risk of the Day</span>
+                    <span>See Risk of the Day / Pogledaj Risk dana</span>
                     <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </div>
@@ -301,7 +301,7 @@ export function MatchPredictions() {
                     className="px-5 group bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs border-0 rounded-full"
                     onClick={() => navigate("/diamond-pick")}
                   >
-                    <span>See Diamond Pick</span>
+                    <span>See Diamond Pick / Pogledaj Diamond Pick</span>
                     <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </div>
@@ -316,7 +316,7 @@ export function MatchPredictions() {
               badgeIcon={Crown}
               badgeLabel="👑 Premium"
               tone="premium"
-              ctaLabel="See all Premium Tips"
+              ctaLabel="See all Premium Tips / Pogledaj sve Premium Tips"
               onCta={() => navigate("/premium-analysis")}
               empty="No Premium predictions available"
               items={premiumTips}

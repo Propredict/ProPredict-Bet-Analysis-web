@@ -78,7 +78,7 @@ export function RiskOfTheDaySection() {
                 onClick={() => navigate("/risk-of-the-day")}
                 className="block w-full text-center text-[11px] text-red-400/80 hover:text-red-400 font-semibold transition-colors"
               >
-                See all Risk Picks →
+                See all Risk Picks / Pogledaj sve Risk Picks →
               </button>
             </div>
           ) : (
@@ -91,7 +91,7 @@ export function RiskOfTheDaySection() {
                 className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                 onClick={() => navigate("/risk-of-the-day")}
               >
-                <Eye className="h-3.5 w-3.5 mr-1" /> See all Risk Picks
+                <Eye className="h-3.5 w-3.5 mr-1" /> See all Risk Picks / Pogledaj sve Risk Picks
               </Button>
             </div>
           )}
