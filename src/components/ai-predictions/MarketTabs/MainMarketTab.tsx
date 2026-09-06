@@ -121,7 +121,11 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
   const strongest = getBestEligibleProbability(prediction);
   // Premium band: the headline shows the informative pick (e.g. "Panathinaikos
   // to Win") while AI Confidence keeps the card's strongest analysed value.
-  const conf = strongest >= 80 ? Math.max(probs[bestType], strongest) : probs[bestType];
+  // Exception: pure 1X2 picks always show their OWN probability — displaying
+  // "Home Win 90%" when the win is 74% (the 90% comes from 1X) is misleading.
+  const conf = ONE_X_TWO.includes(bestType)
+    ? probs[bestType]
+    : strongest >= 80 ? Math.max(probs[bestType], strongest) : probs[bestType];
   return { label: meta.getLabel(prediction), conf, icon: meta.icon, type: bestType };
 }
 
