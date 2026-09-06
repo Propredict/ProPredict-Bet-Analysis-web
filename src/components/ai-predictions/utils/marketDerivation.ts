@@ -755,6 +755,29 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
 
   const top = candidates[0];
 
+  // Pure outcome priority: when one side is clearly stronger (>= 65%), the
+  // headline is the direct win ("1" / "2"), never 1X/X2. A pure draw ("X")
+  // headlines only when the draw probability itself is genuinely high.
+  const PURE_WIN_MIN = 65;
+  const PURE_DRAW_MIN = 40;
+  const homeProb = candidates.find((c) => c.type === "home_win")?.prob ?? 0;
+  const awayProb = candidates.find((c) => c.type === "away_win")?.prob ?? 0;
+  const drawProb = candidates.find((c) => c.type === "draw")?.prob ?? 0;
+  if (homeProb >= PURE_WIN_MIN && homeProb >= awayProb) return "home_win";
+  if (awayProb >= PURE_WIN_MIN && awayProb > homeProb) return "away_win";
+  if (drawProb >= PURE_DRAW_MIN && drawProb >= homeProb && drawProb >= awayProb) return "draw";
+
+  // Goals over double chance: when the top pick would be 1X/X2 but a concrete
+  // goals market (Over 2.5 / BTTS Yes / Over 3.5 / Under 2.5) is strong
+  // (>= 65%), that goals market is more informative and headlines instead.
+  const GOALS_OVER_DC: MarketType[] = ["over25", "btts_yes", "over35", "under25"];
+  if (top.type === "dc_1x" || top.type === "dc_x2") {
+    const goals = candidates.find(
+      (c) => GOALS_OVER_DC.includes(c.type) && c.prob >= 65 && !isWeakUnder(c.type, c.prob),
+    );
+    if (goals) return goals.type;
+  }
+
   // Clear favourite rule (all tiers): when one side is meaningfully stronger
   // than the other, the headline must say WHO wins (or 1X / X2), never a
   // generic goals line. Only near-even matches (< FAVOURITE_GAP) fall back to
