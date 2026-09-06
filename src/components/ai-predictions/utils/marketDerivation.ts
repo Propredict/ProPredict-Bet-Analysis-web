@@ -945,9 +945,10 @@ export function getBestMarketProbability(prediction: AIPrediction): number {
  * percentage rendered in Main so a Premium card can never show a weaker pick.
  */
 export function getBestEligibleProbability(prediction: AIPrediction): number {
-  // Unchanged tier logic: always the strongest raw market probability,
-  // regardless of which pick is displayed as headline.
-  return getMarketCandidates(prediction)[0].prob;
+  // Tier order must follow the exact market and percentage shown in Main.
+  // Using a hidden stronger market here could mark a visible 66% pick as
+  // Premium while a visible 72% pick remained Pro.
+  return getBestMarketProbability(prediction);
 }
 
 

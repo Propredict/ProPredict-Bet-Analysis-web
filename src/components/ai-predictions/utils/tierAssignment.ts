@@ -1,4 +1,4 @@
-import { getBestEligibleProbability, getBestMarketProbability, getTierFromConfidence } from "./marketDerivation";
+import { getBestEligibleProbability } from "./marketDerivation";
 import { leagueTier } from "./topPicksRanking";
 
 export type Tier = "free" | "pro" | "premium";
@@ -23,11 +23,9 @@ export function assignTiers(predictions: Array<any>): {
   const scored = predictions.map((p) => {
     // The same concrete market and percentage shown in Main determines tier.
     const verifiedStrength = getBestEligibleProbability(p);
-    const baseTier = getTierFromConfidence(verifiedStrength) as Tier;
     return {
       id: p.id!,
       strength: verifiedStrength,
-      baseTier,
       prediction: p,
     };
   });
@@ -66,26 +64,23 @@ export function assignTiers(predictions: Array<any>): {
       continue;
     }
 
-    let tier: Tier = s.baseTier;
     // Quality rule: no tier contains a card without a concrete verified pick.
     if (s.strength < 65) continue;
 
-    // Hard cap: Pro never exceeds PRO_CAP, overflow cascades to Free.
-    const proHasRoom = proCount < PRO_CAP;
-
-    if (tier === "premium") {
-      if (premiumCount < PREMIUM_CAP) premiumCount++;
-      else if (proHasRoom) { tier = "pro"; proCount++; }
-      else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
-      else continue;
-    } else if (tier === "pro") {
-      if (proHasRoom) proCount++;
-      else if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
-      else continue;
+    // Rank decides the tier: the 10 highest displayed percentages are Premium,
+    // the next 10 are Pro, and the next 10 are Free.
+    let tier: Tier;
+    if (premiumCount < PREMIUM_CAP) {
+      tier = "premium";
+      premiumCount++;
+    } else if (proCount < PRO_CAP) {
+      tier = "pro";
+      proCount++;
+    } else if (freeCount < FREE_CAP) {
+      tier = "free";
+      freeCount++;
     } else {
-      // Remaining verified picks (>=65%) fill Free directly.
-      if (freeCount < FREE_CAP) { tier = "free"; freeCount++; }
-      else continue;
+      continue;
     }
 
     map.set(s.id, tier);
