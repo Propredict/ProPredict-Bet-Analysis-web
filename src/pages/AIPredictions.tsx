@@ -1197,7 +1197,7 @@ export default function AIPredictions() {
                       className="rounded-lg ring-1 ring-emerald-500/30 bg-background/40"
                     >
                       <AIPredictionCard
-                        overrideTier="premium"
+                        overrideTier={getPredictionTier(prediction) ?? "premium"}
                         prediction={prediction}
                         isAdmin={isAdmin}
                         isPremiumUser={isPremiumUser}
