@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { isAnalyzedPrediction } from "@/components/ai-predictions/utils/marketDerivation";
 
 export interface AIPrediction {
   id: string;
