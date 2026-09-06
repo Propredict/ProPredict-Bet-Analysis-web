@@ -1197,7 +1197,7 @@ export default function AIPredictions() {
                       className="rounded-lg ring-1 ring-emerald-500/30 bg-background/40"
                     >
                       <AIPredictionCard
-                        overrideTier="premium"
+                        overrideTier={getPredictionTier(prediction) ?? "premium"}
                         prediction={prediction}
                         isAdmin={isAdmin}
                         isPremiumUser={isPremiumUser}
@@ -1590,7 +1590,7 @@ export default function AIPredictions() {
                     <React.Fragment key={prediction.id}>
                       <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                         <AIPredictionCard
-                          overrideTier={getPredictionTier(prediction) ?? undefined}
+                          overrideTier={getPredictionTier(prediction) ?? "free"}
                           prediction={prediction}
                           isAdmin={isAdmin}
                           isPremiumUser={isPremiumUser}
