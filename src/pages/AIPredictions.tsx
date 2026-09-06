@@ -1590,7 +1590,7 @@ export default function AIPredictions() {
                     <React.Fragment key={prediction.id}>
                       <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
                         <AIPredictionCard
-                          overrideTier={getPredictionTier(prediction) ?? undefined}
+                          overrideTier={getPredictionTier(prediction) ?? "free"}
                           prediction={prediction}
                           isAdmin={isAdmin}
                           isPremiumUser={isPremiumUser}
