@@ -1055,3 +1055,26 @@ export function getConsistentSafeCombo(
 
   return unique.join(" + ");
 }
+
+/**
+ * Eligibility gate for showing a match in AI Predictions.
+ *
+ * A match is only shown when it was REALLY analysed:
+ *   1. real expected-goals values exist for both teams (no invented/derived xG), and
+ *   2. the displayed headline pick has at least 65% probability.
+ *
+ * Anything else is not a safe pick and must not be published as an AI prediction.
+ */
+export const MIN_PICK_PROBABILITY = 65;
+
+export function hasRealXg(prediction: AIPrediction): boolean {
+  const h = (prediction as any).xg_home;
+  const a = (prediction as any).xg_away;
+  return typeof h === "number" && h > 0 && typeof a === "number" && a > 0;
+}
+
+export function isAnalyzedPrediction(prediction: AIPrediction): boolean {
+  if (!hasRealXg(prediction)) return false;
+  const prob = getBestMarketProbability(prediction);
+  return typeof prob === "number" && prob >= MIN_PICK_PROBABILITY;
+}

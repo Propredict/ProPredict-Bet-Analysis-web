@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { isAnalyzedPrediction } from "@/components/ai-predictions/utils/marketDerivation";
 
 export interface AIPrediction {
   id: string;
@@ -129,7 +130,10 @@ async function fetchPredictions(dateStr: string): Promise<AIPrediction[]> {
     if (newer || (!newer && stronger && !(current as any).updated_at)) byMatch.set(key, p);
   }
 
-  return Array.from(byMatch.values());
+  // Only publish matches that were REALLY analysed: real xG present for both
+  // teams AND a headline pick with at least 65% probability. Everything else is
+  // guesswork and must never appear as an AI prediction.
+  return Array.from(byMatch.values()).filter((p) => isAnalyzedPrediction(p as any));
 }
 
 
