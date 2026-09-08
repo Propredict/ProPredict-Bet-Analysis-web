@@ -749,8 +749,6 @@ export function applyPickDiversity(predictions: AIPrediction[]): void {
  * getBestEligibleProbability).
  */
 export function getBestPickType(prediction: AIPrediction): MarketType {
-  const override = diversityOverrides.get(getPredictionKey(prediction));
-  if (override) return demoteWeakUnder(prediction, override);
   const candidates = getMarketCandidates(prediction);
 
   const top = candidates[0];
@@ -765,16 +763,20 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
   const drawProb = candidates.find((c) => c.type === "draw")?.prob ?? 0;
   if (homeProb >= PURE_WIN_MIN && homeProb >= awayProb) return "home_win";
   if (awayProb >= PURE_WIN_MIN && awayProb > homeProb) return "away_win";
-  // Dominant favourite rule: even below the 65% floor, a side that is far
-  // ahead of the opponent (e.g. 64% vs 14%) must headline as a pure "1"/"2",
-  // never as 1X/X2. Double chance stays only for genuinely close matches.
-  const DOMINANT_MIN = 55;
-  const DOMINANT_GAP = 25;
-  if (homeProb >= DOMINANT_MIN && homeProb - awayProb >= DOMINANT_GAP && homeProb >= drawProb)
+  // Agreed directional rule: if Home and Away are more than 5 points apart,
+  // show the stronger side as a pure "1"/"2". 1X/X2, X and generic goals
+  // remain options only for genuinely close matches (within ±5 points).
+  // This runs before display diversity so a later override can never turn a
+  // clear 64%-14% away favourite back into X2.
+  const CLOSE_SIDES_GAP = 5;
+  if (homeProb - awayProb > CLOSE_SIDES_GAP && homeProb >= drawProb)
     return "home_win";
-  if (awayProb >= DOMINANT_MIN && awayProb - homeProb >= DOMINANT_GAP && awayProb >= drawProb)
+  if (awayProb - homeProb > CLOSE_SIDES_GAP && awayProb >= drawProb)
     return "away_win";
   if (drawProb >= PURE_DRAW_MIN && drawProb >= homeProb && drawProb >= awayProb) return "draw";
+
+  const override = diversityOverrides.get(getPredictionKey(prediction));
+  if (override) return demoteWeakUnder(prediction, override);
 
 
   // Goals over double chance: when the top pick would be 1X/X2 but a concrete
