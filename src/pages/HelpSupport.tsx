@@ -326,16 +326,14 @@ const HelpSupport = () => {
       
       // Send admin notification email via our own email system
       const { error: sendError } = await supabase.functions.invoke(
-        "send-transactional-email",
+        "send-app-email",
         {
           body: {
-            templateName: "contact-message",
-            templateData: {
-              name: formData.name,
-              email: formData.email,
-              title: formData.subject,
-              message: formData.message,
-            },
+            type: "contact",
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
           },
         }
       );
