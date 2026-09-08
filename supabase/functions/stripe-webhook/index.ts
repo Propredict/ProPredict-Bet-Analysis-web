@@ -58,17 +58,22 @@ async function sendPurchaseEmailIfNeeded(
     const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:#ffffff;padding:32px 28px;max-width:560px;margin:0 auto;">
         <h2 style="color:#0F9B8E;letter-spacing:0.5px;text-transform:uppercase;font-size:18px;margin:0 0 24px;">ProPredict</h2>
-        <h1 style="color:#0d1a15;font-size:24px;margin:0 0 16px;">Thank you for your purchase! 🎉</h1>
-        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <h1 style="color:#0d1a15;font-size:24px;margin:0 0 4px;">Thank you for your purchase! 🎉</h1>
+        <h2 style="color:#0F9B8E;font-size:17px;font-weight:600;margin:0 0 16px;">Hvala na kupovini! 🎉</h2>
+        <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 8px;">
           Your <strong>${planLabel}</strong> subscription is now active. Enjoy AI predictions, live scores, and daily picks.
         </p>
+        <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0 0 24px;">
+          Vaša <strong>${planLabel}</strong> pretplata je sada aktivna. Uživajte u AI predikcijama, live rezultatima i dnevnim tipovima.
+        </p>
         <table style="width:100%;background:#f0fdfa;border-radius:10px;padding:16px 20px;margin:0 0 24px;color:#0d1a15;font-size:14px;">
-          <tr><td><strong>Order:</strong></td><td style="text-align:right;">${orderId}</td></tr>
+          <tr><td><strong>Order / Porudžbina:</strong></td><td style="text-align:right;">${orderId}</td></tr>
           <tr><td><strong>Plan:</strong></td><td style="text-align:right;">${planLabel}</td></tr>
-          <tr><td><strong>Total:</strong></td><td style="text-align:right;">${price}</td></tr>
+          <tr><td><strong>Total / Ukupno:</strong></td><td style="text-align:right;">${price}</td></tr>
         </table>
         <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
-          Manage your subscription any time in Profile → Subscription.
+          Manage your subscription any time in Profile → Subscription.<br/>
+          Pretplatu možete izmeniti u bilo kom trenutku u Profil → Pretplata.
         </p>
       </div>
     `;
