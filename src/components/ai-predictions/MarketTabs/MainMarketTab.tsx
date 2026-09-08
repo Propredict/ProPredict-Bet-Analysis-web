@@ -6,6 +6,7 @@ import {
   getBestPickType,
   getRawProbMap,
   getBestEligibleProbability,
+  getPickConfidence,
   getConsistentSafeCombo,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
@@ -123,9 +124,10 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
   // to Win") while AI Confidence keeps the card's strongest analysed value.
   // Exception: pure 1X2 picks always show their OWN probability — displaying
   // "Home Win 90%" when the win is 74% (the 90% comes from 1X) is misleading.
+  const own = getPickConfidence(prediction, bestType);
   const conf = ONE_X_TWO.includes(bestType)
-    ? probs[bestType]
-    : strongest >= 80 ? Math.max(probs[bestType], strongest) : probs[bestType];
+    ? own
+    : strongest >= 80 ? Math.max(own, strongest) : own;
   return { label: meta.getLabel(prediction), conf, icon: meta.icon, type: bestType };
 }
 
