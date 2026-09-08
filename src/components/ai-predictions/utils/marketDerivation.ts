@@ -765,7 +765,17 @@ export function getBestPickType(prediction: AIPrediction): MarketType {
   const drawProb = candidates.find((c) => c.type === "draw")?.prob ?? 0;
   if (homeProb >= PURE_WIN_MIN && homeProb >= awayProb) return "home_win";
   if (awayProb >= PURE_WIN_MIN && awayProb > homeProb) return "away_win";
+  // Dominant favourite rule: even below the 65% floor, a side that is far
+  // ahead of the opponent (e.g. 64% vs 14%) must headline as a pure "1"/"2",
+  // never as 1X/X2. Double chance stays only for genuinely close matches.
+  const DOMINANT_MIN = 55;
+  const DOMINANT_GAP = 25;
+  if (homeProb >= DOMINANT_MIN && homeProb - awayProb >= DOMINANT_GAP && homeProb >= drawProb)
+    return "home_win";
+  if (awayProb >= DOMINANT_MIN && awayProb - homeProb >= DOMINANT_GAP && awayProb >= drawProb)
+    return "away_win";
   if (drawProb >= PURE_DRAW_MIN && drawProb >= homeProb && drawProb >= awayProb) return "draw";
+
 
   // Goals over double chance: when the top pick would be 1X/X2 but a concrete
   // goals market (Over 2.5 / BTTS Yes / Over 3.5 / Under 2.5) is strong
