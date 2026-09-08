@@ -84,7 +84,7 @@ async function sendPurchaseEmailIfNeeded(
       body: JSON.stringify({
         from: "ProPredict <noreply@propredict.me>",
         to: [email],
-        subject: `Thank you for your ProPredict ${planLabel} purchase`,
+        subject: `Thank you for your ProPredict ${planLabel} purchase / Hvala na kupovini`,
         html,
       }),
     });
