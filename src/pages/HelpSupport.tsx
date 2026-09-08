@@ -31,7 +31,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import emailjs from "@emailjs/browser";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -324,26 +324,23 @@ const HelpSupport = () => {
     try {
       contactSchema.parse(formData);
       
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const adminTemplateId = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID;
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-      if (!serviceId || !adminTemplateId || !publicKey) {
-        throw new Error("EmailJS configuration is missing");
-      }
-
-      // Send admin notification email only
-      await emailjs.send(
-        serviceId,
-        adminTemplateId,
+      // Send admin notification email via our own email system
+      const { error: sendError } = await supabase.functions.invoke(
+        "send-transactional-email",
         {
-          name: formData.name,
-          email: formData.email,
-          title: formData.subject,
-          message: formData.message,
-        },
-        publicKey
+          body: {
+            templateName: "contact-message",
+            templateData: {
+              name: formData.name,
+              email: formData.email,
+              title: formData.subject,
+              message: formData.message,
+            },
+          },
+        }
       );
+
+      if (sendError) throw sendError;
       
       toast({
         title: "Message Sent!",
@@ -361,7 +358,7 @@ const HelpSupport = () => {
         });
         setErrors(fieldErrors);
       } else {
-        console.error("EmailJS error:", error);
+        console.error("Contact form error:", error);
         toast({
           title: "Failed to send message",
           description: "Please try again or email us directly.",
