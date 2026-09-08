@@ -358,7 +358,7 @@ const HelpSupport = () => {
         });
         setErrors(fieldErrors);
       } else {
-        console.error("EmailJS error:", error);
+        console.error("Contact form error:", error);
         toast({
           title: "Failed to send message",
           description: "Please try again or email us directly.",
