@@ -9,12 +9,8 @@ export async function sendWelcomeEmail(
   email: string,
 ): Promise<void> {
   try {
-    const { error } = await supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "welcome",
-        recipientEmail: email,
-        templateData: { name },
-      },
+    const { error } = await supabase.functions.invoke("send-app-email", {
+      body: { type: "welcome", name, email },
     });
     if (error) throw error;
     console.log("[Email] Welcome email queued for", email);
