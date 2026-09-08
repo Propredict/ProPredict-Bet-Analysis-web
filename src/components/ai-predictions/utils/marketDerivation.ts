@@ -948,8 +948,33 @@ export function getRawProbMap(prediction: AIPrediction): Record<MarketType, numb
   };
 }
 
+/**
+ * AI Confidence for a concrete market.
+ *
+ * For a pure "1"/"2" headline the number the user cares about is how sure the
+ * model is that THIS side wins the duel, not the raw 1X2 share. A 64% vs 14%
+ * favourite is ~82% certain to be the winning side, so that is the confidence
+ * we display AND rank by. Every other market keeps its raw probability.
+ */
+export function getPickConfidence(
+  prediction: AIPrediction,
+  type: MarketType,
+): number {
+  const map = getRawProbMap(prediction);
+  if (type === "home_win" || type === "away_win") {
+    const hw = map.home_win;
+    const aw = map.away_win;
+    const sides = hw + aw;
+    if (sides <= 0) return map[type];
+    const side = type === "home_win" ? hw : aw;
+    const duel = Math.round((side / sides) * 100);
+    return Math.max(map[type], Math.min(97, duel));
+  }
+  return map[type];
+}
+
 export function getBestMarketProbability(prediction: AIPrediction): number {
-  return getRawProbMap(prediction)[getBestPickType(prediction)];
+  return getPickConfidence(prediction, getBestPickType(prediction));
 }
 
 /**
