@@ -6,6 +6,7 @@ import {
   getBestPickType,
   getRawProbMap,
   getBestEligibleProbability,
+  getPickConfidence,
   getConsistentSafeCombo,
   getConsistentTopCorrectScores,
   getDerivedPredictedScore,
