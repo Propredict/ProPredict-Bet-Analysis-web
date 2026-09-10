@@ -8,12 +8,9 @@ import {
   getBestEligibleProbability,
   getPickConfidence,
   getConsistentSafeCombo,
-  getConsistentTopCorrectScores,
-  getDerivedPredictedScore,
-  getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
 import { getMarketColors, classifyMarket } from "../utils/marketColors";
 
 /**
