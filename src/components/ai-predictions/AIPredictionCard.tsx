@@ -58,6 +58,7 @@ import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
 import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
+import { CorrectScoreTab } from "./MarketTabs/CorrectScoreTab";
 import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
 import { MarketTrendBadge } from "./MarketTrendBadge";
 import { ValueBetBadge } from "./ValueBetBadge";
