@@ -8,12 +8,9 @@ import {
   getBestEligibleProbability,
   getPickConfidence,
   getConsistentSafeCombo,
-  getConsistentTopCorrectScores,
-  getDerivedPredictedScore,
-  getRecommendedScoreConstraints,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Crosshair, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
 import { getMarketColors, classifyMarket } from "../utils/marketColors";
 
 /**
@@ -154,14 +151,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
   const safeCombo = getConsistentSafeCombo(prediction, parsedTags.safeCombo);
-  const scoreConstraints = getRecommendedScoreConstraints(prediction);
   const allProbs = getAllRawProbs(prediction);
-  // Top correct scores now shown on every tier (Free/Pro/Premium) — same as Premium card
-  const topScores = getConsistentTopCorrectScores(
-    prediction,
-    { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type, safeCombo },
-    3
-  );
 
 
   return (
@@ -399,53 +389,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             );
           })}
       </div>
-
-      {/* ===== Top Correct Scores — all tiers ===== */}
-      {topScores.length > 0 && (
-        <div className="pt-1">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Crosshair className={cn("w-3 h-3", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
-            <span className={cn(
-              "text-[10px] md:text-xs font-semibold uppercase tracking-wider",
-              displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
-            )}>
-              Top Correct Scores
-            </span>
-            <span className="text-[9px] md:text-[10px] text-muted-foreground font-medium">
-              (1 of {Math.max(topScores.length, 1)})
-            </span>
-          </div>
-          <div className={cn("grid gap-1.5", topScores.length === 1 ? "grid-cols-1" : topScores.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
-            {topScores.map((s, i) => (
-              <div
-                key={s.score}
-                className={cn(
-                  "text-center py-2 rounded-md border",
-                  i === 0
-                    ? displayTier === "premium" 
-                      ? "border-fuchsia-500/40 bg-fuchsia-500/10" 
-                      : "border-amber-500/40 bg-amber-500/10"
-                    : "border-border/30 bg-card/20"
-                )}
-              >
-                <div className={cn(
-                  "text-sm md:text-base font-bold text-foreground",
-                  !hasAccess && "blur-[5px] select-none"
-                )}>{s.score}</div>
-                <div className={cn(
-                  "text-[9px] md:text-[10px] font-medium",
-                  !hasAccess && "blur-[5px] select-none",
-                  i === 0 
-                    ? displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
-                    : "text-muted-foreground"
-                )}>
-                  {s.probability}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
