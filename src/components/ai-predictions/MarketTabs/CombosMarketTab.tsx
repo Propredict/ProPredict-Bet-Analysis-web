@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { deriveMarkets } from "../utils/marketDerivation";
-import { Star, Zap } from "lucide-react";
+import { deriveMarkets, getConsistentSafeCombo } from "../utils/marketDerivation";
+import { Sparkles, Star, Zap } from "lucide-react";
 
 interface Props {
   prediction: AIPrediction;
@@ -11,6 +11,10 @@ interface Props {
 
 export function CombosMarketTab({ prediction, hasAccess }: Props) {
   const markets = deriveMarkets(prediction);
+  const taggedCombo = prediction.key_factors
+    ?.find((factor) => factor.startsWith("[TAG]SAFE_COMBO:"))
+    ?.replace("[TAG]SAFE_COMBO:", "") ?? null;
+  const riskCombo = getConsistentSafeCombo(prediction, taggedCombo);
 
   if (markets.combos.length === 0) {
     return (
@@ -63,6 +67,21 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
           </div>
         ))}
       </div>
+
+      {riskCombo && (
+        <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-3 text-center">
+          <div className="flex items-center justify-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-fuchsia-400" />
+            <span className="text-xs md:text-sm font-semibold uppercase text-fuchsia-400">Risk Combo</span>
+          </div>
+          <span className={cn(
+            "text-base md:text-lg font-bold text-foreground",
+            !hasAccess && "blur-[5px] select-none"
+          )}>
+            {hasAccess ? riskCombo : "•••••• • •••• •••"}
+          </span>
+        </div>
+      )}
 
       {hasAccess && (
         <div className="bg-[#1e3a5f]/20 rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30 mt-2 md:mt-3">

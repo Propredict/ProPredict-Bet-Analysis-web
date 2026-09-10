@@ -7,7 +7,6 @@ import {
   getRawProbMap,
   getBestEligibleProbability,
   getPickConfidence,
-  getConsistentSafeCombo,
   type MarketType,
 } from "../utils/marketDerivation";
 import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
@@ -150,7 +149,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
 
   const parsedTags = parseStructuredTags(prediction.key_factors ?? null);
-  const safeCombo = getConsistentSafeCombo(prediction, parsedTags.safeCombo);
   const allProbs = getAllRawProbs(prediction);
 
 
@@ -325,30 +323,6 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             </div>
           )}
 
-          {/* SAFE COMBO — shown on all tiers for users with access. */}
-          {safeCombo && hasAccess && (
-            <div className="flex flex-col items-center justify-center gap-1 pt-2 pb-1">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-fuchsia-400" />
-                <span className="text-sm md:text-base font-semibold text-fuchsia-400 uppercase tracking-wider">Risk Combo</span>
-              </div>
-              <span className="text-lg md:text-xl font-bold text-foreground text-center">{safeCombo}</span>
-            </div>
-          )}
-          {safeCombo && !hasAccess && (
-            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
-              <Sparkles className="w-3 h-3 text-fuchsia-400" />
-              <span className="text-[9px] md:text-[10px] font-semibold text-fuchsia-400 uppercase tracking-wider">
-                High Value Insight
-              </span>
-              <Badge className="ml-1 bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
-                <Lock className="w-2.5 h-2.5" />
-                {displayTier === "premium" ? "PREMIUM" : "PRO"}
-              </Badge>
-            </div>
-          )}
-
-          {/* Predicted Score removed — Top Correct Scores below already shows score predictions */}
         </div>
       }
 
