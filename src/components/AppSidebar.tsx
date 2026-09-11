@@ -5,7 +5,7 @@ import {
   Ticket, 
   Calendar,
   Lightbulb,
-  Layers,
+  
   Crown,
   Sparkles,
   Brain,
