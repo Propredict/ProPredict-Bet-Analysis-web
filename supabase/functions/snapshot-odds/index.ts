@@ -255,6 +255,7 @@ serve(async (req: Request) => {
     const results: any[] = [];
     let processed = 0;
     let updated = 0;
+    let skipped = 0;
 
     for (const p of predictions ?? []) {
       processed++;
@@ -408,7 +409,7 @@ serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, processed, updated, sample: results.slice(0, 10) }), {
+    return new Response(JSON.stringify({ ok: true, processed, updated, skipped, sample: results.slice(0, 10) }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
