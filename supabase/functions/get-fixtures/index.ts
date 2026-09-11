@@ -259,12 +259,22 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Error fetching fixtures:", errorMessage);
+    // Provider quota / upstream failures must not blank the app: return an
+    // empty list with 200 so the UI can show its normal "no matches" state.
+    const quotaExhausted = /request limit|rate limit|429/i.test(errorMessage);
     return new Response(
-      JSON.stringify({ error: errorMessage, fixtures: [] }),
+      JSON.stringify({
+        fixtures: [],
+        count: 0,
+        error: errorMessage,
+        unavailable: true,
+        reason: quotaExhausted ? "quota_exhausted" : "upstream_error",
+      }),
       {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
+
 });
