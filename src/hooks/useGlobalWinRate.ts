@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { WIN_RATE_DISPLAY } from "@/config/winRateDisplay";
 
 export interface GlobalWinRateData {
   accuracy: number;
