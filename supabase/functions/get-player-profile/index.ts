@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { cached } from "../_shared/edgeCache.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
