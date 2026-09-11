@@ -206,7 +206,7 @@ const App = () => {
                     <Route path="/how-ai-works" element={<HowAIWorks />} />
                     <Route path="/live-scores" element={<LiveScores />} />
                     <Route path="/favorites" element={<MyFavorites />} />
-                    <Route path="/winning-history" element={<WinningHistory />} />
+                    <Route path="/winning-history" element={<Navigate to="/" replace />} />
                     <Route path="/tickets/:id" element={<TicketDetails />} />
                     <Route path="/get-premium" element={<GetPremium />} />
 
