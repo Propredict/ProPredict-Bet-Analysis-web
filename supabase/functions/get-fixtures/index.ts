@@ -42,7 +42,21 @@ function mapStatus(shortStatus: string): "live" | "upcoming" | "finished" | "hal
 // Each unique query is fetched at most once per TTL; on rate-limit or
 // failure we serve the last known good payload instead of throwing 500.
 // ---------------------------------------------------------------
-const CACHE_TTL_MS = 30_000; // live-ish freshness
+const LIVE_TTL_MS = 30_000;            // in-play fixtures need freshness
+const TODAY_TTL_MS = 60_000;           // today's list (may contain live games)
+const OTHER_DAY_TTL_MS = 10 * 60_000;  // past/future days barely change
+const TEAM_TTL_MS = 10 * 60_000;       // team fixture lookups
+
+// Pick a TTL based on what is being requested, so non-live lists are not
+// re-fetched from API-Football every 30 seconds.
+function ttlFor(qs: URLSearchParams): number {
+  if (qs.has("live")) return LIVE_TTL_MS;
+  if (qs.has("team")) return TEAM_TTL_MS;
+  const d = qs.get("date");
+  const todayUtc = new Date().toISOString().split("T")[0];
+  if (d && d === todayUtc) return TODAY_TTL_MS;
+  return OTHER_DAY_TTL_MS;
+}
 const STALE_MAX_MS = 10 * 60_000;
 const cache = new Map<string, { at: number; data: any[] }>();
 const inflight = new Map<string, Promise<any[]>>();
@@ -96,7 +110,7 @@ serve(async (req) => {
       const key = qs.toString();
       const cached = cache.get(key);
       const now = Date.now();
-      if (cached && now - cached.at < CACHE_TTL_MS) return cached.data;
+      if (cached && now - cached.at < ttlFor(qs)) return cached.data;
 
       const existing = inflight.get(key);
       if (existing) return existing;
