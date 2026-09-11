@@ -255,6 +255,7 @@ serve(async (req: Request) => {
     const results: any[] = [];
     let processed = 0;
     let updated = 0;
+    let skipped = 0;
 
     for (const p of predictions ?? []) {
       processed++;
@@ -268,13 +269,8 @@ serve(async (req: Request) => {
         if (koMs && koMs <= Date.now()) {
           continue;
         }
-        // Fetch ALL markets once (1X2 + Over/Under + BTTS) to save API quota.
-        const rawAll = await fetchAllOddsForFixture(apiKey, p.match_id);
-        const snap = buildSnapshot(p.match_id, p.match_date, rawAll);
-        if (!snap) continue;
-        const marketOdds = buildMarketOdds(rawAll);
-
-        // Get most recent previous snapshot
+        // Get most recent previous snapshot FIRST — it decides whether we
+        // need to spend an API-Football request at all.
         const { data: prevRows } = await supabase
           .from("odds_snapshots")
           .select("*")
@@ -282,6 +278,30 @@ serve(async (req: Request) => {
           .order("captured_at", { ascending: false })
           .limit(1);
         const prev = (prevRows?.[0] ?? null) as Snapshot | null;
+
+        // === QUOTA THROTTLE ===
+        // Odds barely move far from kickoff, so refresh rate scales with
+        // time-to-kickoff instead of hitting every fixture every 30 min.
+        //   > 12h away  → at most every 6h
+        //   3–12h away  → at most every 2h
+        //   < 3h away   → every run (30 min)
+        const prevAt = (prev as any)?.captured_at ? new Date((prev as any).captured_at).getTime() : 0;
+        if (prevAt) {
+          const hoursToKO = koMs ? (koMs - Date.now()) / 3600000 : 99;
+          const minGapMin = hoursToKO > 12 ? 360 : hoursToKO > 3 ? 120 : 25;
+          const ageMin = (Date.now() - prevAt) / 60000;
+          if (ageMin < minGapMin) {
+            skipped++;
+            continue;
+          }
+        }
+
+        // Fetch ALL markets once (1X2 + Over/Under + BTTS) to save API quota.
+        const rawAll = await fetchAllOddsForFixture(apiKey, p.match_id);
+        const snap = buildSnapshot(p.match_id, p.match_date, rawAll);
+        if (!snap) continue;
+        const marketOdds = buildMarketOdds(rawAll);
+
 
         // Insert new snapshot
         await supabase.from("odds_snapshots").insert({
@@ -389,7 +409,7 @@ serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, processed, updated, sample: results.slice(0, 10) }), {
+    return new Response(JSON.stringify({ ok: true, processed, updated, skipped, sample: results.slice(0, 10) }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
