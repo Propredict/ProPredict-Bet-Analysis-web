@@ -32,7 +32,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 const Profile = lazy(() => import("./pages/Profile"));
 const LiveScores = lazy(() => import("./pages/LiveScores"));
 const MyFavorites = lazy(() => import("./pages/MyFavorites"));
-const WinningHistory = lazy(() => import("./pages/WinningHistory"));
+
 const TicketDetails = lazy(() => import("./pages/TicketDetails"));
 const GetPremium = lazy(() => import("./pages/GetPremium"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -206,7 +206,7 @@ const App = () => {
                     <Route path="/how-ai-works" element={<HowAIWorks />} />
                     <Route path="/live-scores" element={<LiveScores />} />
                     <Route path="/favorites" element={<MyFavorites />} />
-                    <Route path="/winning-history" element={<WinningHistory />} />
+                    <Route path="/winning-history" element={<Navigate to="/" replace />} />
                     <Route path="/tickets/:id" element={<TicketDetails />} />
                     <Route path="/get-premium" element={<GetPremium />} />
 
