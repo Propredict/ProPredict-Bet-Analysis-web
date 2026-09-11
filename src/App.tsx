@@ -32,7 +32,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 const Profile = lazy(() => import("./pages/Profile"));
 const LiveScores = lazy(() => import("./pages/LiveScores"));
 const MyFavorites = lazy(() => import("./pages/MyFavorites"));
-const WinningHistory = lazy(() => import("./pages/WinningHistory"));
+
 const TicketDetails = lazy(() => import("./pages/TicketDetails"));
 const GetPremium = lazy(() => import("./pages/GetPremium"));
 const Settings = lazy(() => import("./pages/Settings"));
