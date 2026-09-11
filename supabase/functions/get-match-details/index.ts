@@ -189,6 +189,16 @@ serve(async (req: Request) => {
       h2h: h2hData,
     };
 
+    // TTL by match state: live needs freshness, finished data never changes,
+    // upcoming matches change slowly.
+    const shortStatus = fixture.fixture?.status?.short ?? "";
+    const ttlMs = ["1H", "2H", "ET", "P", "LIVE", "HT", "BT"].includes(shortStatus)
+      ? 60_000                       // live: 1 min
+      : ["FT", "AET", "PEN"].includes(shortStatus)
+      ? 6 * 60 * 60_000              // finished: 6 h
+      : 15 * 60_000;                 // upcoming: 15 min
+    setCached(cacheKey, response, ttlMs);
+
     return new Response(
       JSON.stringify(response),
       { 
@@ -196,6 +206,7 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
       }
     );
+
   } catch (error) {
     console.error("Error fetching match details:", error);
     return new Response(
