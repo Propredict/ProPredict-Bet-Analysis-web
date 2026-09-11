@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { cached } from "../_shared/edgeCache.ts";
+import { getCached, setCached } from "../_shared/edgeCache.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -33,6 +33,16 @@ serve(async (req: Request) => {
       );
     }
 
+    // Squads change only on transfers — cache 6 h.
+    const cacheKey = `team-squad:${teamId}`;
+    const hit = getCached<unknown>(cacheKey);
+    if (hit) {
+      return new Response(JSON.stringify(hit), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT" },
+      });
+    }
+
     const headers = { "x-apisports-key": apiKey };
     const res = await fetch(`${API_FOOTBALL_URL}/players/squads?team=${teamId}`, { headers });
 
@@ -64,15 +74,18 @@ serve(async (req: Request) => {
       photo: p.photo,
     }));
 
+    const payload = {
+      team: {
+        id: teamData.team?.id,
+        name: teamData.team?.name,
+        logo: teamData.team?.logo,
+      },
+      players,
+    };
+    setCached(cacheKey, payload, 6 * 60 * 60_000);
+
     return new Response(
-      JSON.stringify({
-        team: {
-          id: teamData.team?.id,
-          name: teamData.team?.name,
-          logo: teamData.team?.logo,
-        },
-        players,
-      }),
+      JSON.stringify(payload),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
