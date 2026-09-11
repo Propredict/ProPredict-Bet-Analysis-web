@@ -84,6 +84,16 @@ Deno.serve(async (req) => {
     let skippedCount = 0;
     const results: { id: string; status: string; reason: string }[] = [];
 
+    // Stop all passes immediately when API-Football reports the daily
+    // request limit is exhausted — further calls are wasted.
+    let quotaExhausted = false;
+    const isQuotaExhausted = (data: any): boolean => {
+      const errs = data?.errors;
+      if (!errs) return false;
+      const text = typeof errs === "string" ? errs : Object.values(errs).join(" ");
+      return /request limit/i.test(text);
+    };
+
     for (const prediction of pendingPredictions as AIPrediction[]) {
       try {
         // Fetch match result from API-Football
@@ -111,6 +121,13 @@ Deno.serve(async (req) => {
         }
 
         const apiData = await apiResponse.json();
+
+        if (isQuotaExhausted(apiData)) {
+          console.log("API-Football daily request limit reached — stopping all checks");
+          quotaExhausted = true;
+          break;
+        }
+
         const fixture = apiData.response?.[0] as FixtureResponse | undefined;
 
         if (!fixture) {
@@ -499,6 +516,7 @@ Deno.serve(async (req) => {
         const matchInfoMap = new Map((matchInfoData || []).map((a: any) => [a.match_id, a]));
 
         for (const ap of orphanedArena) {
+          if (quotaExhausted) break;
           try {
             const fixtureId = ap.match_id;
             if (!fixtureId || isNaN(Number(fixtureId))) {
@@ -516,6 +534,11 @@ Deno.serve(async (req) => {
               continue;
             }
             const apiJson = await apiResp.json();
+            if (isQuotaExhausted(apiJson)) {
+              console.log("API-Football daily request limit reached — stopping arena pass");
+              quotaExhausted = true;
+              break;
+            }
             const fix = apiJson.response?.[0] as FixtureResponse | undefined;
             if (!fix) {
               orphanDiag.push(`${fixtureId}: no_fixture_data`);
@@ -626,118 +649,12 @@ Deno.serve(async (req) => {
       console.log(`Orphan arena pass: ${arenaOrphanResolved} resolved`);
     }
 
-    // ── THIRD PASS: resolve ALL AI-generated TIPS (won/lost) ──
-    // Any tip with created_by=NULL is AI-published (Diamond Pick, Risk of the Day,
-    // standard daily/exclusive/premium). Use the tip's own match_id when present;
-    // otherwise fall back to matching ai_predictions by (home_team|away_team|tip_date).
-    let tipsResolved = 0;
-    let tipsSkipped = 0;
-    try {
-      const todayStr = formatDate(today);
-      const { data: pendingTips } = await supabase
-        .from("tips")
-        .select("id, home_team, away_team, prediction, tip_date, result, status, category, created_by, match_id")
-        .eq("status", "published")
-        .eq("result", "pending")
-        .is("created_by", null)
-        .gte("tip_date", formatDate(threeDaysAgo))
-        .lte("tip_date", todayStr)
-        .limit(100);
-
-      if (pendingTips && pendingTips.length > 0) {
-        // Lookup helper: combo leg evaluator
-        const evalLeg = (leg: string, h: number, a: number): boolean => {
-          const t = h + a;
-          const btts = h > 0 && a > 0;
-          const s = leg.trim();
-          let m: RegExpMatchArray | null;
-          if ((m = s.match(/^Over\s+(\d+(?:\.\d+)?)/i))) return t > parseFloat(m[1]);
-          if ((m = s.match(/^Under\s+(\d+(?:\.\d+)?)/i))) return t < parseFloat(m[1]);
-          if (/^BTTS\s*No/i.test(s)) return !btts;
-          if (/^BTTS/i.test(s)) return btts;
-          if (/^1X/i.test(s)) return h >= a;
-          if (/^X2/i.test(s)) return a >= h;
-          if (/^12/i.test(s)) return h !== a;
-          if (/^Home/i.test(s)) return h > a;
-          if (/^Away/i.test(s)) return a > h;
-          if (/^Draw/i.test(s)) return h === a;
-          return false;
-        };
-        const evalCombo = (label: string, h: number, a: number): boolean => {
-          const s = label.trim();
-          // Risk of the Day: "1/3 (Home or Away)" — wins if not a draw
-          if (/^1\s*\/\s*3/.test(s) || /Home\s+or\s+Away/i.test(s)) return h !== a;
-          const legs = s.split(/\s*&\s*/);
-          return legs.every((l) => evalLeg(l, h, a));
-        };
-
-        // Build (home_team|away_team|tip_date) -> match_id map from ai_predictions
-        const teamPairs = pendingTips.map((t: any) =>
-          `${(t.home_team ?? "").toLowerCase()}|${(t.away_team ?? "").toLowerCase()}|${t.tip_date}`
-        );
-        const dates = [...new Set(pendingTips.map((t: any) => t.tip_date))];
-        const { data: aiRows } = await supabase
-          .from("ai_predictions")
-          .select("match_id, home_team, away_team, match_date")
-          .in("match_date", dates);
-        const aiMap = new Map<string, string>();
-        for (const r of aiRows ?? []) {
-          const key = `${(r.home_team ?? "").toLowerCase()}|${(r.away_team ?? "").toLowerCase()}|${r.match_date}`;
-          if (r.match_id) aiMap.set(key, String(r.match_id));
-        }
-
-        for (const tip of pendingTips as any[]) {
-          try {
-            const key = `${(tip.home_team ?? "").toLowerCase()}|${(tip.away_team ?? "").toLowerCase()}|${tip.tip_date}`;
-            const fixtureId = (tip.match_id && !isNaN(Number(tip.match_id)))
-              ? String(tip.match_id)
-              : aiMap.get(key);
-            if (!fixtureId || isNaN(Number(fixtureId))) { tipsSkipped++; continue; }
-
-            const apiResp = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, {
-              headers: { "x-apisports-key": apiFootballKey },
-            });
-            if (!apiResp.ok) { tipsSkipped++; continue; }
-            const apiJson = await apiResp.json();
-            const fix = apiJson.response?.[0] as FixtureResponse | undefined;
-            if (!fix) { tipsSkipped++; continue; }
-            const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
-            if (!finStatuses.includes(fix.fixture.status.short)) { tipsSkipped++; continue; }
-            const hg = fix.goals.home, ag = fix.goals.away;
-            if (hg === null || ag === null) { tipsSkipped++; continue; }
-
-            const won = evalCombo(String(tip.prediction ?? ""), hg, ag);
-            // Policy: only mark WON publicly. If lost → leave as pending (silent).
-            if (won) {
-              const { error: tipUpdErr } = await supabase
-                .from("tips")
-                .update({ result: "won" })
-                .eq("id", tip.id);
-              if (!tipUpdErr) {
-                tipsResolved++;
-                console.log(`✓ Tip [${tip.category ?? "standard"}] ${tip.home_team} vs ${tip.away_team} [${tip.prediction}] (${hg}-${ag}) → won`);
-              }
-            } else {
-              tipsSkipped++;
-              console.log(`· Tip ${tip.home_team} vs ${tip.away_team} lost — kept as pending`);
-            }
-            await new Promise((r) => setTimeout(r, 100));
-          } catch (e) {
-            console.error(`Tip resolve error ${tip.id}:`, e);
-          }
-        }
-      }
-    } catch (tipsErr) {
-      console.error("Tips pass error:", tipsErr);
-    }
-    if (tipsResolved > 0) console.log(`Tips pass: ${tipsResolved} resolved, ${tipsSkipped} skipped`);
-
-    // ── FOURTH PASS: resolve TICKETS (won/lost) ──
+    // ── THIRD PASS: resolve TICKETS (won/lost) ──
     // A ticket is WON only if ALL legs win. If any leg can't be evaluated
     // (e.g. unrecognized market label) or any match isn't finished yet, skip.
     let ticketsResolved = 0;
     let ticketsSkipped = 0;
-    try {
+    if (!quotaExhausted) try {
       const todayStr = formatDate(today);
       const { data: pendingTickets } = await supabase
         .from("tickets")
@@ -804,6 +721,13 @@ Deno.serve(async (req) => {
           });
           if (!apiResp.ok) { const v = { hg: 0, ag: 0, finished: false }; fixtureCache.set(fid, v); return v; }
           const j = await apiResp.json();
+          if (isQuotaExhausted(j)) {
+            console.log("API-Football daily request limit reached — stopping tickets pass");
+            quotaExhausted = true;
+            const v = { hg: 0, ag: 0, finished: false };
+            fixtureCache.set(fid, v);
+            return v;
+          }
           const f = j.response?.[0];
           const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
           const finished = !!f && finStatuses.includes(f.fixture?.status?.short);
@@ -868,8 +792,7 @@ Deno.serve(async (req) => {
         arena_orphans_found: arenaOrphanFound,
         arena_orphans_resolved: arenaOrphanResolved,
         arena_orphan_diag: orphanDiag,
-        tips_resolved: tipsResolved,
-        tips_skipped: tipsSkipped,
+        quota_exhausted: quotaExhausted,
         tickets_resolved: ticketsResolved,
         tickets_skipped: ticketsSkipped,
         results,
