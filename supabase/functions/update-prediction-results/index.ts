@@ -649,13 +649,12 @@ Deno.serve(async (req) => {
       console.log(`Orphan arena pass: ${arenaOrphanResolved} resolved`);
     }
 
-
-    // ── FOURTH PASS: resolve TICKETS (won/lost) ──
+    // ── THIRD PASS: resolve TICKETS (won/lost) ──
     // A ticket is WON only if ALL legs win. If any leg can't be evaluated
     // (e.g. unrecognized market label) or any match isn't finished yet, skip.
     let ticketsResolved = 0;
     let ticketsSkipped = 0;
-    try {
+    if (!quotaExhausted) try {
       const todayStr = formatDate(today);
       const { data: pendingTickets } = await supabase
         .from("tickets")
@@ -722,6 +721,13 @@ Deno.serve(async (req) => {
           });
           if (!apiResp.ok) { const v = { hg: 0, ag: 0, finished: false }; fixtureCache.set(fid, v); return v; }
           const j = await apiResp.json();
+          if (isQuotaExhausted(j)) {
+            console.log("API-Football daily request limit reached — stopping tickets pass");
+            quotaExhausted = true;
+            const v = { hg: 0, ag: 0, finished: false };
+            fixtureCache.set(fid, v);
+            return v;
+          }
           const f = j.response?.[0];
           const finStatuses = ["FT", "AET", "PEN", "AWD", "WO"];
           const finished = !!f && finStatuses.includes(f.fixture?.status?.short);
@@ -786,6 +792,7 @@ Deno.serve(async (req) => {
         arena_orphans_found: arenaOrphanFound,
         arena_orphans_resolved: arenaOrphanResolved,
         arena_orphan_diag: orphanDiag,
+        quota_exhausted: quotaExhausted,
         tickets_resolved: ticketsResolved,
         tickets_skipped: ticketsSkipped,
         results,
