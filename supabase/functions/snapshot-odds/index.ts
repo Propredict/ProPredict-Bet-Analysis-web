@@ -238,12 +238,19 @@ serve(async (req: Request) => {
       `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
     const dates = [fmt(today), fmt(tomorrow)];
 
+    // Only track predictions we actually publish:
+    // real xG analysis present + confidence >= 65. Everything else is never shown,
+    // so fetching odds for it would only burn API quota.
     const { data: predictions, error: predErr } = await supabase
       .from("ai_predictions")
       .select("id, match_id, match_date, match_timestamp, prediction, confidence, home_win, draw, away_win")
       .in("match_date", dates)
       .eq("result_status", "pending")
-      .limit(500);
+      .gte("confidence", 65)
+      .gt("xg_home", 0)
+      .gt("xg_away", 0)
+      .order("confidence", { ascending: false })
+      .limit(60);
 
     if (predErr) {
       console.error("Failed to load predictions:", predErr);
