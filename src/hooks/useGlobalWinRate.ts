@@ -19,22 +19,21 @@ export function useGlobalWinRate() {
 
       if (error) throw error;
 
-      let won = 0;
-      let lost = 0;
       let pending = 0;
 
       (data ?? []).forEach((item) => {
-        if (item.result === "won") won++;
-        else if (item.result === "lost") lost++;
-        else pending++;
+        if (item.result !== "won" && item.result !== "lost") pending++;
       });
 
-      // Calculate accuracy: won / (won + lost) * 100
-      // Pending items are excluded from accuracy calculation
-      const closedTotal = won + lost;
-      const accuracy = closedTotal > 0 ? Math.round((won / closedTotal) * 100) : 0;
-
-      return { accuracy, won, lost, pending };
+      // Win Rate / Success / Missed are manually configured in
+      // src/config/winRateDisplay.ts and are intentionally NOT derived from
+      // historical tips or tickets, so deleting old records cannot lower them.
+      return {
+        accuracy: WIN_RATE_DISPLAY.accuracy,
+        won: WIN_RATE_DISPLAY.successCount,
+        lost: WIN_RATE_DISPLAY.missedCount,
+        pending,
+      };
     },
     refetchInterval: 30_000,
   });
