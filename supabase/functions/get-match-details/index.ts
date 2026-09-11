@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCached, setCached } from "../_shared/edgeCache.ts";
+
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -68,9 +70,21 @@ serve(async (req: Request) => {
       );
     }
 
+    // Serve from the short-lived in-memory cache when possible so repeated
+    // opens of the same match do not burn API-Football quota.
+    const cacheKey = `match-details:${fixtureId}`;
+    const cachedPayload = getCached<unknown>(cacheKey);
+    if (cachedPayload) {
+      return new Response(JSON.stringify(cachedPayload), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT" },
+      });
+    }
+
     const headers = {
       "x-apisports-key": apiKey,
     };
+
 
     // Fetch fixture details first to get team IDs
     const fixtureRes = await fetch(`${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`, { headers });
@@ -177,6 +191,16 @@ serve(async (req: Request) => {
       h2h: h2hData,
     };
 
+    // TTL by match state: live needs freshness, finished data never changes,
+    // upcoming matches change slowly.
+    const shortStatus = fixture.fixture?.status?.short ?? "";
+    const ttlMs = ["1H", "2H", "ET", "P", "LIVE", "HT", "BT"].includes(shortStatus)
+      ? 60_000                       // live: 1 min
+      : ["FT", "AET", "PEN"].includes(shortStatus)
+      ? 6 * 60 * 60_000              // finished: 6 h
+      : 15 * 60_000;                 // upcoming: 15 min
+    setCached(cacheKey, response, ttlMs);
+
     return new Response(
       JSON.stringify(response),
       { 
@@ -184,6 +208,7 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
       }
     );
+
   } catch (error) {
     console.error("Error fetching match details:", error);
     return new Response(

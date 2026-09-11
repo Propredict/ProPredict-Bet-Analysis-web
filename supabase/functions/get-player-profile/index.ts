@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCached, setCached } from "../_shared/edgeCache.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -32,6 +33,16 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "API key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Player season stats are slow-moving — cache 30 min.
+    const cacheKey = `player-profile:${playerId}:${season}`;
+    const hit = getCached<unknown>(cacheKey);
+    if (hit) {
+      return new Response(JSON.stringify(hit), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT" },
+      });
     }
 
     const headers = { "x-apisports-key": apiKey };
@@ -218,6 +229,8 @@ serve(async (req: Request) => {
       careerTeams,
       availableSeasons,
     };
+
+    setCached(cacheKey, responseData, 30 * 60_000);
 
     return new Response(
       JSON.stringify(responseData),

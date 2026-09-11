@@ -27,7 +27,8 @@ interface ApiResponse {
 }
 
 const LIVE_REFRESH_MS = 30_000;      // 30s while a match is actually live
-const IDLE_REFRESH_MS = 3 * 60_000;  // 3min when no live match → protects API-Football quota
+const IDLE_REFRESH_MS = 5 * 60_000;  // 5min when no live match → protects API-Football quota
+const PAST_FUTURE_REFRESH_MS = 10 * 60_000; // yesterday/tomorrow barely change
 const STALE_TIME_MS = 2 * 60 * 1000; // 2 minutes
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-fixtures`;
 
@@ -79,6 +80,7 @@ export function useLiveScores({
     staleTime: STALE_TIME_MS,
     gcTime: 10 * 60 * 1000, // 10 min garbage collection
     refetchInterval: (query) => {
+      if (dateMode === "yesterday" || dateMode === "tomorrow") return PAST_FUTURE_REFRESH_MS;
       const list = (query.state.data as Match[] | undefined) ?? [];
       const hasLive = list.some((m) => m.status === "live" || m.status === "halftime");
       return hasLive ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
