@@ -68,9 +68,21 @@ serve(async (req: Request) => {
       );
     }
 
+    // Serve from the short-lived in-memory cache when possible so repeated
+    // opens of the same match do not burn API-Football quota.
+    const cacheKey = `match-details:${fixtureId}`;
+    const cachedPayload = getCached<unknown>(cacheKey);
+    if (cachedPayload) {
+      return new Response(JSON.stringify(cachedPayload), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT" },
+      });
+    }
+
     const headers = {
       "x-apisports-key": apiKey,
     };
+
 
     // Fetch fixture details first to get team IDs
     const fixtureRes = await fetch(`${API_FOOTBALL_URL}/fixtures?id=${fixtureId}`, { headers });
