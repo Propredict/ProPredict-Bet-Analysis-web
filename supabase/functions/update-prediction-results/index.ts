@@ -516,6 +516,7 @@ Deno.serve(async (req) => {
         const matchInfoMap = new Map((matchInfoData || []).map((a: any) => [a.match_id, a]));
 
         for (const ap of orphanedArena) {
+          if (quotaExhausted) break;
           try {
             const fixtureId = ap.match_id;
             if (!fixtureId || isNaN(Number(fixtureId))) {
@@ -533,6 +534,11 @@ Deno.serve(async (req) => {
               continue;
             }
             const apiJson = await apiResp.json();
+            if (isQuotaExhausted(apiJson)) {
+              console.log("API-Football daily request limit reached — stopping arena pass");
+              quotaExhausted = true;
+              break;
+            }
             const fix = apiJson.response?.[0] as FixtureResponse | undefined;
             if (!fix) {
               orphanDiag.push(`${fixtureId}: no_fixture_data`);
