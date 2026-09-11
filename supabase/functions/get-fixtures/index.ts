@@ -92,6 +92,8 @@ serve(async (req) => {
       // Fetch next fixture for a specific team
       params.append("team", teamId);
       params.append("next", "1");
+    }
+
     // ---------------------------------------------------------------
     // Date selection
     // "today" mode now includes ALL matches that play today AND through
@@ -145,7 +147,9 @@ serve(async (req) => {
     let rawItems: any[] = [];
     let belgradeWindow: { startMs: number; endMs: number } | null = null;
 
-    if (mode === "live") {
+    if (teamId) {
+      rawItems = await fetchOne(params);
+    } else if (mode === "live") {
       params.append("live", "all");
       rawItems = await fetchOne(params);
     } else if (date) {
