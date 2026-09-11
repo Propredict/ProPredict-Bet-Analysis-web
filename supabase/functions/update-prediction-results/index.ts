@@ -84,6 +84,16 @@ Deno.serve(async (req) => {
     let skippedCount = 0;
     const results: { id: string; status: string; reason: string }[] = [];
 
+    // Stop all passes immediately when API-Football reports the daily
+    // request limit is exhausted — further calls are wasted.
+    let quotaExhausted = false;
+    const isQuotaExhausted = (data: any): boolean => {
+      const errs = data?.errors;
+      if (!errs) return false;
+      const text = typeof errs === "string" ? errs : Object.values(errs).join(" ");
+      return /request limit/i.test(text);
+    };
+
     for (const prediction of pendingPredictions as AIPrediction[]) {
       try {
         // Fetch match result from API-Football
@@ -111,6 +121,13 @@ Deno.serve(async (req) => {
         }
 
         const apiData = await apiResponse.json();
+
+        if (isQuotaExhausted(apiData)) {
+          console.log("API-Football daily request limit reached — stopping all checks");
+          quotaExhausted = true;
+          break;
+        }
+
         const fixture = apiData.response?.[0] as FixtureResponse | undefined;
 
         if (!fixture) {
