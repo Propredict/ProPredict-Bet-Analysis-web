@@ -94,11 +94,49 @@ Deno.serve(async (req) => {
       return /request limit/i.test(text);
     };
 
+    // ---------------------------------------------------------------
+    // Load every fixture we need in batches of 20 (API-Football supports
+    // ?ids=1-2-3), instead of one request per prediction. Matches that
+    // cannot be finished yet (kickoff still in the future) are skipped
+    // before any request is made.
+    // ---------------------------------------------------------------
+    const nowMs = Date.now();
+    const idsToCheck: string[] = [];
+    for (const p of pendingPredictions as AIPrediction[]) {
+      const id = p.match_id;
+      if (!id || isNaN(Number(id))) continue;
+      // A match on a future date cannot have a result yet.
+      if (p.match_date && new Date(`${p.match_date}T23:59:59Z`).getTime() > nowMs + 3 * 60 * 60_000) continue;
+      if (!idsToCheck.includes(String(id))) idsToCheck.push(String(id));
+    }
+
+    const fixtureMap = new Map<string, FixtureResponse>();
+    for (let i = 0; i < idsToCheck.length; i += 20) {
+      const chunk = idsToCheck.slice(i, i + 20);
+      const apiResponse = await fetch(
+        `https://v3.football.api-sports.io/fixtures?ids=${chunk.join("-")}`,
+        { headers: { "x-apisports-key": apiFootballKey } }
+      );
+      if (!apiResponse.ok) {
+        console.error("API error while loading fixture batch:", apiResponse.status);
+        continue;
+      }
+      const apiData = await apiResponse.json();
+      if (isQuotaExhausted(apiData)) {
+        console.log("API-Football daily request limit reached — stopping all checks");
+        quotaExhausted = true;
+        break;
+      }
+      for (const f of (apiData.response ?? []) as FixtureResponse[]) {
+        fixtureMap.set(String(f.fixture?.id), f);
+      }
+    }
+
     for (const prediction of pendingPredictions as AIPrediction[]) {
+      if (quotaExhausted) break;
       try {
-        // Fetch match result from API-Football
         const fixtureId = prediction.match_id;
-        
+
         // Skip if match_id is not a valid number
         if (!fixtureId || isNaN(Number(fixtureId))) {
           console.log(`Skipping invalid match_id: ${fixtureId}`);
@@ -106,29 +144,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const apiUrl = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
-
-        const apiResponse = await fetch(apiUrl, {
-          headers: {
-            "x-apisports-key": apiFootballKey,
-          },
-        });
-
-        if (!apiResponse.ok) {
-          console.error(`API error for fixture ${fixtureId}:`, apiResponse.status);
-          skippedCount++;
-          continue;
-        }
-
-        const apiData = await apiResponse.json();
-
-        if (isQuotaExhausted(apiData)) {
-          console.log("API-Football daily request limit reached — stopping all checks");
-          quotaExhausted = true;
-          break;
-        }
-
-        const fixture = apiData.response?.[0] as FixtureResponse | undefined;
+        const fixture = fixtureMap.get(String(fixtureId));
 
         if (!fixture) {
           console.log(`No fixture data for ${fixtureId}`);
