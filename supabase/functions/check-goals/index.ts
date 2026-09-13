@@ -143,31 +143,36 @@ serve(async (req) => {
 
       const eventsToSend: Array<{ team: string; type: string }> = [];
       for (const ge of goalEvents) {
-        // Pre-check so we don't hit the unique constraint (which Postgres
-        // logs as a 23505 error even when we handle it in code).
-        const { data: existing } = await supabase
+        // Atomic conflict-safe insert: ON CONFLICT (match_id, home_score, away_score)
+        // DO NOTHING via PostgREST upsert with ignoreDuplicates. Concurrent
+        // executions cannot produce a 23505 error — the conflict is resolved
+        // by the database itself, not by a racy SELECT-then-INSERT.
+        // With ignoreDuplicates, conflicting rows are omitted from the result,
+        // so an empty `inserted` array means the goal was already recorded.
+        const { data: inserted, error: insErr } = await supabase
           .from("match_alert_events")
-          .select("id")
-          .eq("match_id", matchId)
-          .eq("event_type", ge.type)
-          .eq("home_score", homeScore)
-          .eq("away_score", awayScore)
-          .maybeSingle();
+          .upsert(
+            {
+              match_id: matchId,
+              event_type: ge.type,
+              minute: elapsed,
+              home_score: homeScore,
+              away_score: awayScore,
+            },
+            {
+              onConflict: "match_id,home_score,away_score",
+              ignoreDuplicates: true,
+            }
+          )
+          .select("id");
 
-        if (existing) continue;
-
-        const { error: insErr } = await supabase.from("match_alert_events").insert({
-          match_id: matchId,
-          event_type: ge.type,
-          minute: elapsed,
-          home_score: homeScore,
-          away_score: awayScore,
-        });
-
-        if (!insErr) {
-          eventsToSend.push(ge);
-        } else if (insErr.code !== "23505") {
+        if (insErr) {
           console.error("[check-goals] Event insert failed:", insErr.message);
+          continue;
+        }
+
+        if (inserted && inserted.length > 0) {
+          eventsToSend.push(ge);
         }
       }
 
