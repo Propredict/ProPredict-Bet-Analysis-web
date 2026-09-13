@@ -143,23 +143,21 @@ serve(async (req) => {
 
       const eventsToSend: Array<{ team: string; type: string }> = [];
       for (const ge of goalEvents) {
-        const { data: existing } = await supabase
-          .from("match_alert_events")
-          .select("id")
-          .eq("match_id", matchId)
-          .eq("event_type", ge.type)
-          .eq("minute", elapsed)
-          .maybeSingle();
+        // Insert first and let the unique constraint do the dedup.
+        // A 23505 conflict simply means this goal was already recorded,
+        // so we skip it silently instead of logging an error.
+        const { error: insErr } = await supabase.from("match_alert_events").insert({
+          match_id: matchId,
+          event_type: ge.type,
+          minute: elapsed,
+          home_score: homeScore,
+          away_score: awayScore,
+        });
 
-        if (!existing) {
+        if (!insErr) {
           eventsToSend.push(ge);
-          await supabase.from("match_alert_events").insert({
-            match_id: matchId,
-            event_type: ge.type,
-            minute: elapsed,
-            home_score: homeScore,
-            away_score: awayScore,
-          });
+        } else if (insErr.code !== "23505") {
+          console.error("[check-goals] Event insert failed:", insErr.message);
         }
       }
 
