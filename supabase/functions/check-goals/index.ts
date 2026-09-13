@@ -143,9 +143,19 @@ serve(async (req) => {
 
       const eventsToSend: Array<{ team: string; type: string }> = [];
       for (const ge of goalEvents) {
-        // Insert first and let the unique constraint do the dedup.
-        // A 23505 conflict simply means this goal was already recorded,
-        // so we skip it silently instead of logging an error.
+        // Pre-check so we don't hit the unique constraint (which Postgres
+        // logs as a 23505 error even when we handle it in code).
+        const { data: existing } = await supabase
+          .from("match_alert_events")
+          .select("id")
+          .eq("match_id", matchId)
+          .eq("event_type", ge.type)
+          .eq("home_score", homeScore)
+          .eq("away_score", awayScore)
+          .maybeSingle();
+
+        if (existing) continue;
+
         const { error: insErr } = await supabase.from("match_alert_events").insert({
           match_id: matchId,
           event_type: ge.type,
@@ -160,6 +170,7 @@ serve(async (req) => {
           console.error("[check-goals] Event insert failed:", insErr.message);
         }
       }
+
 
       if (eventsToSend.length === 0) {
         queueCacheUpdate(matchId, homeScore, awayScore);
