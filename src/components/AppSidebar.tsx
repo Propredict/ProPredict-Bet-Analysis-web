@@ -43,11 +43,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const tipsItems = [
+const mainItems = [
   { title: "Single Tips", url: "/single-tips", icon: Lightbulb },
-];
-
-const ticketsItems = [
   { title: "Tiket / Bet Slip", url: "/tickets", icon: Ticket },
 ];
 
