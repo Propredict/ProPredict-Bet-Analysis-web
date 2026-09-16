@@ -82,12 +82,12 @@ function getFormColor(result: string) {
 }
 
 function getPositionColor(pos: number, description?: string) {
-  if (description?.toLowerCase().includes("champions league")) return "text-green-400";
-  if (description?.toLowerCase().includes("europa")) return "text-blue-400";
-  if (description?.toLowerCase().includes("relegation")) return "text-red-400";
-  if (pos <= 4) return "text-green-400";
-  if (pos <= 6) return "text-blue-400";
-  if (pos >= 18) return "text-red-400";
+  if (description?.toLowerCase().includes("champions league")) return "text-success";
+  if (description?.toLowerCase().includes("europa")) return "text-primary";
+  if (description?.toLowerCase().includes("relegation")) return "text-destructive";
+  if (pos <= 4) return "text-success";
+  if (pos <= 6) return "text-primary";
+  if (pos >= 18) return "text-destructive";
   return "text-foreground";
 }
 
@@ -131,9 +131,9 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
                   <th className="px-2 sm:px-3 py-2 text-left w-6">#</th>
                   <th className="px-2 sm:px-3 py-2 text-left">Team</th>
                   <th className="px-1 sm:px-3 py-2 text-center">P</th>
-                  <th className="px-1 sm:px-3 py-2 text-center text-green-400">W</th>
-                  <th className="px-1 sm:px-3 py-2 text-center text-yellow-400">D</th>
-                  <th className="px-1 sm:px-3 py-2 text-center text-red-400">L</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-success">W</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-muted-foreground">D</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-destructive">L</th>
                   <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell">GD</th>
                   <th className="px-1 sm:px-3 py-2 text-center text-primary">Pts</th>
                 </tr>
@@ -151,10 +151,10 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
                       </div>
                     </td>
                     <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{team.all.played}</td>
-                    <td className="px-1 sm:px-3 py-2 text-center text-green-400">{team.all.win}</td>
-                    <td className="px-1 sm:px-3 py-2 text-center text-yellow-400">{team.all.draw}</td>
-                    <td className="px-1 sm:px-3 py-2 text-center text-red-400">{team.all.lose}</td>
-                    <td className={cn("px-1 sm:px-3 py-2 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "text-muted-foreground")}>
+                    <td className="px-1 sm:px-3 py-2 text-center text-success">{team.all.win}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{team.all.draw}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-destructive">{team.all.lose}</td>
+                    <td className={cn("px-1 sm:px-3 py-2 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-success" : team.goalsDiff < 0 ? "text-destructive" : "text-muted-foreground")}>
                       {team.goalsDiff > 0 ? `+${team.goalsDiff}` : team.goalsDiff}
                     </td>
                     <td className="px-1 sm:px-3 py-2 text-center font-bold text-primary">{team.points}</td>
@@ -285,9 +285,9 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
                       <th className="px-2 sm:px-3 py-2 sm:py-3 text-left w-6 sm:w-8">#</th>
                       <th className="px-2 sm:px-3 py-2 sm:py-3 text-left">Team</th>
                       <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">MP</th>
-                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">W</th>
-                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-yellow-400">D</th>
-                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-red-400">L</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-success">W</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">D</th>
+                      <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-destructive">L</th>
                       <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">G</th>
                       <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">+/-</th>
                       <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">P</th>
@@ -319,11 +319,11 @@ function SingleLeagueStandings({ leagueId, leagueName }: { leagueId: string; lea
                             </div>
                           </td>
                           <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">{played}</td>
-                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">{win}</td>
-                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-yellow-400">{draw}</td>
-                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-red-400">{lose}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-success">{win}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">{draw}</td>
+                          <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-destructive">{lose}</td>
                           <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden sm:table-cell">{goalsFor}:{goalsAgainst}</td>
-                          <td className={cn("px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-green-400" : team.goalsDiff < 0 ? "text-red-400" : "")}>
+                          <td className={cn("px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell", team.goalsDiff > 0 ? "text-success" : team.goalsDiff < 0 ? "text-destructive" : "")}>
                             {team.goalsDiff}
                           </td>
                           <td className="px-1 sm:px-3 py-2 sm:py-3 text-center font-bold text-primary">{team.points}</td>
@@ -404,9 +404,9 @@ function StandingsRowMobile({
 
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span>P {played}</span>
-            <span className="text-green-400">W {win}</span>
-            <span className="text-yellow-400">D {draw}</span>
-            <span className="text-red-400">L {lose}</span>
+            <span className="text-success">W {win}</span>
+            <span className="text-muted-foreground">D {draw}</span>
+            <span className="text-destructive">L {lose}</span>
             <span>G {goalsFor}:{goalsAgainst}</span>
           </div>
         </div>
