@@ -26,6 +26,7 @@ import {
   Gift,
   Ticket
 } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
