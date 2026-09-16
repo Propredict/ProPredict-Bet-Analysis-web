@@ -320,6 +320,8 @@ const Index = () => {
           <TodaysMatches />
         </Suspense>
 
+        <DashboardStatsStrip />
+
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />
         </Suspense>
