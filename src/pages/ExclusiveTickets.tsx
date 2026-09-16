@@ -148,7 +148,7 @@ export default function ExclusiveTickets() {
                 <Star className="h-6 w-6 fill-primary-foreground/20 text-primary-foreground sm:h-7 sm:w-7" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Modern Sports Pro</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">AI Powered Daily Ticket</p>
                 <h1 className="text-2xl font-extrabold text-primary-foreground sm:text-3xl">Sure Odds 2+</h1>
                 <p className="mt-1 max-w-2xl text-[11px] font-medium leading-relaxed text-primary-foreground/80 sm:text-sm">
                   Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
@@ -204,6 +204,8 @@ export default function ExclusiveTickets() {
       </section>
 
       {/* Tickets Area */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <div className="min-w-0">
       {isLoading ? (
         <Card className="border-primary/15 bg-card p-8 shadow-sm">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -288,6 +290,38 @@ export default function ExclusiveTickets() {
           })}
         </div>
       )}
+      </div>
+
+      <aside className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="rounded-xl border border-primary/15 bg-card p-4 shadow-sm">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10"><ShieldCheck className="h-4 w-4 text-primary" /></div>
+          <h2 className="text-sm font-extrabold text-foreground">Today's Access</h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+            {hasTicketAccess ? "Your ticket is unlocked until midnight. / Vaš tiket je otključan do ponoći." : "Free access is locked. Buy today's ticket or choose Premium. / Free pristup je zaključan. Kupite današnji tiket ili izaberite Premium."}
+          </p>
+          {!hasTicketAccess && (
+            <Button className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleBuyDailyTicket}>
+              <Ticket className="mr-2 h-4 w-4" />Unlock – {SURE_ODDS_PRICE_LABEL}
+            </Button>
+          )}
+        </div>
+        <div className="relative overflow-hidden rounded-xl bg-sidebar p-4 text-sidebar-foreground shadow-md">
+          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full border-[18px] border-primary/20" />
+          <Crown className="mb-3 h-7 w-7 text-blue-300" />
+          <h2 className="text-base font-extrabold">Premium Access</h2>
+          <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/70">Sure Odds 2+ is included every day at no extra cost. / Sure Odds 2+ je uključen svakog dana bez doplate.</p>
+          {plan !== "premium" && !isAdmin && (
+            <Button
+              size="sm"
+              className="relative mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => { setUpgradeHighlight("premium"); setUpgradeModalOpen(true); }}
+            >
+              Get Premium <Crown className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      </aside>
+      </div>
 
       {/* Compliance Disclaimer */}
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
