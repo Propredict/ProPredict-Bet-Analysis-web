@@ -24,28 +24,28 @@ function SettingRow({ icon, title, description, checked, onChange, disabled }: S
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 rounded-xl border-2 p-3 transition-all duration-200",
-        disabled && "pointer-events-none opacity-50",
+        "flex items-center justify-between gap-3 rounded-xl border-2 p-3.5 transition-all duration-200",
+        disabled && "pointer-events-none opacity-60",
         checked
-          ? "border-primary/50 bg-primary/10 shadow-sm shadow-primary/10"
-          : "border-border bg-secondary/40",
+          ? "border-primary/80 bg-primary/10 shadow-md shadow-primary/20"
+          : "border-primary/25 bg-card shadow-sm",
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
         <div
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
-            checked ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
+            checked ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "bg-secondary text-muted-foreground ring-1 ring-border",
           )}
         >
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-sm font-extrabold tracking-tight text-sidebar">{title}</p>
+          <p className="text-xs font-semibold text-foreground/70">{description}</p>
         </div>
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} className="scale-110" />
     </div>
   );
 }
