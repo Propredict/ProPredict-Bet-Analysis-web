@@ -8,3 +8,5 @@
 - [x] Verify the redesigned Sure Odds section on desktop and mobile.
 - [x] Restyle the full Sure Odds 2+ page while preserving Premium, admin, daily-purchase, and Free locking rules.
 - [x] Verify the full Sure Odds page on desktop and mobile, including locked and unlocked rendering logic.
+- [x] Restyle the app/web choice page in Stadium Blue without changing its countdown, links, popup, or live predictions.
+- [x] Verify the app/web choice page on desktop and mobile.
