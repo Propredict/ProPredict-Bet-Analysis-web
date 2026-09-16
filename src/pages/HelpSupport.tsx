@@ -26,6 +26,7 @@ import {
   Gift,
   Ticket
 } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -108,7 +109,7 @@ const HelpSupport = () => {
     {
       title: "Sure Odds 2+ Ticket",
       icon: Ticket,
-      color: "text-amber-400",
+      color: "text-primary",
       questions: [
         {
           q: "What is the Sure Odds 2+ Ticket?",
@@ -214,7 +215,7 @@ const HelpSupport = () => {
     {
       title: "App & Technical",
       icon: Smartphone,
-      color: "text-blue-400",
+      color: "text-primary",
       questions: [
         {
           q: "How do I enable notifications?",
@@ -264,7 +265,7 @@ const HelpSupport = () => {
     ...(getIsAndroidApp() ? [{
       title: "Rewards & Points",
       icon: Gift,
-      color: "text-amber-400",
+      color: "text-primary",
       questions: [
         {
           q: "What are Daily Rewards?",
@@ -391,20 +392,12 @@ const HelpSupport = () => {
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-full border border-primary">
-          <HelpCircle className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-sm sm:text-base font-semibold text-foreground">FAQ & Support</h1>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Get help with ProPredict</p>
-        </div>
-      </div>
+      <PageHero title="FAQ & Support" subtitle="Get help with ProPredict" icon={HelpCircle} className="mb-4" />
 
       {/* Support Contact Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
         {supportCards.map((card) => (
-          <Card key={card.title} className="hover:border-primary/50 transition-colors cursor-pointer">
+          <Card key={card.title} className="border-2 border-primary/25 transition-colors hover:border-primary/60 cursor-pointer">
             <CardContent className="p-3 text-center">
               <card.icon className={`h-5 w-5 mx-auto mb-1.5 ${card.color}`} />
               <p className="text-xs font-medium text-foreground">{card.title}</p>
@@ -442,11 +435,11 @@ const HelpSupport = () => {
                       value={`${category.title}-${index}`}
                       className={`border rounded-md px-3 data-[state=open]:bg-muted/30 ${faq.highlight ? "border-destructive/60 bg-destructive/5" : "border-border"}`}
                     >
-                      <AccordionTrigger className={`text-[11px] sm:text-xs hover:no-underline py-2 ${faq.highlight ? "text-destructive font-semibold" : "text-foreground"}`}>
+                      <AccordionTrigger className={`text-xs sm:text-sm hover:no-underline py-2.5 ${faq.highlight ? "text-destructive font-semibold" : "text-foreground"}`}>
                         {faq.highlight && <span className="mr-1.5">🔥</span>}
                         {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent className="text-[10px] sm:text-xs text-muted-foreground pb-2">
+                      <AccordionContent className="text-xs text-muted-foreground pb-2">
                         {faq.a}
                       </AccordionContent>
                     </AccordionItem>
