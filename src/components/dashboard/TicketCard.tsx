@@ -52,6 +52,8 @@ interface TicketCardProps {
   isUnlocking?: boolean;
   hideLockedMatches?: boolean;
   customLockedCTA?: React.ReactNode;
+  /** Light (white) ticket design — used for the Sure Odds highlight card */
+  light?: boolean;
 }
 
 /* =======================
@@ -106,6 +108,7 @@ function TicketCard({
   isUnlocking = false,
   hideLockedMatches = false,
   customLockedCTA,
+  light = false,
 }: TicketCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -167,31 +170,45 @@ function TicketCard({
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
 
-  const cardShell = cn(
-    "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
-    accent.glow
-  );
+  const cardShell = light
+    ? cn(
+        "relative rounded-xl border border-amber-200 bg-white overflow-hidden transition-all duration-300 hover:border-amber-300 cursor-pointer group",
+        "shadow-[0_10px_40px_-10px_rgba(245,158,11,0.45)]"
+      )
+    : cn(
+        "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
+        accent.glow
+      );
 
   // --- Shared header ---
   const renderHeader = () => (
     <>
-      <div className={cn("h-1 w-full", accent.line)} />
-      <div className={cn("bg-gradient-to-b", accent.gradient)}>
+      <div className={cn("h-1.5 w-full", light ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400" : accent.line)} />
+      <div className={light ? "bg-gradient-to-b from-amber-50 to-white border-b border-amber-100" : cn("bg-gradient-to-b", accent.gradient)}>
         <div className="p-3.5 sm:p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               {getTierBadge(ticket.tier)}
-              <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
+              <span className={cn(
+                "text-[10px] px-2 py-0.5 rounded-full border",
+                light ? "text-amber-700 bg-amber-100/70 border-amber-200" : "text-muted-foreground bg-muted/40 border-border/30"
+              )}>
                 {ticket.matchCount} Matches
               </span>
             </div>
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className="font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight text-center">
+          <h3 className={cn(
+            "font-bold text-base sm:text-lg leading-tight tracking-tight text-center",
+            light ? "text-slate-900" : "text-foreground"
+          )}>
             {ticket.title}
           </h3>
-          <div className="mt-1.5 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+          <div className={cn(
+            "mt-1.5 flex items-center justify-center gap-3 text-[11px]",
+            light ? "text-slate-500" : "text-muted-foreground"
+          )}>
             {ticketDate && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -201,7 +218,7 @@ function TicketCard({
             {ticket.totalOdds > 0 && (
               <span className="flex items-center gap-1">
                 <span className="opacity-60">Total odds</span>
-                <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
+                <span className={cn("font-bold", light ? "text-amber-600" : "text-foreground")}>{formatCombinedOdds(ticket.totalOdds)}</span>
               </span>
             )}
           </div>
@@ -224,21 +241,21 @@ function TicketCard({
             {displayedMatches.map((match, idx) => {
               const parsed = parseMatchName(match.name);
               return (
-                <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+                <div key={idx} className={cn("rounded-lg border p-2.5", light ? "border-slate-200 bg-slate-50" : "border-border/40 bg-muted/10")}>
                   {parsed.league && (
-                    <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                    <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-amber-600 font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                   )}
                   <div className="flex items-center justify-center gap-2">
-                    <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                       {parsed.homeTeam}
                     </span>
-                    <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                    <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                    <span className={cn("shrink-0 text-[10px]", light ? "text-slate-400" : "text-muted-foreground")}>vs</span>
+                    <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                       {parsed.awayTeam}
                     </span>
                   </div>
                   <div className="mt-1.5 flex items-center justify-center gap-2">
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 shrink-0">
+                    <span className={cn("text-[10px] flex items-center gap-1 shrink-0", light ? "text-slate-400" : "text-muted-foreground")}>
                       <Lock className="h-2.5 w-2.5" />
                       Locked
                     </span>
@@ -323,21 +340,24 @@ function TicketCard({
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+              <div key={idx} className={cn("rounded-lg border p-2.5", light ? "border-slate-200 bg-slate-50" : "border-border/40 bg-muted/10")}>
                 {parsed.league && (
-                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                  <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-amber-600 font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                     {parsed.homeTeam}
                   </span>
-                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className={cn("shrink-0 text-[10px]", light ? "text-slate-400" : "text-muted-foreground")}>vs</span>
+                  <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-2 rounded-lg border border-success/30 bg-success/5 py-2 px-3 text-center">
-                  <span className="text-[13px] font-bold text-foreground tracking-wide">
+                <div className={cn(
+                  "mt-2 rounded-lg border py-2 px-3 text-center",
+                  light ? "border-emerald-200 bg-emerald-50" : "border-success/30 bg-success/5"
+                )}>
+                  <span className={cn("text-[13px] font-bold tracking-wide", light ? "text-emerald-700" : "text-foreground")}>
                     {match.prediction}
                   </span>
                 </div>

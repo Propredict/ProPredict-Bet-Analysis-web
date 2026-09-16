@@ -107,6 +107,7 @@ export function SureOddsDashboardSection() {
             <TicketCard
               ticket={ticket}
               isLocked={false}
+              light
               unlockMethod={{ type: "unlocked" }}
               isUnlocking={unlockingId === ticket.id}
               onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
