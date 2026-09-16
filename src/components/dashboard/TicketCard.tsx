@@ -340,21 +340,24 @@ function TicketCard({
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="rounded-lg border border-border/40 bg-muted/10 p-2.5">
+              <div key={idx} className={cn("rounded-lg border p-2.5", light ? "border-slate-200 bg-slate-50" : "border-border/40 bg-muted/10")}>
                 {parsed.league && (
-                  <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5">{parsed.league}</p>
+                  <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-amber-600 font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                     {parsed.homeTeam}
                   </span>
-                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className={cn("shrink-0 text-[10px]", light ? "text-slate-400" : "text-muted-foreground")}>vs</span>
+                  <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-slate-900 border-slate-200 bg-white" : "text-foreground border-border/50 bg-muted/20")}>
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-2 rounded-lg border border-success/30 bg-success/5 py-2 px-3 text-center">
-                  <span className="text-[13px] font-bold text-foreground tracking-wide">
+                <div className={cn(
+                  "mt-2 rounded-lg border py-2 px-3 text-center",
+                  light ? "border-emerald-200 bg-emerald-50" : "border-success/30 bg-success/5"
+                )}>
+                  <span className={cn("text-[13px] font-bold tracking-wide", light ? "text-emerald-700" : "text-foreground")}>
                     {match.prediction}
                   </span>
                 </div>
