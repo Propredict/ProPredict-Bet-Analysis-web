@@ -72,9 +72,9 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
 
   const toneClasses =
     tone === "emerald"
-      ? "bg-green-500/15 text-green-300 border-green-500/30 hover:bg-green-500/20"
+      ? "bg-green-500/15 text-success border-green-500/30 hover:bg-green-500/20"
       : tone === "amber"
-      ? "bg-blue-500/15 text-blue-300 border-blue-500/30 hover:bg-blue-500/20"
+      ? "bg-blue-500/15 text-primary border-blue-500/30 hover:bg-blue-500/20"
       : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/40";
 
   return (

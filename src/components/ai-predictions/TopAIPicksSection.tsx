@@ -257,7 +257,7 @@ export function TopAIPicksSection({
               type="button"
               aria-label="Previous pick"
               onClick={() => scrollByCard("left")}
-              className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-blue-300 active:scale-95 transition"
+              className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-primary active:scale-95 transition"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -269,7 +269,7 @@ export function TopAIPicksSection({
               type="button"
               aria-label="Next pick"
               onClick={() => scrollByCard("right")}
-              className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-blue-300 active:scale-95 transition"
+              className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-primary active:scale-95 transition"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -294,7 +294,7 @@ export function TopAIPicksSection({
             <div className="flex items-center gap-2 text-center sm:text-left">
               <Lock className="w-4 h-4 text-blue-400 shrink-0" />
               <p className="text-xs md:text-sm text-foreground">
-                <span className="font-semibold text-blue-300">
+                <span className="font-semibold text-primary">
                   +{lockedCount} more elite picks / +{lockedCount} dodatnih elite izbora
                 </span>{" "}
                 available with Pro & Premium / dostupno sa Pro & Premium

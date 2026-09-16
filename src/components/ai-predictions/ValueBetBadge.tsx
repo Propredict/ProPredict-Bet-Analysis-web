@@ -44,8 +44,8 @@ export function ValueBetBadge({
   const pct = `+${Math.round(value * 100)}%`;
 
   const tone = isStrong
-    ? "bg-gradient-to-r from-blue-500/20 to-blue-500/20 text-blue-300 border-blue-500/40 shadow-[0_0_10px_rgba(251,146,60,0.25)]"
-    : "bg-blue-500/15 text-blue-300 border-blue-500/30";
+    ? "bg-gradient-to-r from-blue-500/20 to-blue-500/20 text-primary border-blue-500/40 shadow-[0_0_10px_rgba(251,146,60,0.25)]"
+    : "bg-blue-500/15 text-primary border-blue-500/30";
 
   return (
     <div

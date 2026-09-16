@@ -818,7 +818,7 @@ export default function AIPredictions() {
                   <Gift className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Free ({tierCounts.free})
                 </span>
-                <span className="text-[9px] md:text-sm font-bold text-green-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-success/90 leading-none">
                   {Math.max(tierStats.free.accuracy, 50)}%
                 </span>
               </Button>
@@ -837,7 +837,7 @@ export default function AIPredictions() {
                   <Star className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Pro ({tierCounts.pro})
                 </span>
-                <span className="text-[9px] md:text-sm font-bold text-blue-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
                   {Math.max(tierStats.pro.accuracy, 75)}%
                 </span>
               </Button>
@@ -856,7 +856,7 @@ export default function AIPredictions() {
                   <Crown className="w-3.5 h-3.5 md:w-5 md:h-5" />
                   Premium ({tierCounts.premium})
                 </span>
-                <span className="text-[9px] md:text-sm font-bold text-blue-300/90 leading-none">
+                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
                   {Math.max(tierStats.premium.accuracy, 87)}%
                 </span>
               </Button>
@@ -927,7 +927,7 @@ export default function AIPredictions() {
                       <Sparkles className="w-3 h-3 mr-1" />
                       Elite Signal
                     </Badge>
-                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-500/10 text-cyan-200 text-[9px] md:text-[10px] px-2 py-0.5">
+                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-500/10 text-primary text-[9px] md:text-[10px] px-2 py-0.5">
                       Tier 1/2 • Stable Form
                     </Badge>
                   </div>
@@ -978,7 +978,7 @@ export default function AIPredictions() {
 
                         {/* VS + meta */}
                         <div className="flex flex-col items-center text-center px-2 md:px-4">
-                          <div className="text-[10px] md:text-xs text-cyan-200/80 font-semibold mb-1">
+                          <div className="text-[10px] md:text-xs text-primary/80 font-semibold mb-1">
                             {diamondPick.league || "Elite Match"}
                           </div>
                           <div className="text-[10px] md:text-xs text-muted-foreground mb-1.5">
@@ -1000,7 +1000,7 @@ export default function AIPredictions() {
                                 className="w-9 h-9 md:w-14 md:h-14 object-contain"
                               />
                             ) : (
-                              <span className="text-lg md:text-2xl font-black text-blue-100">
+                              <span className="text-lg md:text-2xl font-black text-primary">
                                 {diamondPick.away_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
                               </span>
                             )}
@@ -1012,11 +1012,11 @@ export default function AIPredictions() {
 
                         {/* AI Prediction lock badge */}
                         <div className="hidden md:flex flex-col items-center justify-center text-center min-w-[140px] border-l border-cyan-400/20 pl-4">
-                          <div className="flex items-center gap-1.5 text-blue-300 mb-1.5">
+                          <div className="flex items-center gap-1.5 text-primary mb-1.5">
                             <Sparkles className="w-4 h-4" />
                             <span className="text-xs font-bold uppercase tracking-wider">AI Prediction</span>
                           </div>
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-200 text-xs font-bold">
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-primary text-xs font-bold">
                             <Lock className="w-3 h-3" />
                             PREMIUM ONLY
                           </div>
@@ -1027,7 +1027,7 @@ export default function AIPredictions() {
                       </div>
 
                       {/* Mobile-only lock badge */}
-                      <div className="md:hidden flex items-center justify-center gap-2 mt-3 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-200 text-xs font-bold">
+                      <div className="md:hidden flex items-center justify-center gap-2 mt-3 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-primary text-xs font-bold">
                         <Lock className="w-3 h-3" />
                         PREMIUM ONLY — Unlock to see AI pick / Otključaj da vidiš AI izbor
                       </div>
@@ -1062,7 +1062,7 @@ export default function AIPredictions() {
                             1,200+ users unlocked this pick
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-400/30 text-green-300 text-[10px] md:text-xs font-bold whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-400/30 text-success text-[10px] md:text-xs font-bold whitespace-nowrap">
                           <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
                           Last 10 Diamond Picks: 9W / 1L (90%)
                         </div>
@@ -1073,9 +1073,9 @@ export default function AIPredictions() {
                     <div className="ring-1 ring-blue-400/30 rounded-xl bg-gradient-to-br from-card via-card to-primary/10 p-4 md:p-5 flex flex-col items-center text-center gap-3">
                       <div className="flex items-center gap-2">
                         <div className="p-2 rounded-full bg-blue-500/15 border border-blue-400/30">
-                          <Lock className="w-5 h-5 text-blue-300" />
+                          <Lock className="w-5 h-5 text-primary" />
                         </div>
-                        <span className="text-xs md:text-sm font-bold uppercase tracking-wider text-blue-300">
+                        <span className="text-xs md:text-sm font-bold uppercase tracking-wider text-primary">
                           Premium Only
                         </span>
                       </div>
@@ -1154,10 +1154,10 @@ export default function AIPredictions() {
                     Lowest variance + stable form — the most defensive selection today
                   </p>
                   <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
-                    <Badge className="bg-green-500/20 text-green-200 border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
+                    <Badge className="bg-green-500/20 text-success border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
                       ✅ Low Variance
                     </Badge>
-                    <Badge className="bg-green-500/20 text-green-200 border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
+                    <Badge className="bg-green-500/20 text-success border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
                       🛡️ Defensive Edge
                     </Badge>
                   </div>
@@ -1206,7 +1206,7 @@ export default function AIPredictions() {
                       </div>
                       <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                     </div>
-                    <Badge className="mt-2 bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
+                    <Badge className="mt-2 bg-blue-500/20 text-primary border-blue-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
                       {isAndroidApp ? `${tierCounts.pro} picks available` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
                     </Badge>
                   </div>
@@ -1344,7 +1344,7 @@ export default function AIPredictions() {
                       </div>
                       <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                     </div>
-                    <Badge className="mt-2 bg-blue-500/20 text-blue-300 border-blue-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
+                    <Badge className="mt-2 bg-blue-500/20 text-primary border-blue-500/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">
                       🔒 {tierCounts.premium} Premium picks locked
                     </Badge>
                   </div>
@@ -1632,7 +1632,7 @@ export default function AIPredictions() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 px-2 text-[9px] text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  className="h-6 px-2 text-[9px] text-blue-400 hover:text-primary hover:bg-blue-500/10"
                   onClick={() => setTierFilter("premium")}
                 >
                   View →
