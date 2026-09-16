@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Crown, Loader2, Lock, RefreshCw, Sparkles, Ticket as TicketIcon } from "lucide-react";
+import { CheckCircle2, Crown, Loader2, Lock, RefreshCw, Sparkles, Target, Ticket as TicketIcon } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
@@ -82,48 +82,90 @@ function TicketGroup({
               const visibleMatches = isLocked ? ticket.matches.slice(0, 3) : ticket.matches;
 
               return (
-                <article id={`ticket-${ticket.id}`} key={ticket.id} className="overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-accent/25">
+                <article id={`ticket-${ticket.id}`} key={ticket.id} className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-lg">
                   <Button
                     type="button"
                     variant="ghost"
-                    className="flex h-auto w-full items-center justify-between gap-3 rounded-none border-b border-sidebar-border px-4 py-3 text-left hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                    className="flex h-auto w-full items-center justify-between gap-3 rounded-none border-b border-primary/25 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 px-4 py-4 text-left hover:from-sidebar-accent hover:to-primary/90 hover:text-sidebar-foreground"
                     onClick={() => navigate(`/tickets/${ticket.id}`)}
                   >
                     <div className="min-w-0">
-                      <p className="truncate font-bold text-sidebar-foreground">{ticket.title}</p>
-                      <p className="mt-0.5 text-[11px] text-sidebar-foreground/55">{ticket.matches.length} matches</p>
+                      <div className="mb-1 flex items-center gap-2">
+                        {isPremium ? <Crown className="h-4 w-4 text-primary" /> : <TicketIcon className="h-4 w-4 text-primary" />}
+                        <span className="text-[10px] font-bold uppercase text-primary">{isPremium ? "Premium Ticket" : "Daily Ticket"}</span>
+                      </div>
+                      <p className="truncate text-base font-extrabold uppercase text-sidebar-foreground sm:text-lg">{ticket.title}</p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase text-sidebar-foreground/65">Carefully selected picks</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-[9px] font-bold uppercase text-sidebar-foreground/45">Total odds</p>
-                      <p className="font-bold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
+                      <p className="text-[9px] font-bold uppercase text-sidebar-foreground/55">Total odds</p>
+                      <p className="text-lg font-extrabold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
                   </Button>
 
-                  <div className="space-y-2 p-3">
-                    {visibleMatches.map((match) => {
+                  <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-secondary/55 px-2 py-3 text-center">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Matches</p>
+                      <p className="mt-0.5 text-sm font-extrabold text-foreground">{ticket.matches.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Confidence</p>
+                      <p className="mt-0.5 text-sm font-extrabold text-primary">High</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Status</p>
+                      <p className="mt-0.5 text-sm font-extrabold text-success">Ready</p>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-border bg-card px-3 sm:px-4">
+                    {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/45 p-3 transition-colors hover:border-primary/40">
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[10px] font-semibold uppercase text-sidebar-foreground/45">{parsed.league || "Football"}</p>
-                            <p className="mt-1 truncate text-sm font-semibold text-sidebar-foreground">{parsed.homeTeam} <span className="text-sidebar-foreground/40">vs</span> {parsed.awayTeam}</p>
+                        <div key={match.id} className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 py-3.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(8rem,auto)_1.5rem] sm:gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
+                            {matchIndex + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
+                            <p className="mt-1 truncate text-sm font-extrabold text-foreground">{parsed.homeTeam} <span className="px-1 text-xs font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
                           </div>
                           {isLocked ? (
-                            <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-sidebar-border bg-sidebar px-3 py-2 text-xs font-semibold text-sidebar-foreground/65">
+                            <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
                               <Lock className="h-3.5 w-3.5" /> Locked
                             </div>
                           ) : (
-                            <div className="max-w-[44%] shrink-0 rounded-lg border border-success/45 bg-success/10 px-3 py-2 text-right">
-                              <p className="truncate text-xs font-extrabold text-success">{match.prediction}</p>
-                              <p className="text-[10px] font-semibold text-success/80">{match.odds.toFixed(2)}</p>
+                            <div className="max-w-[9rem] shrink-0 rounded-lg border border-primary/25 bg-secondary px-3 py-2 text-left sm:min-w-32">
+                              <p className="text-[9px] font-bold uppercase text-primary">Pick</p>
+                              <p className="truncate text-xs font-extrabold text-foreground">{match.prediction}</p>
+                              <p className="text-[10px] font-semibold text-primary">{match.odds.toFixed(2)}</p>
                             </div>
                           )}
+                          <CheckCircle2 className="hidden h-5 w-5 text-success sm:block" />
                         </div>
                       );
                     })}
+                    {isLocked && ticket.matches.length > visibleMatches.length && (
+                      <div className="py-3 text-center text-xs font-bold text-primary">+{ticket.matches.length - visibleMatches.length} more matches</div>
+                    )}
                   </div>
 
-                  <div className="border-t border-sidebar-border bg-sidebar-accent/20 p-3">
+                  <div className="grid grid-cols-3 divide-x divide-border border-t border-border bg-secondary/35 text-center">
+                    <div className="px-2 py-3">
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Total matches</p>
+                      <p className="text-lg font-extrabold text-foreground">{ticket.matches.length}</p>
+                    </div>
+                    <div className="px-2 py-3">
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Total odds</p>
+                      <p className="text-lg font-extrabold text-primary">{isLocked ? "—" : formatCombinedOdds(ticket.total_odds)}</p>
+                    </div>
+                    <div className="px-2 py-3">
+                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Status</p>
+                      <p className="flex items-center justify-center gap-1 text-xs font-extrabold text-success"><Target className="h-4 w-4" /> Ready</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border bg-card p-3">
                     {isLocked ? (
                       <Button
                         className="h-11 w-full bg-primary font-bold text-primary-foreground hover:bg-primary/90"
