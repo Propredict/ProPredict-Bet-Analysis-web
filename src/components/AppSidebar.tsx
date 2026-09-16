@@ -93,18 +93,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-xl">
-      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 bg-sidebar border-b border-sidebar-border">
+      <SidebarHeader className="h-16 sm:h-[72px] pt-[env(safe-area-inset-top,0px)] px-3 bg-sidebar border-b border-sidebar-border justify-center">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <img 
               src={logoImage} 
               alt="ProPredict" 
-              className="h-8 w-8 object-contain rounded-lg"
+              className="h-10 w-10 object-contain rounded-lg"
             />
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-base font-bold text-sidebar-foreground">ProPredict</span>
-                <span className="text-xs text-sidebar-foreground/70">AI Predictions & Analysis</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-black tracking-tight text-sidebar-foreground">
+                  Pro<span className="text-primary">Predict</span>
+                </span>
+                <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/60">
+                  Play Smart. Bet Better.
+                </span>
               </div>
             )}
           </div>
@@ -132,7 +136,7 @@ export function AppSidebar() {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
                    activeClassName="bg-primary text-primary-foreground hover:bg-primary shadow-md"
                 >
-                   <Home className="h-4 w-4" />
+                   <Home className="h-[18px] w-[18px]" />
                   {!collapsed && <span>Dashboard</span>}
                 </NavLink>
               </SidebarMenuButton>
@@ -141,10 +145,10 @@ export function AppSidebar() {
               <SidebarMenuButton asChild>
                 <NavLink 
                   to="/sure-odds" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                   activeClassName="bg-primary/20 text-primary"
                 >
-                  <Ticket className="h-4 w-4" />
+                  <Ticket className="h-[18px] w-[18px]" />
                   {!collapsed && <span>Sure Odds 2+</span>}
                 </NavLink>
               </SidebarMenuButton>
@@ -155,10 +159,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to="/ai-predictions" 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <Brain className="h-4 w-4" />
+                      <Brain className="h-[18px] w-[18px]" />
                       {!collapsed && <span>AI Predictions</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -167,10 +171,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to="/match-previews" 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-[18px] w-[18px]" />
                       {!collapsed && <span>Top 30 AI Picks</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -190,7 +194,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-base font-semibold transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
                       <item.icon className="h-[18px] w-[18px]" />
@@ -254,10 +258,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-[18px] w-[18px]" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -278,10 +282,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink 
                     to="/how-ai-works" 
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                     activeClassName="bg-primary/20 text-primary"
                   >
-                    <HelpCircle className="h-4 w-4" />
+                    <HelpCircle className="h-[18px] w-[18px]" />
                     {!collapsed && <span>How AI Works</span>}
                   </NavLink>
                 </SidebarMenuButton>
@@ -290,10 +294,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <NavLink 
                     to="/help-support?faq=predictions-glossary" 
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                     activeClassName="bg-primary/20 text-primary"
                   >
-                    <BookOpen className="h-4 w-4" />
+                    <BookOpen className="h-[18px] w-[18px]" />
                     {!collapsed && <span>FAQ</span>}
                   </NavLink>
                 </SidebarMenuButton>
@@ -314,10 +318,10 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={item.url} 
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                         activeClassName="bg-warning/20 text-warning"
                       >
-                        <item.icon className="h-4 w-4" />
+                        <item.icon className="h-[18px] w-[18px]" />
                         {!collapsed && <span>{item.title}</span>}
                         {item.url === "/admin/support" && supportUnread > 0 && (
                           <span className={`ml-auto h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse ${collapsed ? "absolute top-0 right-0" : ""}`}>
@@ -348,10 +352,10 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <NavLink 
                 to="/help-support" 
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                 activeClassName="bg-primary/20 text-primary"
               >
-                <HelpCircle className="h-4 w-4" />
+                <HelpCircle className="h-[18px] w-[18px]" />
                 {!collapsed && <span>FAQ & Support</span>}
               </NavLink>
             </SidebarMenuButton>
@@ -360,10 +364,10 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <NavLink 
                 to="/settings" 
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                 activeClassName="bg-primary/20 text-primary"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-[18px] w-[18px]" />
                 {!collapsed && <span>Settings</span>}
               </NavLink>
             </SidebarMenuButton>
