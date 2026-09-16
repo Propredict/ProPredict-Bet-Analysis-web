@@ -29,6 +29,105 @@ const stableDailyScore = (value: string) => {
   return hash >>> 0;
 };
 
+function derivePickLabel(prediction: any) {
+  const bestType = (() => {
+    try {
+      return getBestPickType(prediction as any);
+    } catch {
+      return null;
+    }
+  })();
+  const labelFromBestType = (() => {
+    switch (bestType) {
+      case "home_win": return `${prediction.home_team} Win`;
+      case "away_win": return `${prediction.away_team} Win`;
+      case "draw": return "Draw";
+      case "dc_1x": return `${prediction.home_team} or Draw`;
+      case "dc_x2": return `Draw or ${prediction.away_team}`;
+      case "dc_12": return `${prediction.home_team} or ${prediction.away_team}`;
+      case "over15": return "Over 1.5 Goals";
+      case "over25": return "Over 2.5 Goals";
+      case "over35": return "Over 3.5 Goals";
+      case "under25": return "Under 2.5 Goals";
+      case "under35": return "Under 3.5 Goals";
+      case "btts_yes": return "BTTS Yes";
+      case "btts_no": return "BTTS No";
+      default: return null;
+    }
+  })();
+  const labelMap: Record<string, string> = { "1": "Home Win", X: "Draw", "2": "Away Win" };
+  const rawPred = String(prediction.prediction ?? "").trim();
+  return labelFromBestType ?? labelMap[rawPred] ?? rawPred;
+}
+
+function PredictionListRow({
+  prediction,
+  onClick,
+  lockTier = null,
+  showWatchAd = false,
+  isUnlocking = false,
+  onWatchAd,
+}: {
+  prediction: any;
+  onClick: () => void;
+  lockTier?: LockTier;
+  showWatchAd?: boolean;
+  isUnlocking?: boolean;
+  onWatchAd?: () => void;
+}) {
+  const locked = lockTier !== null;
+  const isPremiumLock = lockTier === "premium";
+  const watchAdMode = locked && showWatchAd && !isPremiumLock;
+  const pick = derivePickLabel(prediction);
+  const confidence = prediction.confidence ?? 0;
+
+  return (
+    <div
+      onClick={onClick}
+      className="flex cursor-pointer items-center gap-2 border-b border-border/70 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-secondary/40 sm:px-4"
+    >
+      <span className="hidden w-12 shrink-0 text-xs font-bold text-muted-foreground sm:inline">
+        {prediction.match_time}
+      </span>
+      <span className="hidden w-28 shrink-0 truncate text-[11px] font-bold uppercase text-primary lg:inline">
+        AI Prediction
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase text-sidebar">
+        {prediction.home_team} <span className="text-muted-foreground">vs</span> {prediction.away_team}
+      </span>
+
+      {watchAdMode ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onWatchAd?.();
+          }}
+          disabled={isUnlocking}
+          className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[11px] font-bold text-primary-foreground disabled:opacity-70"
+        >
+          {isUnlocking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 fill-current" />}
+          Watch Ad
+        </button>
+      ) : locked ? (
+        <span className="shrink-0 inline-flex items-center gap-1 rounded-md border border-primary/45 bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary">
+          {isPremiumLock ? <Crown className="h-3 w-3" /> : <Star className="h-3 w-3" />}
+          {isPremiumLock ? "Premium" : "Pro"}
+        </span>
+      ) : (
+        <span className="shrink-0 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-[11px] font-extrabold text-success sm:text-xs">
+          {pick || "—"}
+        </span>
+      )}
+
+      {confidence > 0 && (
+        <span className="hidden shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary sm:inline">
+          {confidence}%
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ConfidenceBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2 w-full">
@@ -244,7 +343,7 @@ export function DashboardAIPredictions() {
         : null
       : baseTier;
     return (
-      <PredictionCard
+      <PredictionListRow
         key={prediction.id}
         prediction={prediction}
         onClick={() => navigate("/ai-predictions")}
@@ -262,9 +361,9 @@ export function DashboardAIPredictions() {
   return (
     <section className="space-y-5">
         {/* Section Header — centered bold title */}
-        <div className="text-center space-y-1 pt-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-            <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+        <div className="space-y-1 pt-2 text-center">
+          <h2 className="flex items-center justify-center gap-2 text-xl font-black tracking-tight text-sidebar sm:text-2xl">
+            <Brain className="h-6 w-6 text-primary sm:h-7 sm:w-7" />
             Daily Predictions made by AI / AI Dnevne predikcije
           </h2>
           <p className="text-[11px] text-muted-foreground">
@@ -389,41 +488,41 @@ function TierSection({
   const styles = TONE_STYLES[tone];
 
   return (
-    <div className={`rounded-2xl border ${styles.border} bg-gradient-to-br ${styles.bg} p-3 sm:p-4 space-y-3`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <Badge variant="outline" className={`gap-1 ${styles.badge} text-[10px] px-2 py-0.5`}>
-              <BadgeIcon className="h-3 w-3" />
-              {badgeLabel}
-            </Badge>
-            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
+    <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <BadgeIcon className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-black text-sidebar sm:text-lg">{title}</h3>
+            <p className="truncate text-[11px] text-muted-foreground">{subtitle}</p>
           </div>
-          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
         </div>
+        <button
+          onClick={onCta}
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-primary hover:underline"
+        >
+          View All <ChevronRight className="h-3 w-3" />
+        </button>
       </div>
 
       {picks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {picks.map((p, i) => renderCard(p, i))}
-        </div>
+        picks.map((p, i) => renderCard(p, i))
       ) : (
-        <div className="flex flex-col items-center gap-1.5 py-6 rounded-xl border border-border/40 bg-card/40">
-          <BadgeIcon className={`h-5 w-5 ${styles.text} opacity-50`} />
-          <p className="text-[11px] text-muted-foreground">{empty}</p>
-        </div>
+        <p className="px-4 py-6 text-center text-sm text-muted-foreground">{empty}</p>
       )}
 
-      <div className="flex justify-center pt-1">
+      <div className="border-t border-border px-3 py-3">
         <Button
           size="sm"
-          className={`px-5 group bg-gradient-to-r ${styles.cta} text-primary-foreground text-xs border-0 rounded-full`}
+          className="group w-full rounded-lg bg-primary text-xs font-bold text-primary-foreground"
           onClick={onCta}
         >
-          <span>{ctaLabel}</span>
-          <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+          <span className="truncate">{ctaLabel}</span>
+          <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
