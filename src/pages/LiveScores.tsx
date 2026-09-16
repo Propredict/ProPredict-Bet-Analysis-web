@@ -23,6 +23,7 @@ import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
+import { PageHero } from "@/components/layout/PageHero";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 /* -------------------- CONSTANTS -------------------- */
