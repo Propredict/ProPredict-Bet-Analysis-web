@@ -220,10 +220,6 @@ const Index = () => {
         </div>
 
 
-        {/* Social Proof Section */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardSocialProof />
-        </Suspense>
 
 
 
