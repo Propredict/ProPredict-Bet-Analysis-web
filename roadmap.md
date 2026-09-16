@@ -14,4 +14,4 @@
 - [x] Verify the dashboard rewards popup visually on desktop and mobile.
 - [x] Route the Dashboard Sure Odds ticket card to the Sure Odds page.
 - [x] Strengthen blue borders and use green prediction fields across tip and ticket cards.
-- [ ] Verify the Dashboard click, desktop/mobile card styling, and overflow.
+- [x] Verify the Dashboard click, desktop/mobile card styling, and overflow.
