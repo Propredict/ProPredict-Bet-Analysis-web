@@ -391,15 +391,7 @@ const HelpSupport = () => {
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-full border border-primary">
-          <HelpCircle className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-sm sm:text-base font-semibold text-foreground">FAQ & Support</h1>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Get help with ProPredict</p>
-        </div>
-      </div>
+      <PageHero title="FAQ & Support" subtitle="Get help with ProPredict" icon={HelpCircle} className="mb-4" />
 
       {/* Support Contact Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
