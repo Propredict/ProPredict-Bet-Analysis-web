@@ -74,20 +74,6 @@ export default function Tickets() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { value: "1000+", label: "Daily Matches Analyzed" },
-              { value: "85%", label: "Average Accuracy" },
-              { value: "50K+", label: "Active Users" },
-              { value: "24/7", label: "Live Updates" },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-3 py-3 text-center">
-                <p className="text-xl font-black text-primary sm:text-2xl">{s.value}</p>
-                <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-sidebar-foreground/60">{s.label}</p>
-              </div>
-            ))}
-          </div>
-
           <div className="mt-7">
             <TicketGroup title="Daily Ticket" subtitle="Open daily selection" badge="Daily" tickets={dailyTickets} tier="daily" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>

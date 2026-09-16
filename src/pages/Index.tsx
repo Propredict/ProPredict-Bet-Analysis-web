@@ -130,6 +130,20 @@ const Index = () => {
               Be Premium — Unlock All Tips for 1 Month
             </Link>
         </div>
+          {/* Right-side stats column (desktop), like reference design */}
+          <div className="absolute inset-y-0 right-6 hidden flex-col justify-center gap-3 md:flex">
+            {[
+              { value: "1000+", label: "Daily Matches Analyzed" },
+              { value: "85%", label: "Average Accuracy" },
+              { value: "50K+", label: "Active Users" },
+              { value: "24/7", label: "Live Updates" },
+            ].map((s) => (
+              <div key={s.label} className="w-44 rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-4 py-2.5 backdrop-blur-sm">
+                <p className="text-xl font-black text-primary">{s.value}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-sidebar-foreground/60">{s.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Quick links strip */}
