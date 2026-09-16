@@ -231,7 +231,6 @@ const App = () => {
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
-                    <Route path="/players" element={<Players />} />
                     <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
                     <Route path="/diamond-pick" element={<DiamondPick />} />
                     
