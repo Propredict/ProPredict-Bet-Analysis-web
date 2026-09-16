@@ -655,41 +655,41 @@ export default function AIPredictions() {
 
 
           {/* Stats Cards Row - Active / Analyzed / Accuracy */}
-          <div className="grid grid-cols-3 gap-1.5 md:gap-3">
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 rounded-xl">
-              <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
-                <Brain className="w-3.5 h-3.5 md:w-5 md:h-5 text-primary" />
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
+            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-primary/35 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
+              <div className="rounded-xl bg-primary/10 p-2 md:p-2.5">
+                <Brain className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Active</p>
-                <p className="text-sm md:text-xl font-extrabold text-primary leading-none">
+                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Active</p>
+                <p className="text-lg md:text-2xl font-extrabold text-primary leading-none">
                   {loading ? "..." : activeCount}
                 </p>
-                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Picks running now</p>
+                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">Picks running now</p>
               </div>
             </Card>
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20 rounded-xl">
-              <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/10">
-                <BarChart3 className="w-3.5 h-3.5 md:w-5 md:h-5 text-blue-400" />
+            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-primary/35 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
+              <div className="rounded-xl bg-primary/10 p-2 md:p-2.5">
+                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Analyzed</p>
-                <p className="text-sm md:text-xl font-extrabold text-blue-400 leading-none">
+                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Analyzed</p>
+                <p className="text-lg md:text-2xl font-extrabold text-primary leading-none">
                   {loading ? "..." : totalAnalyzed.toLocaleString()}
                 </p>
-                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">Matches analyzed</p>
+                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">Matches analyzed</p>
               </div>
             </Card>
-            <Card className="flex items-center gap-2 p-2 md:p-3 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20 rounded-xl">
-              <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/10">
-                <Target className="w-3.5 h-3.5 md:w-5 md:h-5 text-blue-400" />
+            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-success/40 bg-card p-3 shadow-md shadow-success/10 md:p-4">
+              <div className="rounded-xl bg-success/10 p-2 md:p-2.5">
+                <Target className="w-4 h-4 md:w-5 md:h-5 text-success" />
               </div>
               <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground truncate">Accuracy</p>
-                <p className="text-sm md:text-xl font-extrabold text-blue-400 leading-none">
+                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Accuracy</p>
+                <p className="text-lg md:text-2xl font-extrabold text-success leading-none">
                   {loading ? "..." : `${dayStats.accuracy}%`}
                 </p>
-                <p className="hidden md:block text-[10px] text-muted-foreground mt-0.5">AI success rate</p>
+                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">AI success rate</p>
               </div>
             </Card>
           </div>
