@@ -97,7 +97,7 @@ export function KeyPlayerMissingBadge({
                 <li key={i} className="flex items-start gap-2 text-[10px]">
                   <span className="text-red-400 mt-0.5">●</span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-white font-medium">{p.name}</span>
+                    <span className="text-foreground font-medium">{p.name}</span>
                     <span className="text-muted-foreground ml-1">
                       — {ROLE_LABEL[p.role]}
                     </span>
@@ -123,7 +123,7 @@ export function KeyPlayerMissingBadge({
                 <li key={i} className="flex items-start gap-2 text-[10px]">
                   <span className="text-red-400 mt-0.5">●</span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-white font-medium">{p.name}</span>
+                    <span className="text-foreground font-medium">{p.name}</span>
                     <span className="text-muted-foreground ml-1">
                       — {ROLE_LABEL[p.role]}
                     </span>
