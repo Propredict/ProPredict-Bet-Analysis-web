@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PageHero } from "@/components/layout/PageHero";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
