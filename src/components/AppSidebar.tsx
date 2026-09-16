@@ -21,7 +21,6 @@ import {
   X,
   User,
   Target,
-  Gem,
   MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -45,10 +44,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const tipsItems = [
-  { title: "Daily Predictions", url: "/daily-analysis", icon: Lightbulb },
-  { title: "Premium Predictions", url: "/premium-analysis", icon: Crown },
-  { title: "Risk of the Day", url: "/risk-of-the-day", icon: Target },
-  { title: "Diamond Pick", url: "/diamond-pick", icon: Gem },
+  { title: "Single Tips", url: "/single-tips", icon: Lightbulb },
 ];
 
 const ticketsItems = [
