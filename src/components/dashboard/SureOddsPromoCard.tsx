@@ -136,122 +136,32 @@ export function SureOddsPromoCard({
     );
   }
 
-  // ── Locked promotional state ──
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Hero header */}
-      <div className="relative text-center mb-6 sm:mb-8">
-        <div className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider mb-4 shadow-lg shadow-primary/20">
-          <Star className="h-3 w-3 fill-current" />
-          PRO
+    <div className="overflow-hidden rounded-xl border border-primary/15 bg-card shadow-md shadow-primary/10">
+      <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
+        <div className="flex items-start justify-between gap-3">
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
+          <Badge className="border border-primary-foreground/20 bg-primary-foreground/15 text-[10px] text-primary-foreground"><Star className="mr-1 h-3 w-3 fill-current" />PRO</Badge>
         </div>
-
-        <h2 className="text-foreground font-black text-4xl sm:text-5xl leading-none tracking-tighter uppercase">
-          SURE ODDS
-        </h2>
-
-        <div className="relative flex justify-center items-start mt-1">
-          <span
-            className="text-transparent bg-clip-text bg-gradient-to-b from-blue-300 via-primary to-blue-700 font-black text-8xl sm:text-9xl leading-[0.85] tracking-tighter drop-shadow-[0_10px_15px_rgba(0,148,230,0.35)]"
-          >
-            2+
-          </span>
-
-          {/* Total odds sticker */}
-          <div className="absolute right-0 sm:-right-2 top-4 w-20 h-20 sm:w-24 sm:h-24 bg-sidebar rounded-full border-2 border-border flex flex-col items-center justify-center rotate-12 shadow-2xl">
-            <span className="text-[8px] sm:text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-none">
-              Total Odds
-            </span>
-            <span className="text-xl sm:text-2xl font-black text-primary leading-none mt-1">
-              {ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : ">2"}
-            </span>
-            <Star className="h-3 w-3 text-primary mt-1 fill-current" />
-          </div>
-        </div>
-
-        {/* One-time purchase badge */}
-        <div className="absolute -left-2 sm:-left-4 top-16 sm:top-24 -rotate-12">
-          <div className="bg-white text-primary-foreground px-2.5 py-1 font-black text-[9px] uppercase tracking-tighter rounded shadow-lg">
-            One-Time
-            <br />
-            Purchase
-          </div>
-        </div>
-
-        {/* Trust chips */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-5">
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            Carefully selected matches
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full">
-            <Target className="h-3.5 w-3.5 text-primary" />
-            High value picks
-          </div>
+        <div className="mt-5 flex items-end justify-between">
+          <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds</p><p className="text-3xl font-extrabold leading-none">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : "2.00+"}</p></div>
+          <div className="text-right"><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date</p><p className="text-xs font-semibold">{ticketDate}</p></div>
         </div>
       </div>
 
-      {/* Ticket card */}
-      <div
-        className={cn(
-          "w-full bg-card border border-border rounded-[2rem] overflow-hidden",
-          "shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
-        )}
-      >
-        <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
-        <div className="px-5 pt-6 pb-2 text-center">
-          <div className="flex justify-center gap-2 mb-3">
-            <Badge className="gap-1 bg-primary text-primary-foreground border-0 text-[10px] px-2 py-0.5">
-              <Star className="h-3 w-3 fill-current" />PRO
-            </Badge>
-            <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
-              {ticket.matchCount} MATCHES
-            </span>
-          </div>
-          <h3 className="text-foreground font-bold text-lg tracking-tight">
-            TODAY'S TICKET <span className="text-primary">ODDS 2+</span>
-          </h3>
-          <div className="text-muted-foreground text-[10px] sm:text-[11px] font-medium mt-1 flex justify-center items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {ticketDate}
-            </span>
-            <span className="flex items-center gap-1">
-              Total odds: <span className="text-success font-bold">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : ">2"}</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Locked match list — show names, hide predictions */}
-        <div className="px-4 sm:px-5 space-y-2 mt-4">
+      <div className="space-y-2 bg-secondary/60 p-2">
           {matches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div
-                key={idx}
-                className="bg-muted/30 border border-border/50 rounded-2xl p-3.5"
-              >
-                {parsed.league && (
-                  <p className="text-[9px] text-muted-foreground truncate text-center mb-2 uppercase tracking-widest">
-                    {parsed.league}
-                  </p>
-                )}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.homeTeam}
-                  </span>
-                  <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
-                    {parsed.awayTeam}
-                  </span>
+              <div key={idx} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending</span>
                 </div>
-                <div className="mt-2 flex items-center justify-center gap-1">
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                    <Lock className="h-2.5 w-2.5 text-primary" />
-                    <span className="text-[9px] text-primary font-black uppercase">Locked</span>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1.5"><p className="truncate text-sm font-bold text-foreground">{parsed.homeTeam}</p><p className="truncate text-sm font-bold text-foreground">{parsed.awayTeam}</p></div>
+                  <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked</div></div>
                   </div>
-                </div>
               </div>
             );
           })}
@@ -261,32 +171,16 @@ export function SureOddsPromoCard({
               <ChevronRight className="h-3 w-3" />
             </p>
           )}
-        </div>
-
-        {/* CTA area */}
-        <div className="p-5">
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <div className="flex -space-x-2">
-              <div className="w-7 h-7 rounded-full border-2 border-card bg-muted flex items-center justify-center">
-                <Users className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <div className="w-7 h-7 rounded-full border-2 border-card bg-muted/80" />
-              <div className="w-7 h-7 rounded-full border-2 border-card bg-muted/60" />
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-muted-foreground">
-              <span className="text-success font-bold">{socialPct}% of users</span> unlocked this ticket
-            </p>
-          </div>
-
+      </div>
+      <div className="border-t border-border bg-card p-4">
+          <p className="mb-3 text-center text-[10px] text-muted-foreground"><span className="font-bold text-primary">{socialPct}% of users</span> unlocked this ticket</p>
           <Button
             size="lg"
             disabled={isUnlocking}
             onClick={onUnlockClick}
             className={cn(
-              "w-full gap-2 h-14 text-sm sm:text-base font-black uppercase tracking-tighter",
-              "bg-gradient-to-b from-blue-300 via-primary to-blue-700",
-              "hover:brightness-110 active:scale-[0.98]",
-              "text-primary-foreground border-0 rounded-2xl shadow-[0_15px_35px_rgba(0,148,230,0.25)]",
+              "h-12 w-full gap-2 rounded-xl border-0 bg-primary text-sm font-extrabold uppercase text-primary-foreground shadow-lg shadow-primary/20",
+              "hover:bg-primary/90 active:scale-[0.98]",
               "transition-all duration-200"
             )}
           >
@@ -299,46 +193,11 @@ export function SureOddsPromoCard({
               <>
                 <Ticket className="h-5 w-5" />
                 <span className="flex-1 text-left">Unlock Today's Ticket</span>
-                <span className="bg-sidebar/10 px-2 py-1 rounded-lg text-base">{priceLabel}</span>
+                <span className="rounded-lg bg-primary-foreground/15 px-2 py-1 text-sm">{priceLabel}</span>
                 <ChevronRight className="h-5 w-5" />
               </>
             )}
           </Button>
-        </div>
-
-        {/* Footer benefits */}
-        <div className="grid grid-cols-3 border-t border-border/50 bg-sidebar/5 py-4">
-          <div className="flex flex-col items-center gap-1.5 border-r border-border/50 px-2">
-            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <span className="text-[7px] sm:text-[8px] text-center font-extrabold text-muted-foreground uppercase tracking-widest leading-tight">
-              1-Time Payment
-              <br />
-              No Subscription
-            </span>
-          </div>
-          <div className="flex flex-col items-center gap-1.5 border-r border-border/50 px-2">
-            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <Gem className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <span className="text-[7px] sm:text-[8px] text-center font-extrabold text-muted-foreground uppercase tracking-widest leading-tight">
-              High Value
-              <br />
-              Picks
-            </span>
-          </div>
-          <div className="flex flex-col items-center gap-1.5 px-2">
-            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <Clock className="h-3.5 w-3.5 text-primary" />
-            </div>
-            <span className="text-[7px] sm:text-[8px] text-center font-extrabold text-muted-foreground uppercase tracking-widest leading-tight">
-              Available Until
-              <br />
-              Midnight (CET)
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

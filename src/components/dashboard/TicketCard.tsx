@@ -169,6 +169,50 @@ function TicketCard({
 
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
+  if (light && !isLocked) {
+    return (
+      <div className="overflow-hidden rounded-xl border border-primary/15 bg-card shadow-md shadow-primary/10" onClick={handleCardClick}>
+        <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p>
+              <h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3>
+            </div>
+            <div className="rounded-full border border-primary-foreground/20 bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-bold">{ticket.matchCount} MATCHES</div>
+          </div>
+          <div className="mt-5 flex items-end justify-between">
+            <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds</p><p className="text-3xl font-extrabold leading-none">{formatCombinedOdds(ticket.totalOdds)}</p></div>
+            <div className="text-right">{ticketDate && <><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date</p><p className="text-xs font-semibold">{ticketDate}</p></>}</div>
+          </div>
+        </div>
+        <div className="space-y-2 bg-secondary/60 p-2">
+          {displayedMatches.map((match, idx) => {
+            const parsed = parseMatchName(match.name);
+            return (
+              <div key={idx} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Active</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <p className="truncate text-sm font-bold text-foreground">{parsed.homeTeam}</p>
+                    <p className="truncate text-sm font-bold text-foreground">{parsed.awayTeam}</p>
+                  </div>
+                  <div className="max-w-[48%] text-right">
+                    <p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p>
+                    <div className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground">{match.prediction}<span className="ml-2 text-blue-300">{match.odds?.toFixed(2)}</span></div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {remainingCount > 0 && <p className="py-1 text-center text-[10px] font-semibold text-primary">+{remainingCount} more matches</p>}
+        </div>
+      </div>
+    );
+  }
+
 
   const cardShell = light
     ? cn(
