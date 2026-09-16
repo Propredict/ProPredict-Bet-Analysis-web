@@ -93,18 +93,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-xl">
-      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 bg-sidebar border-b border-sidebar-border">
+      <SidebarHeader className="h-16 sm:h-[72px] pt-[env(safe-area-inset-top,0px)] px-3 bg-sidebar border-b border-sidebar-border justify-center">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <img 
               src={logoImage} 
               alt="ProPredict" 
-              className="h-8 w-8 object-contain rounded-lg"
+              className="h-10 w-10 object-contain rounded-lg"
             />
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-base font-bold text-sidebar-foreground">ProPredict</span>
-                <span className="text-xs text-sidebar-foreground/70">AI Predictions & Analysis</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-black tracking-tight text-sidebar-foreground">
+                  Pro<span className="text-primary">Predict</span>
+                </span>
+                <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/60">
+                  Play Smart. Bet Better.
+                </span>
               </div>
             )}
           </div>
