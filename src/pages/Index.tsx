@@ -81,6 +81,7 @@ const Index = () => {
           <img src={heroStadium} alt="AI Football Stadium" className="w-full h-[26rem] sm:h-80 md:h-[22rem] object-cover" width={1920} height={864} />
           <div className="absolute inset-0 bg-sidebar/90 sm:bg-gradient-to-r sm:from-sidebar sm:via-sidebar/90 sm:to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-center gap-2 px-5 py-5 text-center sm:max-w-xl sm:px-8 sm:text-left md:max-w-2xl">
+            {/* desktop right-side stats like reference design */}
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary sm:text-xs">More than predictions</span>
             <h1 className="text-2xl font-black leading-tight tracking-tight text-primary-foreground sm:text-3xl md:text-[2.6rem]">
               Welcome to <span className="text-primary">Pro</span><span className="text-blue-300">Predict</span>
