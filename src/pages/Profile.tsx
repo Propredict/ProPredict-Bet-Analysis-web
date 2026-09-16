@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
-import { useArenaStats } from "@/hooks/useArenaStats";
 import { restorePurchases } from "@/hooks/useRevenueCat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,6 @@ const Profile = () => {
   const { user, signOut, session, loading: authLoading } = useAuth();
   const { plan } = useUserPlan();
   const { isAndroidApp } = usePlatform();
-  const arenaStats = useArenaStats();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
