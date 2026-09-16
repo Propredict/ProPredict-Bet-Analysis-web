@@ -100,71 +100,56 @@ export function FreeUserUpsellModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
-        className="max-w-[360px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden"
-        style={{
-          border: '1px solid rgba(245,158,11,0.55)',
-          boxShadow: '0 0 40px rgba(245,158,11,0.25), 0 25px 50px -12px rgba(0,0,0,0.6)',
-          background: 'radial-gradient(120% 80% at 50% 0%, #241a06 0%, #0d0b06 55%, #050505 100%)',
-        }}
+        className="max-h-[95vh] max-w-[390px] gap-0 overflow-y-auto rounded-xl border-2 border-primary/60 bg-card p-0 shadow-2xl shadow-primary/25 [&>button]:hidden"
       >
         {/* Limited ribbon */}
-        <div
-          className="absolute right-0 top-0 px-2.5 py-1.5 text-[9px] font-extrabold uppercase leading-tight text-black text-center rounded-bl-lg z-10"
-          style={{ background: 'linear-gradient(135deg, #fbbf24, #f97316)' }}
-        >
-          Limited<br />picks<br />today!
+        <div className="absolute right-0 top-0 z-10 rounded-bl-lg bg-primary px-3 py-2 text-center text-[10px] font-extrabold uppercase leading-tight text-primary-foreground">
+          Limited<br />today
         </div>
 
         {/* Close */}
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
           onClick={handleClose}
-          className="absolute left-3 top-3 p-1.5 rounded-full bg-black/50 hover:bg-black/70 transition-colors z-10"
+          className="absolute left-3 top-3 z-10 h-8 w-8 rounded-full bg-sidebar-accent text-sidebar-foreground hover:bg-primary hover:text-primary-foreground"
           aria-label="Close"
         >
-          <X className="h-3.5 w-3.5 text-amber-200/70" />
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
 
-        <div className="p-5 pt-7 flex flex-col items-center text-center gap-3.5">
+        <div className="bg-gradient-to-br from-sidebar via-sidebar-accent to-sidebar px-5 pb-5 pt-8 text-center text-sidebar-foreground">
           {/* Ticket badge */}
-          <div
-            className="h-14 w-14 rounded-full flex items-center justify-center border-2 border-amber-400"
-            style={{ boxShadow: '0 0 25px rgba(251,191,36,0.45) inset, 0 0 20px rgba(251,191,36,0.35)' }}
-          >
-            <Ticket className="h-7 w-7 text-amber-400" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-primary bg-primary/15 shadow-lg shadow-primary/25">
+            <Ticket className="h-7 w-7 text-primary" />
           </div>
 
-          <DialogTitle className="text-2xl font-black leading-none tracking-tight">
-            <span className="text-foreground">SURE ODDS </span>
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(180deg,#fde68a,#f59e0b)' }}
-            >
-              2+
-            </span>
-            <span
-              className="block text-xl font-black bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(180deg,#fde68a,#f59e0b)' }}
-            >
+          <DialogTitle className="mt-4 text-2xl font-black leading-tight text-sidebar-foreground">
+            SURE ODDS <span className="text-primary">2+</span>
+            <span className="mt-1 block text-lg font-extrabold text-sidebar-foreground">
               DAILY TICKET / DNEVNI TIKET
             </span>
           </DialogTitle>
 
-          <p className="text-xs text-muted-foreground italic">
-            High-confidence picks • Odds <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span> / Sigurni izbori • Kvota <span className="text-emerald-400 font-semibold not-italic">&gt; 2.00</span>
+          <p className="mt-2 text-xs text-sidebar-foreground/70">
+            High-confidence picks • Odds <span className="font-bold text-primary">&gt; 2.00</span> / Sigurni izbori • Kvota <span className="font-bold text-primary">&gt; 2.00</span>
           </p>
+        </div>
 
+        <div className="flex flex-col items-center gap-3.5 bg-card p-5 text-center">
           {/* Feature grid */}
-          <div className="w-full grid grid-cols-4 gap-px rounded-xl border border-amber-500/25 bg-black/40 overflow-hidden">
+          <div className="grid w-full grid-cols-2 overflow-hidden rounded-lg border border-primary/30 bg-secondary/55 sm:grid-cols-4">
             {[
               { icon: "🎯", top: "HIGH ODDS / VISOKA KVOTA", bottom: "> 2.00", accent: true },
               { icon: "🛡️", top: "CAREFULLY / PAŽLJIVO", bottom: "SELECTED / IZABRANO" },
               { icon: "📊", top: "FULL MATCH / PUNA", bottom: "ANALYSIS / ANALIZA" },
               { icon: "🔥", top: "HOT PICKS / VRUĆI IZBORI", bottom: "DAILY / DNEVNO" },
             ].map((f) => (
-              <div key={f.top} className="flex flex-col items-center gap-1 py-2.5 px-1">
+              <div key={f.top} className="flex min-h-20 flex-col items-center justify-center gap-1 border-b border-r border-primary/15 px-2 py-2.5">
                 <span className="text-base leading-none">{f.icon}</span>
-                <span className="text-[8px] font-bold text-foreground/85 leading-tight">{f.top}</span>
-                <span className={`text-[8px] font-bold leading-tight ${f.accent ? "text-emerald-400" : "text-foreground/85"}`}>
+                <span className="text-[9px] font-bold leading-tight text-foreground">{f.top}</span>
+                <span className={`text-[9px] font-bold leading-tight ${f.accent ? "text-success" : "text-primary"}`}>
                   {f.bottom}
                 </span>
               </div>
@@ -172,64 +157,56 @@ export function FreeUserUpsellModal() {
           </div>
 
           {/* Social proof */}
-          <div className="w-full rounded-xl border border-amber-500/40 bg-black/40 px-3 py-2.5 flex items-center gap-3">
+          <div className="flex w-full items-center gap-3 rounded-lg border border-primary/35 bg-secondary/45 px-3 py-3">
             <div className="flex-1 text-left">
-              <p className="text-[11px] font-bold text-foreground">
-                🔥 <span className="text-amber-400">{socialCount} users</span> unlocked this / {socialCount} korisnika je otključalo
+              <p className="text-xs font-bold text-foreground">
+                🔥 <span className="text-primary">{socialCount} users</span> unlocked this / {socialCount} korisnika je otključalo
               </p>
-              <p className="text-[10px] text-muted-foreground">Join winners. Get your edge today. / Pridruži se pobeđivačima. Uzmi prednost danas.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Join winners. Get your edge today. / Pridruži se pobeđivačima. Uzmi prednost danas.</p>
             </div>
-            <div
-              className="h-12 w-12 shrink-0 rounded-full border-2 border-emerald-400 flex flex-col items-center justify-center"
-              style={{ boxShadow: '0 0 15px rgba(52,211,153,0.35)' }}
-            >
-              <span className="text-xs font-black text-amber-300 leading-none">85%</span>
-              <span className="text-[7px] font-bold text-amber-200/70 leading-none mt-0.5">ACCURACY / TAČNOST</span>
+            <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-full border-2 border-success bg-success/10">
+              <span className="text-sm font-black leading-none text-success">85%</span>
+              <span className="mt-0.5 text-[7px] font-bold leading-none text-success">ACCURACY</span>
             </div>
           </div>
 
           {/* Price */}
-          <div className="w-full rounded-xl border border-amber-500/25 bg-black/40 p-3 flex flex-col items-center gap-3">
+          <div className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-primary/40 bg-secondary/35 p-4">
             <div className="flex items-center justify-center gap-3">
-              <span className="text-sm text-muted-foreground line-through decoration-red-500">€7.99</span>
+              <span className="text-sm text-muted-foreground line-through decoration-destructive">€7.99</span>
               <div className="flex flex-col items-center">
-                <span
-                  className="text-3xl font-black bg-clip-text text-transparent leading-none"
-                  style={{ backgroundImage: 'linear-gradient(180deg,#fde68a,#f59e0b)' }}
-                >
+                <span className="text-3xl font-black leading-none text-primary">
                   {SURE_ODDS_PRICE_LABEL}
                 </span>
-                <span className="text-[9px] font-semibold text-muted-foreground tracking-wide">ONE-TIME ACCESS / JEDNOKRATAN PRISTUP</span>
+                <span className="text-[10px] font-semibold text-muted-foreground">ONE-TIME ACCESS / JEDNOKRATAN PRISTUP</span>
               </div>
-              <div className="h-11 w-11 rounded-full border border-amber-400/70 flex flex-col items-center justify-center">
-                <span className="text-[9px] font-black text-amber-300 leading-none">SAVE / UŠTEDA</span>
-                <span className="text-[10px] font-black text-amber-300 leading-none">50%</span>
+              <div className="flex h-12 w-12 flex-col items-center justify-center rounded-full border border-primary/50 bg-primary/10">
+                <span className="text-[8px] font-black leading-none text-primary">SAVE</span>
+                <span className="text-xs font-black leading-none text-primary">50%</span>
               </div>
             </div>
 
             <Button
               onClick={handleGetTicket}
-              className="w-full h-12 text-base font-black italic tracking-tight rounded-xl text-black hover:opacity-95"
-              style={{
-                background: 'linear-gradient(90deg, #f59e0b, #facc15 55%, #4ade80)',
-                boxShadow: '0 0 25px rgba(245,158,11,0.35)',
-              }}
+              className="h-12 w-full rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 sm:text-base"
             >
-              GET TODAY'S TICKET / UZMI DANAŠNJI TIKET 🚀
+              GET TODAY'S TICKET / UZMI TIKET
             </Button>
 
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+            <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <Lock className="h-3 w-3" />
               INSTANT ACCESS AFTER PAYMENT / TRENUTAN PRISTUP NAKON PLAĆANJA
             </p>
           </div>
 
-          <button
+          <Button
+            type="button"
+            variant="ghost"
             onClick={handleClose}
-            className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors pb-1"
+            className="h-8 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             Continue Free / Nastavi besplatno
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
