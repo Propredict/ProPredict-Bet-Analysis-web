@@ -530,8 +530,8 @@ export default function MatchPreviews() {
                       className={cn(
                         "w-full mt-5 h-auto py-4 sm:py-5 rounded-2xl font-black text-sm sm:text-base uppercase tracking-tight transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_20px_40px_-10px_rgba(139,92,246,0.4)]",
                         isFreeUser
-                          ? "bg-gradient-to-r from-primary via-primary to-pink-500 hover:from-violet-700 hover:via-primary hover:to-pink-600 animate-pulse"
-                          : "bg-gradient-to-r from-primary via-primary to-pink-500 hover:from-violet-700 hover:via-primary hover:to-pink-600"
+                          ? "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary animate-pulse"
+                          : "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary"
                       )}
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >
