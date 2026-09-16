@@ -1,6 +1,8 @@
 import { useEffect, useRef, lazy, Suspense, forwardRef, useState } from "react";
 import googlePlayBanner from "@/assets/google-play-banner.jfif";
-import heroStadium from "@/assets/hero-stadium.jpg";
+import heroStadiumPlayer from "@/assets/hero-stadium-player.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
