@@ -16,7 +16,6 @@ import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
 import { DashboardStatsStrip } from "@/components/dashboard/DashboardStatsStrip";
