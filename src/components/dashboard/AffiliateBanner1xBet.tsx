@@ -50,18 +50,19 @@ export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL, compact = f
       target="_blank"
       rel="noopener noreferrer sponsored"
       aria-label="1xBet – Register now (sponsored)"
-      className="group relative mx-auto block h-full w-full max-w-3xl overflow-hidden rounded-xl border border-sidebar-border bg-sidebar shadow-lg transition-all hover:border-primary/40 hover:shadow-xl"
+      className="group relative mx-auto block w-full max-w-3xl overflow-hidden rounded-xl border-2 border-primary/35 bg-sidebar shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-xl hover:shadow-primary/25"
     >
-      <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-bold uppercase tracking-wider text-white/70">
+      <span className="absolute top-2 right-2 z-20 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/80 backdrop-blur">
         Sponsored
       </span>
       <img
         src={bannerAsset.url}
         alt="1xBet – Register now"
-        className="block h-[120px] w-full object-contain sm:h-[150px] md:h-[170px]"
+        className="block h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transform-none"
         loading="lazy"
       />
-      <span className="absolute bottom-1 right-2 z-20 text-[9px] text-white/70">
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/55 to-transparent" />
+      <span className="absolute bottom-1.5 right-2 z-20 text-[9px] font-semibold text-white/80">
         18+ • Play responsibly
       </span>
     </a>
