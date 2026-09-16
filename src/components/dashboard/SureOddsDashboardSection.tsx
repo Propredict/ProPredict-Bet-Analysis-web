@@ -10,6 +10,7 @@ import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
+import { PremiumLockCard } from "@/components/premium/PremiumLock";
 
 function mapDbTicket(db: any): BettingTicket {
   return {
