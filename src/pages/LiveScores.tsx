@@ -66,6 +66,11 @@ export default function LiveScores() {
     dateMode,
     statusFilter: statusTab
   });
+  // Unfiltered set for the stat cards — totals must not change with the tab
+  const { matches: allDayMatches } = useLiveScores({
+    dateMode,
+    statusFilter: "all"
+  });
   const {
     favorites,
     isFavorite,
@@ -236,8 +241,9 @@ export default function LiveScores() {
 
   /* -------------------- STATS -------------------- */
 
-  const liveCount = matches.filter(m => m.status === "live" || m.status === "halftime").length;
-  const leaguesCount = new Set(matches.map(m => m.league)).size;
+  const liveCount = allDayMatches.filter(m => m.status === "live" || m.status === "halftime").length;
+  const todayTotalCount = allDayMatches.length;
+  const leaguesCount = new Set(allDayMatches.map(m => m.league)).size;
 
   /* -------------------- FILTERING -------------------- */
 
