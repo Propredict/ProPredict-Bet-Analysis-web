@@ -952,7 +952,7 @@ export default function AIPredictions() {
                 ) : (
                   /* Locked Diamond Pick — premium neon preview for free users */
                   <div className="space-y-3 md:space-y-4">
-                    <div className="ring-2 ring-cyan-400/40 rounded-xl shadow-[0_0_30px_rgba(34,211,238,0.25)] bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-cyan-950/40 p-3 md:p-4 overflow-hidden">
+                    <div className="ring-2 ring-cyan-400/40 rounded-xl shadow-[0_0_30px_rgba(34,211,238,0.25)] bg-gradient-to-br from-card via-card to-primary/10 p-3 md:p-4 overflow-hidden">
                       {/* Match preview row */}
                       <div className="flex items-center gap-2 md:gap-4">
                         {/* Home team */}
@@ -966,7 +966,7 @@ export default function AIPredictions() {
                                 className="w-9 h-9 md:w-14 md:h-14 object-contain"
                               />
                             ) : (
-                              <span className="text-lg md:text-2xl font-black text-cyan-100">
+                              <span className="text-lg md:text-2xl font-black text-primary-foreground">
                                 {diamondPick.home_team?.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
                               </span>
                             )}
@@ -984,7 +984,7 @@ export default function AIPredictions() {
                           <div className="text-[10px] md:text-xs text-muted-foreground mb-1.5">
                             {diamondPick.match_date} • {diamondPick.match_time || "TBD"}
                           </div>
-                          <div className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-900 border border-cyan-400/30 text-cyan-100 font-black text-sm md:text-base shadow-lg shadow-cyan-500/20">
+                          <div className="px-3 py-1 md:px-4 md:py-1.5 rounded-lg bg-gradient-to-r from-primary to-blue-600 border border-cyan-400/30 text-primary-foreground font-black text-sm md:text-base shadow-lg shadow-cyan-500/20">
                             VS
                           </div>
                         </div>
@@ -1054,7 +1054,7 @@ export default function AIPredictions() {
                                 {String.fromCharCode(65 + i)}
                               </div>
                             ))}
-                            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white">
+                            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-primary border-2 border-card flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white">
                               1K+
                             </div>
                           </div>
@@ -1070,7 +1070,7 @@ export default function AIPredictions() {
                     </div>
 
                     {/* Premium-only explanation card */}
-                    <div className="ring-1 ring-blue-400/30 rounded-xl bg-gradient-to-br from-blue-950/30 via-slate-900/70 to-blue-950/30 p-4 md:p-5 flex flex-col items-center text-center gap-3">
+                    <div className="ring-1 ring-blue-400/30 rounded-xl bg-gradient-to-br from-card via-card to-primary/10 p-4 md:p-5 flex flex-col items-center text-center gap-3">
                       <div className="flex items-center gap-2">
                         <div className="p-2 rounded-full bg-blue-500/15 border border-blue-400/30">
                           <Lock className="w-5 h-5 text-blue-300" />
@@ -1241,7 +1241,7 @@ export default function AIPredictions() {
                           // Use the same probability used for tier assignment (not raw confidence)
                           const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
                           return (
-                          <Card key={`teaser-pro-${prediction.id}`} className="bg-[#0a1628] border-blue-500/20 overflow-hidden rounded relative">
+                          <Card key={`teaser-pro-${prediction.id}`} className="bg-card border-blue-500/20 overflow-hidden rounded relative">
                             <CardContent className="p-0">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-blue-500/10">
                                 <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[8px] px-1.5 py-0.5 rounded">
@@ -1274,7 +1274,7 @@ export default function AIPredictions() {
                                   <span className="text-[9px] font-medium text-blue-400/90">🔒 Unlock this prediction / Otključaj ovu predikciju</span>
                                 </div>
                                 <p className="text-[8px] text-blue-400/60 pl-0.5">📊 Solid value detected</p>
-                                <div className="h-1.5 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+                                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                                   <div
                                     className={cn(
                                       "h-full rounded-full",
@@ -1356,7 +1356,7 @@ export default function AIPredictions() {
                       // Use the same probability used for tier assignment (≥85% for Premium)
                       const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
                       return (
-                          <Card key={`teaser-prem-${prediction.id}`} className="bg-[#0a1628] border-blue-500/20 overflow-hidden rounded relative">
+                          <Card key={`teaser-prem-${prediction.id}`} className="bg-card border-blue-500/20 overflow-hidden rounded relative">
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
                             <CardContent className="p-0 relative">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-blue-500/10">
@@ -1394,7 +1394,7 @@ export default function AIPredictions() {
                                 <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[7px] px-1.5 py-0 rounded w-fit">
                                   🔥 Top pick today
                                 </Badge>
-                                <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(8,120,249,0.3)]">
+                                <div className="h-2 bg-secondary rounded-full overflow-hidden shadow-[0_0_6px_rgba(8,120,249,0.3)]">
                                   <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 shadow-[0_0_8px_rgba(8,120,249,0.5)]" style={{ width: `${Math.max(10, displayedPct)}%` }} />
                                 </div>
                                 <Button
@@ -1577,7 +1577,7 @@ export default function AIPredictions() {
                       </div>
                       {showLockedCard && (
                         <div className="transition-all duration-500">
-                          <Card className="bg-[#0a1628] border-blue-500/25 overflow-hidden rounded relative">
+                          <Card className="bg-card border-blue-500/25 overflow-hidden rounded relative">
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
                             <CardContent className="p-0 relative">
                               <div className="px-3 py-2 flex items-center justify-between border-b border-blue-500/10">

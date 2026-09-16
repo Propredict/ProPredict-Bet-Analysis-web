@@ -48,7 +48,7 @@ export function PendingPickCard({ league, homeTeam, awayTeam, matchTimestamp }: 
     : null;
 
   return (
-    <Card className="bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded">
+    <Card className="bg-card border-primary/30 overflow-hidden rounded">
       <CardContent className="p-0">
         <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">

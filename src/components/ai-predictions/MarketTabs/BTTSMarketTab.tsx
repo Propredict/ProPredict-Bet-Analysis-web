@@ -32,7 +32,7 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
               "flex items-center justify-between p-2 md:p-3 rounded-lg border transition-all",
               hasAccess && option.recommended
                 ? "bg-green-500/10 border-green-500/30"
-                : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
+                : "bg-secondary border-[#1e3a5f]/30"
             )}
           >
             <div className="flex items-center gap-1.5 md:gap-2">

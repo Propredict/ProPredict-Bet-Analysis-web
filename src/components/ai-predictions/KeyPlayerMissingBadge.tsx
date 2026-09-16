@@ -72,12 +72,12 @@ export function KeyPlayerMissingBadge({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 p-3 bg-[#0a1628] border-[#1e3a5f]/60 text-white"
+        className="w-72 p-3 bg-card border-[#1e3a5f]/60 text-white"
         align="end"
         sideOffset={4}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-[#1e3a5f]/40">
+        <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-primary/30">
           <UserX className="w-3.5 h-3.5 text-blue-400" />
           <h4 className="text-xs font-semibold">Missing Key Players</h4>
           {lineupConfirmed && (
@@ -139,7 +139,7 @@ export function KeyPlayerMissingBadge({
           </div>
         )}
 
-        <p className="mt-2 pt-2 border-t border-[#1e3a5f]/40 text-[9px] text-muted-foreground/70">
+        <p className="mt-2 pt-2 border-t border-primary/30 text-[9px] text-muted-foreground/70">
           Confidence has been adjusted based on missing players.
         </p>
       </PopoverContent>

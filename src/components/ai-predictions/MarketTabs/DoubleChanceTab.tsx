@@ -36,7 +36,7 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
         "p-2.5 md:p-4 rounded-lg border",
         hasAccess
           ? "bg-green-500/10 border-green-500/30"
-          : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
+          : "bg-secondary border-[#1e3a5f]/30"
       )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 md:gap-2">
@@ -64,7 +64,7 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
       </div>
 
       {hasAccess && (
-        <div className="bg-[#1e3a5f]/20 rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30">
+        <div className="bg-secondary rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30">
           <p className="text-[10px] md:text-xs text-muted-foreground">
             <span className="font-semibold text-cyan-400">Safer pick:</span> Covers two outcomes.
           </p>

@@ -102,7 +102,7 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
         <TooltipContent
           side="bottom"
           align="end"
-          className="max-w-[220px] p-2.5 bg-[#0a1628] border-[#1e3a5f] text-foreground"
+          className="max-w-[220px] p-2.5 bg-card border-[#1e3a5f] text-foreground"
         >
           <div className="space-y-1.5">
             <div className="text-[10px] font-bold text-foreground border-b border-[#1e3a5f] pb-1.5 mb-1.5 flex items-center gap-1">
