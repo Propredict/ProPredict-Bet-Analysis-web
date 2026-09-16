@@ -392,6 +392,33 @@ export type Database = {
           },
         ]
       }
+      community_messages: {
+        Row: {
+          avatar_url: string | null
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_reward_claims: {
         Row: {
           claim_date: string
