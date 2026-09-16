@@ -43,11 +43,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const tipsItems = [
+const mainItems = [
   { title: "Single Tips", url: "/single-tips", icon: Lightbulb },
-];
-
-const ticketsItems = [
   { title: "Tiket / Bet Slip", url: "/tickets", icon: Ticket },
 ];
 
@@ -177,48 +174,19 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Tips */}
+        {/* Single Tips + Tiket / Bet Slip */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Match Predictions"}
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {tipsItems.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-base font-semibold transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Tickets */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Tickets"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {ticketsItems
-                .map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/20 text-primary"
-                    >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-[18px] w-[18px]" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -240,10 +208,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-base font-bold transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
                       activeClassName=""
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-5 w-5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
