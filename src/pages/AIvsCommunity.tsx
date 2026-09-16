@@ -207,8 +207,14 @@ export default function AIvsCommunity() {
       </Helmet>
 
       <div className="w-full px-3 sm:px-4 lg:px-6 py-4 space-y-5">
+        <PageHero
+          title="AI vs Members"
+          subtitle="Who gets it right today? Compare AI picks with the community."
+          icon={Swords}
+        />
+
         {/* === HERO HEADER === */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-card via-card to-primary/10 border border-primary/30 p-5">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-5 shadow-md">
           {/* Glow effects */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-3xl" />
