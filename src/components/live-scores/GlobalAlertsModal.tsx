@@ -57,7 +57,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-sidebar/70 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-50 bg-sidebar/85 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
