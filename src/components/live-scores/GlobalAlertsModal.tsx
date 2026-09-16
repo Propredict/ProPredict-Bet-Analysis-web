@@ -24,28 +24,28 @@ function SettingRow({ icon, title, description, checked, onChange, disabled }: S
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 rounded-xl border-2 p-3 transition-all duration-200",
-        disabled && "pointer-events-none opacity-50",
+        "flex items-center justify-between gap-3 rounded-xl border-2 p-3.5 transition-all duration-200",
+        disabled && "pointer-events-none opacity-60",
         checked
-          ? "border-primary/50 bg-primary/10 shadow-sm shadow-primary/10"
-          : "border-border bg-secondary/40",
+          ? "border-primary/80 bg-primary/10 shadow-md shadow-primary/20"
+          : "border-primary/25 bg-card shadow-sm",
       )}
     >
       <div className="flex min-w-0 items-center gap-3">
         <div
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
-            checked ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
+            checked ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "bg-secondary text-muted-foreground ring-1 ring-border",
           )}
         >
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-sm font-extrabold tracking-tight text-sidebar">{title}</p>
+          <p className="text-xs font-semibold text-foreground/70">{description}</p>
         </div>
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} className="scale-110" />
     </div>
   );
 }
@@ -57,7 +57,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-sidebar/70 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-50 bg-sidebar/85 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
@@ -100,7 +100,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
             <div
               className={cn(
                 "rounded-xl border-2 p-4 transition-all duration-200",
-                settings.enabled ? "border-primary bg-primary/10" : "border-border bg-secondary/40",
+                settings.enabled ? "border-primary/80 bg-primary/10 shadow-md shadow-primary/20" : "border-primary/25 bg-card shadow-sm",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -108,14 +108,14 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
                   <div
                     className={cn(
                       "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                      settings.enabled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                      settings.enabled ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "bg-secondary text-muted-foreground ring-1 ring-border",
                     )}
                   >
                     <Bell className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-foreground">Enable Push Notifications</p>
-                    <p className="text-xs text-muted-foreground">Get alerts for match events</p>
+                    <p className="text-sm font-black tracking-tight text-sidebar">Enable Push Notifications</p>
+                    <p className="text-xs font-semibold text-foreground/70">Get alerts for match events</p>
                   </div>
                 </div>
                 <Switch checked={settings.enabled} onCheckedChange={() => onToggle("enabled")} className="scale-110" />
@@ -124,7 +124,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
 
             {/* Alert Types Section */}
             <div className="space-y-2">
-              <p className="px-1 text-xs font-bold uppercase tracking-wider text-primary">Alert Types</p>
+              <p className="px-1 text-xs font-extrabold uppercase tracking-widest text-sidebar">Alert Types</p>
               <div className="space-y-2.5">
                 <SettingRow
                   icon={<Goal className="h-5 w-5" />}
@@ -155,7 +155,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
 
             {/* Preferences Section */}
             <div className="space-y-2 pt-1">
-              <p className="px-1 text-xs font-bold uppercase tracking-wider text-primary">Preferences</p>
+              <p className="px-1 text-xs font-extrabold uppercase tracking-widest text-sidebar">Preferences</p>
               <div className="space-y-2.5">
                 <SettingRow
                   icon={settings.soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
@@ -178,12 +178,12 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
           </div>
 
           {/* Footer */}
-          <div className="border-t border-border bg-secondary/40 px-5 py-3">
-            <p className="text-center text-xs font-semibold text-muted-foreground">
+          <div className="border-t-2 border-primary/20 bg-secondary/60 px-5 py-3.5">
+            <p className="text-center text-xs font-bold">
               {settings.enabled ? (
                 <span className="text-success">✓ Notifications are enabled</span>
               ) : (
-                "Enable notifications to receive match alerts"
+                <span className="text-sidebar">Enable notifications to receive match alerts</span>
               )}
             </p>
           </div>
