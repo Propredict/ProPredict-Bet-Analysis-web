@@ -52,6 +52,8 @@ interface TicketCardProps {
   isUnlocking?: boolean;
   hideLockedMatches?: boolean;
   customLockedCTA?: React.ReactNode;
+  /** Light (white) ticket design — used for the Sure Odds highlight card */
+  light?: boolean;
 }
 
 /* =======================
