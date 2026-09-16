@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTips } from "@/hooks/useTips";
 import { useLiveScores } from "@/hooks/useLiveScores";
