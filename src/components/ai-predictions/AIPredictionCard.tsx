@@ -218,7 +218,7 @@ const AIPredictionCardInner = ({
             )}
             {isStrongSignal && (
               <Badge
-                className="bg-gradient-to-r from-green-500 to-green-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34, 197, 94,0.55)]"
+                className="bg-gradient-to-r from-green-500 to-green-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34,197,94,0.55)]"
                 title="Confidence ≥ 80% with strong xG dominance (Δ ≥ 0.8) — model's highest-conviction signal"
               >
                 <Zap className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />

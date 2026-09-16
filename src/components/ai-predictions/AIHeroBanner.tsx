@@ -7,7 +7,7 @@ import heroAsset from "@/assets/ai-hero-banner.jpg.asset.json";
  */
 export function AIHeroBanner() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-[hsl(var(--sidebar-background))] shadow-[0_0_40px_-12px_rgba(8, 120, 249,0.45)]">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-[hsl(var(--sidebar-background))] shadow-[0_0_40px_-12px_rgba(8,120,249,0.45)]">
       <img
         src={heroAsset.url}
         alt="AI powered football predictions"

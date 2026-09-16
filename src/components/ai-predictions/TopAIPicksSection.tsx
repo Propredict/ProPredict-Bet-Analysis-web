@@ -116,7 +116,7 @@ export function TopAIPicksSection({
         "relative overflow-hidden border-2",
         "bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-blue-600/10",
         "border-blue-500/40",
-        "shadow-[0_0_40px_rgba(8, 120, 249,0.15)]",
+        "shadow-[0_0_40px_rgba(8,120,249,0.15)]",
       )}
     >
       {/* Decorative glow orbs */}

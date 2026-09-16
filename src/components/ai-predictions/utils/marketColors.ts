@@ -52,7 +52,7 @@ export const MARKET_COLORS: Record<MarketCategory, MarketColorTokens> = {
   btts: {
     chipClass: "bg-green-500/15 text-green-300 border-green-500/40",
     barGradient: "from-green-500 via-green-400 to-lime-400",
-    glow: "rgba(34, 197, 94,0.45)",
+    glow: "rgba(34,197,94,0.45)",
     shortLabel: "BTTS",
   },
   dc: {
@@ -64,7 +64,7 @@ export const MARKET_COLORS: Record<MarketCategory, MarketColorTokens> = {
   "1x2": {
     chipClass: "bg-blue-500/15 text-blue-300 border-blue-500/40",
     barGradient: "from-blue-500 via-blue-400 to-blue-400",
-    glow: "rgba(8, 120, 249,0.45)",
+    glow: "rgba(8,120,249,0.45)",
     shortLabel: "1X2",
   },
   other: {

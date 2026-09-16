@@ -752,7 +752,7 @@ export default function AIPredictions() {
 
                 <Button
                   onClick={() => navigate("/get-premium")}
-                  className="w-full h-auto py-2 md:h-14 md:py-0 text-xs md:text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-blue-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(8, 120, 249,0.35)] relative whitespace-normal"
+                  className="w-full h-auto py-2 md:h-14 md:py-0 text-xs md:text-lg font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-blue-500 hover:opacity-90 text-white border-0 rounded-xl md:rounded-2xl gap-2 shadow-[0_0_35px_rgba(8,120,249,0.35)] relative whitespace-normal"
                 >
                   <Crown className="w-3.5 h-3.5 md:w-5 md:h-5 fill-current shrink-0" />
                   <span className="flex flex-col items-center leading-tight">
@@ -809,7 +809,7 @@ export default function AIPredictions() {
                 className={cn(
                   "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "free"
-                    ? "bg-green-500/30 text-green-400 border border-green-500 shadow-[0_0_12px_rgba(34, 197, 94,0.4)]"
+                    ? "bg-green-500/30 text-green-400 border border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
                     : "bg-green-500/15 text-green-400 border border-green-500/40 hover:bg-green-500/25 hover:border-green-500"
                 )}
                 onClick={() => setTierFilter("free")}
@@ -828,7 +828,7 @@ export default function AIPredictions() {
                 className={cn(
                   "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "pro"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8, 120, 249,0.4)]"
+                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
                     : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
                 )}
                 onClick={() => setTierFilter("pro")}
@@ -847,7 +847,7 @@ export default function AIPredictions() {
                 className={cn(
                   "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
                   tierFilter === "premium"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8, 120, 249,0.4)]"
+                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
                     : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
                 )}
                 onClick={() => setTierFilter("premium")}
@@ -866,7 +866,7 @@ export default function AIPredictions() {
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
           {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
           {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
-            <div className="relative overflow-hidden rounded-2xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 via-blue-500/10 to-cyan-500/10 px-3 py-2.5 md:px-6 md:py-6 shadow-[0_0_25px_rgba(8, 120, 249,0.12)]">
+            <div className="relative overflow-hidden rounded-2xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 via-blue-500/10 to-cyan-500/10 px-3 py-2.5 md:px-6 md:py-6 shadow-[0_0_25px_rgba(8,120,249,0.12)]">
               <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-blue-500/15 blur-2xl" />
               <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
               <div className="relative flex items-center gap-2 md:gap-3">
@@ -1124,7 +1124,7 @@ export default function AIPredictions() {
                 "relative overflow-hidden border mb-3 md:mb-4",
                 "bg-gradient-to-br from-green-950/40 via-slate-900/60 to-green-950/40",
                 "border-green-500/40",
-                "shadow-[0_0_30px_rgba(34, 197, 94,0.18)]",
+                "shadow-[0_0_30px_rgba(34,197,94,0.18)]",
               )}
             >
               {/* Subtle corner glows — softer than Diamond's pulse */}
@@ -1394,8 +1394,8 @@ export default function AIPredictions() {
                                 <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[7px] px-1.5 py-0 rounded w-fit">
                                   🔥 Top pick today
                                 </Badge>
-                                <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(8, 120, 249,0.3)]">
-                                  <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 shadow-[0_0_8px_rgba(8, 120, 249,0.5)]" style={{ width: `${Math.max(10, displayedPct)}%` }} />
+                                <div className="h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden shadow-[0_0_6px_rgba(8,120,249,0.3)]">
+                                  <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 shadow-[0_0_8px_rgba(8,120,249,0.5)]" style={{ width: `${Math.max(10, displayedPct)}%` }} />
                                 </div>
                                 <Button
                                   onClick={() => navigate("/get-premium")}
