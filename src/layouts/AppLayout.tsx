@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles } from "lucide-react";
+import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles, Search } from "lucide-react";
 import { ArenaNotificationsDropdown } from "@/components/ArenaNotificationsDropdown";
 import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
