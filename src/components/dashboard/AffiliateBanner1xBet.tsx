@@ -23,7 +23,7 @@ export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL, compact = f
         target="_blank"
         rel="noopener noreferrer sponsored"
         aria-label="1xBet – Register now (sponsored)"
-        className="group relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-primary/25 bg-card shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-1 hover:border-primary active:scale-95 motion-reduce:transform-none"
+        className="group relative flex aspect-square w-full max-w-[150px] flex-col items-center justify-center justify-self-center overflow-hidden rounded-xl border-2 border-primary/25 bg-card shadow-lg shadow-primary/20 transition-all duration-300 hover:-translate-y-1 hover:border-primary active:scale-95 motion-reduce:transform-none"
       >
         <span className="absolute inset-x-0 top-0 h-1 bg-primary" />
         <span className="absolute left-3 top-3 flex items-center gap-1.5 text-[9px] font-bold uppercase text-muted-foreground">
@@ -37,7 +37,7 @@ export function AffiliateBanner1xBet({ href = DEFAULT_AFFILIATE_URL, compact = f
         </span>
 
         <span className="absolute bottom-4 rounded-full border border-primary/35 bg-background px-3 py-1 text-[9px] font-black uppercase text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-          View offer
+          Join now
         </span>
         <span className="sr-only">18+ • Play responsibly</span>
       </a>

@@ -15,7 +15,7 @@ export function AffiliateBannerMelbet({ compact = false }: AffiliateBannerMelbet
         target="_blank"
         rel="noopener noreferrer sponsored"
         aria-label="Melbet — Exclusive $100 bonus on first deposit"
-        className="group relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-accent/30 bg-card shadow-lg shadow-accent/20 transition-all duration-300 hover:-translate-y-1 hover:border-accent active:scale-95 motion-reduce:transform-none"
+        className="group relative flex aspect-square w-full max-w-[150px] flex-col items-center justify-center justify-self-center overflow-hidden rounded-xl border-2 border-accent/30 bg-card shadow-lg shadow-accent/20 transition-all duration-300 hover:-translate-y-1 hover:border-accent active:scale-95 motion-reduce:transform-none"
       >
         <span className="absolute inset-x-0 top-0 h-1 bg-accent" />
         <span className="absolute left-3 top-3 flex items-center gap-1.5 text-[9px] font-bold uppercase text-muted-foreground">
@@ -28,7 +28,7 @@ export function AffiliateBannerMelbet({ compact = false }: AffiliateBannerMelbet
         </span>
 
         <span className="absolute bottom-4 rounded-full border border-accent/40 bg-background px-3 py-1 text-[9px] font-black uppercase text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-          View offer
+          Join now
         </span>
         <span className="sr-only">18+ • Play responsibly</span>
       </a>

@@ -22,8 +22,8 @@ import { toast } from "sonner";
 type TipView = "daily" | "premium" | "risk" | "diamond";
 
 const views: Array<{ value: TipView; label: string; shortLabel: string; icon: typeof Lightbulb }> = [
-  { value: "daily", label: "Daily Predictions", shortLabel: "Daily", icon: Lightbulb },
-  { value: "premium", label: "Premium Predictions", shortLabel: "Premium", icon: Crown },
+  { value: "daily", label: "Daily Tip", shortLabel: "Daily Tip", icon: Lightbulb },
+  { value: "premium", label: "Premium Tip", shortLabel: "Premium Tip", icon: Crown },
   { value: "risk", label: "Risk of the Day", shortLabel: "Risk", icon: Target },
   { value: "diamond", label: "Diamond Pick", shortLabel: "Diamond", icon: Gem },
 ];
@@ -182,12 +182,13 @@ export default function SingleTips() {
         </section>
 
         <Tabs value={activeView} onValueChange={changeView}>
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl border border-primary/35 bg-card p-2 sm:grid-cols-4">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-3 rounded-xl border border-primary/35 bg-card p-3 sm:grid-cols-4">
             {views.map((view) => (
-              <TabsTrigger key={view.value} value={view.value} className="h-11 gap-2 rounded-lg border border-primary/20 bg-secondary/40 px-2 text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <view.icon className="h-4 w-4 shrink-0" />
-                <span className="hidden md:inline">{view.label}</span>
-                <span className="md:hidden">{view.shortLabel}</span>
+              <TabsTrigger key={view.value} value={view.value} className="flex min-h-24 flex-col gap-2 rounded-lg border-2 border-primary/25 bg-secondary/40 px-3 py-4 text-center text-foreground shadow-sm data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/70 text-primary data-[state=active]:bg-primary-foreground/15 data-[state=active]:text-primary-foreground">
+                  <view.icon className="h-5 w-5 shrink-0" />
+                </span>
+                <span className="text-sm font-extrabold">{view.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -240,7 +241,7 @@ export default function SingleTips() {
         </Tabs>
 
         <p className="text-center text-[10px] text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
-        <div className="grid grid-cols-2 gap-3" aria-label="Sponsored partners">
+        <div className="mx-auto grid w-full max-w-xs grid-cols-2 gap-3" aria-label="Sponsored partners">
           <AffiliateBanner1xBet compact />
           <AffiliateBannerMelbet compact />
         </div>
