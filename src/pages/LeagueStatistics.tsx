@@ -113,27 +113,21 @@ export default function LeagueStatistics() {
     </Helmet>
     <div className="section-gap max-w-full overflow-x-hidden">
         {/* Header - COMPACT */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="p-1.5 rounded-md bg-primary/20">
-              <BarChart3 className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold sm:text-base text-foreground">All Leagues Standings</h1>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Stats & rankings</p>
-            </div>
-          </div>
-
-          {/* League Selector - Searchable */}
-          <LeagueSearchSelect
-            leagues={allLeagues}
-            value={selectedLeagueId}
-            onValueChange={setSelectedLeagueId}
-            placeholder="Select League"
-            className="w-full sm:w-[160px]"
-            compact
-          />
-        </div>
+        <PageHero
+          title="All Leagues Standings"
+          subtitle="Stats & rankings"
+          icon={BarChart3}
+          actions={
+            <LeagueSearchSelect
+              leagues={allLeagues}
+              value={selectedLeagueId}
+              onValueChange={setSelectedLeagueId}
+              placeholder="Select League"
+              className="w-full sm:w-[180px]"
+              compact
+            />
+          }
+        />
 
         {/* Stats Summary - COMPACT cards */}
         <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
