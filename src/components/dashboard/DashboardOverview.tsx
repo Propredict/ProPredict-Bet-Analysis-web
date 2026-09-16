@@ -19,6 +19,7 @@ interface Row {
   confidence: number;
   tier: ContentTier;
   kickoff: string;
+  category: string;
 }
 
 function mapTip(t: any): Row {
@@ -31,6 +32,7 @@ function mapTip(t: any): Row {
     confidence: t.confidence ?? 0,
     tier: (t.tier ?? "free") as ContentTier,
     kickoff: t.kickoff_time ? String(t.kickoff_time).slice(0, 5) : "",
+    category: t.category ?? "",
   };
 }
 
