@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, ChevronDown, Trophy, Calendar } from "lucide-react";
+import { ChevronDown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAIPredictionLeagues } from "@/hooks/useAIPredictionLeagues";
 
 interface AIPredictionsSidebarProps {
   selectedDay: "today" | "tomorrow";
@@ -20,15 +18,8 @@ export function AIPredictionsSidebar({
   selectedLeague,
   onLeagueChange,
 }: AIPredictionsSidebarProps) {
-  const [leagueSearch, setLeagueSearch] = useState("");
   const [todayOpen, setTodayOpen] = useState(true);
   const [tomorrowOpen, setTomorrowOpen] = useState(true);
-  const { leagues, loading: leaguesLoading } = useAIPredictionLeagues();
-
-  // Filter leagues by search
-  const filteredLeagues = leagues.filter((l) =>
-    l.league.toLowerCase().includes(leagueSearch.toLowerCase())
-  );
 
   return (
     <div className="space-y-4">
