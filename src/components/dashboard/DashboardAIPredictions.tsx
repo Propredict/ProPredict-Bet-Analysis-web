@@ -488,41 +488,41 @@ function TierSection({
   const styles = TONE_STYLES[tone];
 
   return (
-    <div className={`rounded-2xl border ${styles.border} bg-gradient-to-br ${styles.bg} p-3 sm:p-4 space-y-3`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <Badge variant="outline" className={`gap-1 ${styles.badge} text-[10px] px-2 py-0.5`}>
-              <BadgeIcon className="h-3 w-3" />
-              {badgeLabel}
-            </Badge>
-            <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
+    <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <BadgeIcon className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-black text-sidebar sm:text-lg">{title}</h3>
+            <p className="truncate text-[11px] text-muted-foreground">{subtitle}</p>
           </div>
-          <p className="text-[10px] text-muted-foreground">{subtitle}</p>
         </div>
+        <button
+          onClick={onCta}
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-primary hover:underline"
+        >
+          View All <ChevronRight className="h-3 w-3" />
+        </button>
       </div>
 
       {picks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {picks.map((p, i) => renderCard(p, i))}
-        </div>
+        picks.map((p, i) => renderCard(p, i))
       ) : (
-        <div className="flex flex-col items-center gap-1.5 py-6 rounded-xl border border-border/40 bg-card/40">
-          <BadgeIcon className={`h-5 w-5 ${styles.text} opacity-50`} />
-          <p className="text-[11px] text-muted-foreground">{empty}</p>
-        </div>
+        <p className="px-4 py-6 text-center text-sm text-muted-foreground">{empty}</p>
       )}
 
-      <div className="flex justify-center pt-1">
+      <div className="border-t border-border px-3 py-3">
         <Button
           size="sm"
-          className={`px-5 group bg-gradient-to-r ${styles.cta} text-primary-foreground text-xs border-0 rounded-full`}
+          className="group w-full rounded-lg bg-primary text-xs font-bold text-primary-foreground"
           onClick={onCta}
         >
-          <span>{ctaLabel}</span>
-          <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-0.5" />
+          <span className="truncate">{ctaLabel}</span>
+          <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
