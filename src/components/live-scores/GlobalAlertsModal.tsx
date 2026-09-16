@@ -100,7 +100,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
             <div
               className={cn(
                 "rounded-xl border-2 p-4 transition-all duration-200",
-                settings.enabled ? "border-primary bg-primary/10" : "border-border bg-secondary/40",
+                settings.enabled ? "border-primary/80 bg-primary/10 shadow-md shadow-primary/20" : "border-primary/25 bg-card shadow-sm",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -108,14 +108,14 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
                   <div
                     className={cn(
                       "flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                      settings.enabled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                      settings.enabled ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "bg-secondary text-muted-foreground ring-1 ring-border",
                     )}
                   >
                     <Bell className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-foreground">Enable Push Notifications</p>
-                    <p className="text-xs text-muted-foreground">Get alerts for match events</p>
+                    <p className="text-sm font-black tracking-tight text-sidebar">Enable Push Notifications</p>
+                    <p className="text-xs font-semibold text-foreground/70">Get alerts for match events</p>
                   </div>
                 </div>
                 <Switch checked={settings.enabled} onCheckedChange={() => onToggle("enabled")} className="scale-110" />
