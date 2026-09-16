@@ -256,32 +256,19 @@ export default function MatchPreviews() {
       </Helmet>
 
       <div className="page-content space-y-4">
-        {/* Premium Page Header */}
-        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background/80 to-background p-6 sm:p-8">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-success/5 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
-          </div>
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-primary border border-primary/50 shadow-lg shadow-primary/20">
-                <Trophy className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Top 30 AI Picks</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Only the safest AI picks — <span className="text-primary font-bold">75%+ confidence</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs font-black text-primary uppercase tracking-widest">AI Curated</span>
-            </div>
-          </div>
-        </div>
+        {/* Page Header */}
+        <PageHero
+          title="Top 30 AI Picks"
+          subtitle="Only the safest AI picks — 75%+ confidence"
+          icon={Trophy}
+          badge={
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/30 bg-primary-foreground/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
+              <Sparkles className="h-3 w-3" />
+              AI Curated
+            </span>
+          }
+        />
+
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
         <AffiliateBanner1xBet />
