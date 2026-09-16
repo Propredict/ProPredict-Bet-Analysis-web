@@ -396,19 +396,19 @@ export default function LiveScores() {
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
             globalAlertSettings.enabled
-              ? "bg-gradient-to-r from-green-500/15 to-emerald-500/10 border-green-500/30"
-              : "bg-gradient-to-r from-amber-500/15 to-orange-500/10 border-amber-500/30"
+              ? "bg-gradient-to-r from-success/15 to-success/10 border-success/30"
+              : "bg-gradient-to-r from-primary/15 to-primary/10 border-primary/30"
           )}
         >
           <Bell className={cn(
             "h-4 w-4 flex-shrink-0",
             globalAlertSettings.enabled
-              ? "text-green-400 animate-[pulse_1.5s_ease-in-out_infinite]"
-              : "text-amber-400"
+              ? "text-success animate-[pulse_1.5s_ease-in-out_infinite]"
+              : "text-primary"
           )} />
           <span className={cn(
             "text-xs font-medium",
-            globalAlertSettings.enabled ? "text-green-300" : "text-amber-300"
+            globalAlertSettings.enabled ? "text-success" : "text-primary"
           )}>
             {globalAlertSettings.enabled
               ? "🔔 Goal sound alerts are ON"
@@ -424,7 +424,7 @@ export default function LiveScores() {
                 size="sm"
                 variant="outline"
                 onClick={clearAllFavorites}
-                className="gap-1 h-7 text-[10px] sm:text-xs border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                className="gap-1 h-7 text-[10px] sm:text-xs border-primary/40 text-primary hover:bg-primary/10"
               >
                 <XCircle className="h-3 w-3" />
                 Clear All Stars ({favorites.size})
@@ -435,7 +435,7 @@ export default function LiveScores() {
                 size="sm"
                 variant="outline"
                 onClick={clearAllAlerts}
-                className="gap-1 h-7 text-[10px] sm:text-xs border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                className="gap-1 h-7 text-[10px] sm:text-xs border-primary/40 text-primary hover:bg-primary/10"
               >
                 <XCircle className="h-3 w-3" />
                 Clear All Bells ({alertedMatchIds.size})
@@ -450,13 +450,13 @@ export default function LiveScores() {
           <StatCard title="Leagues" value={leaguesCount} icon={Trophy} variant="leagues" />
           
           {/* Favorites Quick Link */}
-          <Card onClick={() => navigate("/favorites")} className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-pink-500/15 to-pink-600/5 border-pink-500/20 hover:border-pink-500/40 cursor-pointer">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-pink-500/15 flex items-center justify-center flex-shrink-0">
-              <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-pink-400" />
+          <Card onClick={() => navigate("/favorites")} className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-primary/15 to-primary/5 border-primary/20 hover:border-primary/40 cursor-pointer">
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Favorites</p>
-              <p className="text-[9px] sm:text-[10px] font-semibold text-pink-400">View →</p>
+              <p className="text-[9px] sm:text-[10px] font-semibold text-primary">View →</p>
             </div>
           </Card>
         </div>
