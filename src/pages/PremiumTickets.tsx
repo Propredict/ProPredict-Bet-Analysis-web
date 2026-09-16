@@ -1,237 +1,91 @@
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Ticket, Crown, RefreshCw, Target, BarChart3, TrendingUp, Sparkles, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import TicketCard from "@/components/dashboard/TicketCard";
-import { PricingModal } from "@/components/PricingModal";
-import { useTickets } from "@/hooks/useTickets";
-import { useUserPlan } from "@/hooks/useUserPlan";
-import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
-import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
+import { TicketGroup } from "@/components/tickets/TicketGroup";
+import { useTickets } from "@/hooks/useTickets";
+import { useUnlockHandler } from "@/hooks/useUnlockHandler";
+import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const {
-    tickets,
-    isLoading,
-    refetch
-  } = useTickets(false);
-  const {
-    canAccess,
-    getUnlockMethod,
-    plan,
-    refetch: refetchPlan
-  } = useUserPlan();
-  const {
-    unlockingId,
-    handleUnlock
-  } = useUnlockHandler();
   const [searchParams] = useSearchParams();
+  const { tickets, isLoading, refetch } = useTickets(false);
+  const { getUnlockMethod, isAuthenticated } = useUserPlan();
+  const { unlockingId, handleUnlock } = useUnlockHandler();
   const highlightId = searchParams.get("highlight");
-  const planRequired = searchParams.get("plan_required");
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [upgradeHighlight, setUpgradeHighlight] = useState<"basic" | "premium" | undefined>();
 
-  // Highlight scroll from push notification
+  const todayBelgrade = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
+  const premiumTickets = tickets.filter((ticket) => {
+    const isRisk = ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(String(ticket.category));
+    return ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRisk;
+  });
+
   useEffect(() => {
     if (!highlightId) return;
-    const scrollToTicket = () => {
-      const el = document.getElementById(`ticket-${highlightId}`);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("push-highlight");
-      setTimeout(() => el.classList.remove("push-highlight"), 4000);
-    };
-    setTimeout(scrollToTicket, 400);
+    const timer = window.setTimeout(() => {
+      const ticket = document.getElementById(`ticket-${highlightId}`);
+      ticket?.scrollIntoView({ behavior: "smooth", block: "center" });
+      ticket?.classList.add("push-highlight");
+      window.setTimeout(() => ticket?.classList.remove("push-highlight"), 4000);
+    }, 400);
+    return () => window.clearTimeout(timer);
   }, [highlightId]);
 
-  // Plan required upgrade modal from push notification
-  useEffect(() => {
-    if (!planRequired) return;
-    if (planRequired === "premium" && plan !== "premium") {
-      setUpgradeHighlight("premium");
-      setUpgradeModalOpen(true);
-    } else if (planRequired === "pro" && plan === "free") {
-      setUpgradeHighlight("basic");
-      setUpgradeModalOpen(true);
-    }
-  }, [planRequired, plan]);
-
-  // Get today's date in Belgrade timezone (YYYY-MM-DD)
-  const todayBelgrade = new Date().toLocaleDateString("en-CA", {
-    timeZone: "Europe/Belgrade",
-  });
-  
-  const isRiskTicket = (ticket: any) =>
-    ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(ticket.category);
-
-
-  const premiumTickets = tickets.filter(
-    ticket => ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRiskTicket(ticket)
-  );
-  const unlockedCount = premiumTickets.filter(ticket => canAccess("premium", "ticket", ticket.id)).length;
-  
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([refetch(), refetchPlan()]);
-      toast({
-        title: "Data refreshed",
-        description: "Premium Ticket have been updated.",
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
+  const getAccess = (tier: ContentTier, contentType?: "tip" | "ticket", contentId?: string) => {
+    if (!isAuthenticated) return { type: "login_required", message: "Sign in to unlock" } as const;
+    return getUnlockMethod(tier, contentType, contentId);
   };
 
-  return <>
-    <FreeUserUpsellModal />
-    <Helmet>
-      <title>Premium Ticket – ProPredict</title>
-      <meta
-        name="description"
-        content="Premium AI-powered match combinations with highest confidence selections. For informational and entertainment purposes only."
-      />
-    </Helmet>
-    <div className="section-gap">
-      {/* Sponsored: Melbet affiliate banner at top */}
-      <div className="mb-4">
-        <AffiliateBannerMelbet />
-      </div>
+  const unlock = (ticketId: string, tier: "daily" | "premium") => {
+    const method = getAccess(tier, "ticket", ticketId);
+    if (method?.type === "login_required") {
+      navigate("/login");
+      return;
+    }
+    if (tier === "premium" && method?.type !== "watch_ad" && method?.type !== "android_watch_ad_or_pro") {
+      navigate("/get-premium");
+      return;
+    }
+    handleUnlock("ticket", ticketId, tier);
+  };
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 via-pink-500/10 to-transparent border border-fuchsia-500/30 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="p-1.5 rounded-md bg-fuchsia-500/20">
-            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-fuchsia-400" />
+  return (
+    <>
+      <Helmet>
+        <title>Premium Ticket – ProPredict</title>
+        <meta name="description" content="Today's Premium football prediction ticket with selected matches, picks and total odds." />
+        <meta property="og:title" content="Premium Ticket – ProPredict" />
+        <meta property="og:description" content="Today's Premium football prediction ticket." />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
+      <div className="space-y-5">
+        <div className="overflow-hidden rounded-2xl bg-sidebar px-4 py-7 text-sidebar-foreground shadow-xl sm:px-7 sm:py-9">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase text-primary">Premium selection</p>
+              <h1 className="text-3xl font-extrabold sm:text-4xl">Premium Ticket</h1>
+              <p className="mt-2 max-w-xl text-sm text-sidebar-foreground/65">Today's exclusive Premium ticket for members.</p>
+            </div>
+            <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-4 py-3 sm:text-right">
+              <p className="text-[9px] font-bold uppercase text-sidebar-foreground/45">Ticket date</p>
+              <p className="mt-1 text-sm font-semibold text-sidebar-foreground">{new Date().toLocaleDateString("en-GB", { timeZone: "Europe/Belgrade", day: "numeric", month: "long", year: "numeric" })}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm text-fuchsia-400 sm:text-lg font-semibold">Premium Ticket</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Subscribe to view all premium predictions</p>
+
+          <div className="mt-7">
+            <TicketGroup title="Premium Ticket" subtitle="Premium members" badge="Exclusive" tickets={premiumTickets} tier="premium" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>
         </div>
-        <div className="flex items-center gap-1 sm:gap-1.5">
-          <Button
-            size="default"
-            className="bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white font-bold border-0 gap-1.5 h-10 sm:h-11 text-xs sm:text-sm px-4 sm:px-5 shadow-lg shadow-fuchsia-500/20"
-            onClick={() => navigate("/get-premium")}
-          >
-            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-            Subscribe
-          </Button>
-        </div>
+
+        <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
+        <section aria-label="Sponsored partners" className="mx-auto grid w-full max-w-2xl grid-cols-2 gap-3 sm:gap-5">
+          <AffiliateBanner1xBet compact />
+          <AffiliateBannerMelbet compact />
+        </section>
       </div>
-
-      {/* Description */}
-      <Card className="p-3 bg-gradient-to-r from-fuchsia-500/15 via-pink-500/10 to-transparent border-fuchsia-500/20">
-        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Premium Ticket feature exclusive, high-confidence match combinations created using advanced AI models and expert insights, available only to Premium users.
-        </p>
-      </Card>
-
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">85%</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Accuracy</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-accent/20">
-              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">{premiumTickets.length}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Available</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-      {/* Tickets Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {isLoading ? <Card className="p-8 bg-card border-border">
-            <div className="flex flex-col items-center justify-center text-muted-foreground">
-              <Loader2 className="h-8 w-8 animate-spin mb-2" />
-              <p>Loading predictions...</p>
-            </div>
-          </Card> : premiumTickets.length === 0 ? <Card className="p-8 bg-card border-border">
-            <div className="flex flex-col items-center justify-center text-muted-foreground">
-              <Ticket className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-warning mb-1">No Premium Ticket available</p>
-              <p className="text-sm">Check back later for new predictions</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </Card> : premiumTickets.map((ticket, idx) => {
-        const unlockMethod = getUnlockMethod("premium", "ticket", ticket.id);
-        const isLocked = unlockMethod?.type !== "unlocked";
-        const isUnlocking = unlockingId === ticket.id;
-        const matchesToShow = isLocked ? (ticket.matches ?? []).slice(0, 3) : ticket.matches ?? [];
-        return <React.Fragment key={ticket.id}>
-          <div id={`ticket-${ticket.id}`}>
-          <TicketCard ticket={{
-          id: ticket.id,
-          title: ticket.title,
-          matchCount: ticket.matches?.length ?? 0,
-          status: ticket.result ?? "pending",
-          totalOdds: ticket.total_odds ?? 0,
-          tier: ticket.tier,
-          matches: matchesToShow.map(m => ({
-            name: m.match_name,
-            prediction: m.prediction,
-            odds: m.odds
-          })),
-          createdAt: ticket.created_at_ts
-        }} isLocked={isLocked} unlockMethod={unlockMethod} onUnlockClick={() => handleUnlock("ticket", ticket.id, "premium")} onViewTicket={() => navigate(`/tickets/${ticket.id}`)} isUnlocking={isUnlocking} />
-          </div>
-          {(idx + 1) % 5 === 0 && Math.floor((idx + 1) / 5) <= 2 && idx < premiumTickets.length - 1 && (
-              <AdSlot className="col-span-full" />
-          )}
-        </React.Fragment>;
-      })}
-      </div>
-
-      {/* Compliance Disclaimer */}
-      <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
-        These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.
-      </p>
-      {/* Sponsored: 1xBet affiliate banner – web only */}
-      <div className="mt-4">
-        <AffiliateBanner1xBet />
-      </div>
-
-    </div>
-    <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />
-  </>;
+    </>
+  );
 }

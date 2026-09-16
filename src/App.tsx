@@ -51,6 +51,7 @@ const HowAIWorks = lazy(() => import("./pages/HowAIWorks"));
 
 // Tier pages - lazy loaded
 const Tickets = lazy(() => import("./pages/Tickets"));
+const PremiumTickets = lazy(() => import("./pages/PremiumTickets"));
 const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
 const SingleTips = lazy(() => import("./pages/SingleTips"));
