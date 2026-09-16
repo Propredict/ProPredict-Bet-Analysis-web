@@ -22,7 +22,7 @@ export function AIPredictionsSidebar({
   return (
     <div className="space-y-4">
       {/* Predictions Section */}
-      <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
+      <Card className="bg-card/80 border-primary/30">
         <CardContent className="p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3">Predictions</h3>
           
@@ -35,7 +35,7 @@ export function AIPredictionsSidebar({
                   "w-full justify-between text-sm px-3 py-2 h-auto mb-1",
                   selectedDay === "today"
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "text-muted-foreground hover:bg-[#1e3a5f]/30"
+                    : "text-muted-foreground hover:bg-secondary"
                 )}
                 onClick={() => onDayChange("today")}
               >
@@ -60,7 +60,7 @@ export function AIPredictionsSidebar({
                   "w-full justify-between text-sm px-3 py-2 h-auto",
                   selectedDay === "tomorrow"
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "text-muted-foreground hover:bg-[#1e3a5f]/30"
+                    : "text-muted-foreground hover:bg-secondary"
                 )}
                 onClick={() => onDayChange("tomorrow")}
               >

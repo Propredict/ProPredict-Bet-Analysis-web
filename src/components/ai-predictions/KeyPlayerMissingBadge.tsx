@@ -50,8 +50,8 @@ export function KeyPlayerMissingBadge({
     severity === "high"
       ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/25"
       : severity === "medium"
-        ? "bg-blue-500/15 text-blue-300 border-blue-500/40 hover:bg-blue-500/25"
-        : "bg-blue-500/15 text-blue-300 border-blue-500/40 hover:bg-blue-500/25";
+        ? "bg-blue-500/15 text-primary border-blue-500/40 hover:bg-blue-500/25"
+        : "bg-blue-500/15 text-primary border-blue-500/40 hover:bg-blue-500/25";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -72,16 +72,16 @@ export function KeyPlayerMissingBadge({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 p-3 bg-[#0a1628] border-[#1e3a5f]/60 text-white"
+        className="w-72 p-3 bg-card border-primary/25 text-white"
         align="end"
         sideOffset={4}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-[#1e3a5f]/40">
+        <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-primary/30">
           <UserX className="w-3.5 h-3.5 text-blue-400" />
           <h4 className="text-xs font-semibold">Missing Key Players</h4>
           {lineupConfirmed && (
-            <Badge className="ml-auto bg-green-500/15 text-green-300 border-green-500/30 text-[8px] px-1 py-0 rounded">
+            <Badge className="ml-auto bg-green-500/15 text-success border-green-500/30 text-[8px] px-1 py-0 rounded">
               Confirmed XI
             </Badge>
           )}
@@ -139,7 +139,7 @@ export function KeyPlayerMissingBadge({
           </div>
         )}
 
-        <p className="mt-2 pt-2 border-t border-[#1e3a5f]/40 text-[9px] text-muted-foreground/70">
+        <p className="mt-2 pt-2 border-t border-primary/30 text-[9px] text-muted-foreground/70">
           Confidence has been adjusted based on missing players.
         </p>
       </PopoverContent>

@@ -254,7 +254,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           {(() => {
             const tokens = getMarketColors(pick.label);
             return (
-              <div className="relative h-2 bg-[#1e3a5f]/40 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-secondary rounded-full overflow-hidden">
                 <div
                   className={cn(
                     "relative h-full rounded-full transition-all duration-700 bg-gradient-to-r",

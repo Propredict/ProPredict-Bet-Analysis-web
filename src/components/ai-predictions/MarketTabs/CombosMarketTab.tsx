@@ -40,7 +40,7 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
               "flex items-center justify-between p-2 md:p-3 rounded-lg border transition-all",
               hasAccess && combo.recommended
                 ? "bg-gradient-to-r from-blue-500/10 to-blue-500/10 border-blue-500/30"
-                : "bg-[#1e3a5f]/20 border-[#1e3a5f]/30"
+                : "bg-secondary border-primary/25"
             )}
           >
             <div className="flex items-center gap-1.5 md:gap-2">
@@ -84,7 +84,7 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
       )}
 
       {hasAccess && (
-        <div className="bg-[#1e3a5f]/20 rounded-lg p-2 md:p-3 border border-[#1e3a5f]/30 mt-2 md:mt-3">
+        <div className="bg-secondary rounded-lg p-2 md:p-3 border border-primary/25 mt-2 md:mt-3">
           <p className="text-[10px] md:text-xs text-muted-foreground">
             <span className="font-semibold text-blue-400">Higher value:</span> Combines result + goals.
           </p>

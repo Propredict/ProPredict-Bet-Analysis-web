@@ -176,7 +176,7 @@ const AIPredictionCardInner = ({
 
   return (
     <Card className={cn(
-      "bg-[#0a1628] border-[#1e3a5f]/40 overflow-hidden rounded",
+      "bg-card border-primary/30 overflow-hidden rounded",
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
@@ -303,24 +303,24 @@ const AIPredictionCardInner = ({
         <div className="px-2 md:px-3 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
-              "w-full bg-[#1e3a5f]/30 h-6 md:h-7 rounded grid grid-cols-6"
+              "w-full bg-secondary h-6 md:h-7 rounded grid grid-cols-6"
             )}>
-              <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="main" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 BTTS
               </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 DC
               </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Combo
               </TabsTrigger>
-              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] data-[state=active]:bg-[#1e3a5f] px-0.5 rounded">
+              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Correct
               </TabsTrigger>
             </TabsList>
@@ -386,7 +386,7 @@ const AIPredictionCardInner = ({
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-between text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground p-1 md:p-1.5 h-auto bg-[#1e3a5f]/20 rounded"
+                  className="w-full justify-between text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground p-1 md:p-1.5 h-auto bg-secondary rounded"
                 >
                   <span className="flex items-center gap-1 md:gap-1.5">
                     <Brain className="w-2.5 md:w-3 h-2.5 md:h-3" />
@@ -396,7 +396,7 @@ const AIPredictionCardInner = ({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-[#1e3a5f]/20 rounded space-y-1.5 md:space-y-2">
+                <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-secondary rounded space-y-1.5 md:space-y-2">
                   <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
                     {prediction.analysis}
                   </p>
@@ -417,7 +417,7 @@ const AIPredictionCardInner = ({
                          <Badge 
                            key={i} 
                            variant="secondary" 
-                           className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-[#1e3a5f]/40"
+                           className="text-[8px] md:text-[9px] px-1 py-0.5 rounded bg-secondary"
                          >
                            {factor}
                          </Badge>
@@ -485,7 +485,7 @@ const AIPredictionCardInner = ({
             ) : (
               <Button
                 className={cn(
-                  "w-full h-7 md:h-8 text-[10px] md:text-xs hover:opacity-90 text-white border-0 font-medium rounded",
+                  "w-full h-auto min-h-7 md:min-h-8 py-1.5 whitespace-normal text-center text-[10px] md:text-xs leading-tight hover:opacity-90 text-white border-0 font-medium rounded",
                   unlockMethod.type === "upgrade_basic" 
                     ? "bg-gradient-to-r from-blue-500 to-blue-500" 
                     : "bg-gradient-to-r from-blue-500 to-blue-500"
@@ -514,7 +514,7 @@ const AIPredictionCardInner = ({
         )}
 
         {/* Disclaimer */}
-        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-[#1e3a5f]/30">
+        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-primary/25">
           <p className="text-[8px] md:text-[9px] text-muted-foreground/60 text-center leading-tight">
             AI-generated prediction. No guarantee of accuracy. For informational purposes only.
           </p>

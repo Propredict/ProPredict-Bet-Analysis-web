@@ -29,17 +29,17 @@ export function AIHeroBanner() {
 
         <div className="mt-3 sm:mt-5 hidden sm:flex flex-wrap gap-x-6 gap-y-3">
           <Feature
-            icon={<BrainCircuit className="h-4 w-4 text-blue-300" />}
+            icon={<BrainCircuit className="h-4 w-4 text-primary" />}
             title="Smart Analysis"
             lines={["AI scans thousands", "of data points"]}
           />
           <Feature
-            icon={<ShieldCheck className="h-4 w-4 text-blue-300" />}
+            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
             title="High Accuracy"
             lines={["75%+ confidence", "on safe matches"]}
           />
           <Feature
-            icon={<Trophy className="h-4 w-4 text-blue-300" />}
+            icon={<Trophy className="h-4 w-4 text-primary" />}
             title="Real Results"
             lines={["Join thousands", "of winning users"]}
           />
