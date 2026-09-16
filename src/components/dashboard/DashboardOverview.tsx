@@ -179,6 +179,41 @@ export function DashboardOverview() {
               })
             )}
           </section>
+
+          {/* Risk of the Day */}
+          <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md md:col-span-2 xl:col-span-1">
+            <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-black text-sidebar">Risk of the Day</h2>
+              </div>
+              <Link to="/single-tips?view=risk" className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                View All <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            {riskRows.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">Risk pick is being prepared.</p>
+            ) : (
+              riskRows.map((row) => {
+                const locked = !canAccess(row.tier, "tip", row.id);
+                return (
+                  <div key={row.id} className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-extrabold uppercase text-sidebar">{row.home} vs {row.away}</p>
+                      {locked ? (
+                        <p className="inline-flex items-center gap-1 text-xs font-bold text-primary"><Lock className="h-3 w-3" /> Premium pick</p>
+                      ) : (
+                        <p className="text-xs font-bold text-success">{row.prediction}</p>
+                      )}
+                    </div>
+                    {row.confidence > 0 && (
+                      <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary">{row.confidence}%</span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </section>
         </div>
       </div>
 
