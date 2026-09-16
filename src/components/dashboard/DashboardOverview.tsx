@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { AlertTriangle, ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertTriangle, ArrowRight, Check, Crown, Loader2, Target } from "lucide-react";
 import { useTips } from "@/hooks/useTips";
+import { useTickets } from "@/hooks/useTickets";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { PremiumLockBadge, PremiumLockCard } from "@/components/premium/PremiumLock";
 import { AffiliateBanner1xBet } from "./AffiliateBanner1xBet";
 
 function todayBelgrade() {
