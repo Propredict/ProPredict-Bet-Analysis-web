@@ -134,8 +134,8 @@ export default function LeagueStatistics() {
         {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           <HeroStat icon={Play} label="Live" value={liveCount} caption="Matches in play" tone="live" />
-          <HeroStat icon={Trophy} label="Matches" value={filteredMatches.length} caption="Total matches today" />
-          <HeroStat icon={Users} label="Selected" value={isAllLeagues ? "All Leagues" : selectedLeague?.name ?? "—"} caption="Current selection" />
+          <HeroStat icon={Trophy} label="Matches" value={filteredMatches.length} caption="Total matches today" tone="success" />
+          <HeroStat icon={Users} tone="sky" label="Selected" value={isAllLeagues ? "All Leagues" : selectedLeague?.name ?? "—"} caption="Current selection" />
           <HeroStat icon={Target} label="Leagues" value={dynamicLeagues.length} caption="Active leagues" />
         </div>
 
