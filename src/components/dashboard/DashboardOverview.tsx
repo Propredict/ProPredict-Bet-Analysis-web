@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { AlertTriangle, ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertTriangle, ArrowRight, Check, Crown, Loader2, Target } from "lucide-react";
 import { useTips } from "@/hooks/useTips";
+import { useTickets } from "@/hooks/useTickets";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { PremiumLockBadge, PremiumLockCard } from "@/components/premium/PremiumLock";
 import { AffiliateBanner1xBet } from "./AffiliateBanner1xBet";
 
 function todayBelgrade() {
@@ -20,19 +21,60 @@ interface Row {
   tier: ContentTier;
   kickoff: string;
   category: string;
+  source: "tip" | "ticket";
+  sourceId: string;
+  label: string;
 }
 
 function mapTip(t: any): Row {
+  const category = t.category ?? "";
+  const label =
+    category === "diamond_pick"
+      ? "Diamond"
+      : category === "risk_of_day"
+        ? "Risk"
+        : t.tier === "premium"
+          ? "Premium Tip"
+          : "Free Tip";
   return {
-    id: t.id,
+    id: `tip-${t.id}`,
     home: t.home_team,
     away: t.away_team,
     league: t.league ?? "",
     prediction: t.prediction ?? "",
     confidence: t.confidence ?? 0,
     tier: (t.tier ?? "free") as ContentTier,
-    kickoff: t.kickoff_time ? String(t.kickoff_time).slice(0, 5) : "",
-    category: t.category ?? "",
+    kickoff: t.match_time ? String(t.match_time).slice(0, 5) : "",
+    category,
+    source: "tip",
+    sourceId: t.id,
+    label,
+  };
+}
+
+function mapTicketMatch(ticket: any, m: any): Row {
+  const name: string = m.match_name ?? "";
+  const [fallbackHome, fallbackAway] = name.split(/\s+vs\.?\s+/i);
+  const category: string = ticket.category ?? "";
+  const label =
+    category === "diamond_pick"
+      ? "Diamond"
+      : /risk/i.test(category)
+        ? "Risk"
+        : "Premium Ticket";
+  return {
+    id: `tm-${m.id}`,
+    home: m.home_team ?? fallbackHome ?? name,
+    away: m.away_team ?? fallbackAway ?? "",
+    league: m.league ?? "",
+    prediction: m.prediction ?? "",
+    confidence: 0,
+    tier: (ticket.tier ?? "premium") as ContentTier,
+    kickoff: "",
+    category,
+    source: "ticket",
+    sourceId: ticket.id,
+    label,
   };
 }
 
@@ -40,17 +82,15 @@ function PredictionRow({ row, locked }: { row: Row; locked: boolean }) {
   return (
     <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0 sm:px-4">
       <span className="hidden w-12 shrink-0 text-xs font-bold text-muted-foreground sm:inline">{row.kickoff}</span>
-      <span className="hidden w-28 shrink-0 truncate text-xs text-muted-foreground lg:inline">{row.league}</span>
+      <span className="hidden w-24 shrink-0 truncate text-[11px] font-bold uppercase text-primary lg:inline">{row.label}</span>
       <span className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase text-sidebar">
-        {row.home} <span className="text-muted-foreground">vs</span> {row.away}
+        {row.home} {row.away ? <span className="text-muted-foreground">vs</span> : null} {row.away}
       </span>
       {locked ? (
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary">
-          <Lock className="h-3 w-3" /> Locked
-        </span>
+        <PremiumLockBadge />
       ) : (
         <span className="shrink-0 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-[11px] font-extrabold text-success sm:text-xs">
-          {row.prediction}
+          {row.prediction || "—"}
         </span>
       )}
       {row.confidence > 0 && (
@@ -73,15 +113,37 @@ const premiumBenefits = [
 export function DashboardOverview() {
   const tipsQuery = useTips(false);
   const { tips: dbTips = [], isLoading } = tipsQuery ?? ({} as any);
+  const { tickets = [] } = (useTickets(false) ?? {}) as any;
   const { canAccess } = useUserPlan();
   const { matches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
 
   const today = todayBelgrade();
-  const todays = (dbTips as any[]).filter((t) => t.tip_date === today).map(mapTip);
-  const sorted = [...todays].sort((a, b) => b.confidence - a.confidence);
-  const topRows = sorted.slice(0, 5);
-  const tipRows = sorted.filter((r) => r.category !== "risk_of_day").slice(0, 4);
-  const riskRows = sorted.filter((r) => r.category === "risk_of_day").slice(0, 4);
+
+  const tipRowsAll = (dbTips as any[]).filter((t) => t.tip_date === today).map(mapTip);
+
+  const premiumTicketRows = (tickets as any[])
+    .filter(
+      (t) =>
+        t.ticket_date === today &&
+        t.category !== "sure_odds" &&
+        (t.tier === "premium" || t.tier === "exclusive" || /risk|diamond/i.test(t.category ?? "")),
+    )
+    .flatMap((t) => (t.matches ?? []).map((m: any) => mapTicketMatch(t, m)));
+
+  const allRows = [...tipRowsAll, ...premiumTicketRows];
+  const isLockedRow = (r: Row) => !canAccess(r.tier, r.source === "ticket" ? "ticket" : "tip", r.sourceId);
+
+  // Free (unlocked) first, then locked premium content.
+  const sorted = [...allRows].sort((a, b) => {
+    const la = isLockedRow(a) ? 1 : 0;
+    const lb = isLockedRow(b) ? 1 : 0;
+    if (la !== lb) return la - lb;
+    return b.confidence - a.confidence;
+  });
+
+  const topRows = sorted.slice(0, 8);
+  const hasLocked = topRows.some(isLockedRow);
+  const riskRows = sorted.filter((r) => /risk/i.test(r.category)).slice(0, 4);
 
   const liveMatches = matches
     .filter((m) => m.status === "live" || m.status === "halftime")
@@ -89,7 +151,7 @@ export function DashboardOverview() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-      {/* LEFT: Top predictions + live/tips row */}
+      {/* LEFT: Top predictions + live/risk row */}
       <div className="space-y-4">
         <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
           <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3 sm:px-4">
@@ -108,13 +170,16 @@ export function DashboardOverview() {
           ) : topRows.length === 0 ? (
             <p className="px-4 py-6 text-center text-sm text-muted-foreground">No predictions published yet today.</p>
           ) : (
-            topRows.map((row) => (
-              <PredictionRow key={row.id} row={row} locked={!canAccess(row.tier, "tip", row.id)} />
-            ))
+            <>
+              {topRows.map((row) => (
+                <PredictionRow key={row.id} row={row} locked={isLockedRow(row)} />
+              ))}
+              {hasLocked && <PremiumLockCard className="m-3" />}
+            </>
           )}
         </section>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Live matches */}
           <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
@@ -145,43 +210,8 @@ export function DashboardOverview() {
             )}
           </section>
 
-          {/* Today's tips */}
-          <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
-            <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
-              <div className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-black text-sidebar">Today's Tips</h2>
-              </div>
-              <Link to="/single-tips" className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
-                View All <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            {tipRows.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-muted-foreground">Tips are being prepared.</p>
-            ) : (
-              tipRows.map((row) => {
-                const locked = !canAccess(row.tier, "tip", row.id);
-                return (
-                  <div key={row.id} className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-extrabold uppercase text-sidebar">{row.home} vs {row.away}</p>
-                      {locked ? (
-                        <p className="inline-flex items-center gap-1 text-xs font-bold text-primary"><Lock className="h-3 w-3" /> Premium pick</p>
-                      ) : (
-                        <p className="text-xs font-bold text-success">{row.prediction}</p>
-                      )}
-                    </div>
-                    {row.confidence > 0 && (
-                      <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary">{row.confidence}%</span>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </section>
-
           {/* Risk of the Day */}
-          <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md md:col-span-2 xl:col-span-1">
+          <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-primary" />
@@ -195,20 +225,18 @@ export function DashboardOverview() {
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">Risk pick is being prepared.</p>
             ) : (
               riskRows.map((row) => {
-                const locked = !canAccess(row.tier, "tip", row.id);
+                const locked = isLockedRow(row);
                 return (
                   <div key={row.id} className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-extrabold uppercase text-sidebar">{row.home} vs {row.away}</p>
-                      {locked ? (
-                        <p className="inline-flex items-center gap-1 text-xs font-bold text-primary"><Lock className="h-3 w-3" /> Premium pick</p>
-                      ) : (
-                        <p className="text-xs font-bold text-success">{row.prediction}</p>
-                      )}
+                      {!locked && <p className="text-xs font-bold text-success">{row.prediction}</p>}
                     </div>
-                    {row.confidence > 0 && (
+                    {locked ? (
+                      <PremiumLockBadge />
+                    ) : row.confidence > 0 ? (
                       <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary">{row.confidence}%</span>
-                    )}
+                    ) : null}
                   </div>
                 );
               })

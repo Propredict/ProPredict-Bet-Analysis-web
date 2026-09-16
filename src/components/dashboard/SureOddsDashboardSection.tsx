@@ -10,6 +10,7 @@ import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { SureOddsPromoCard } from "./SureOddsPromoCard";
+import { PremiumLockCard } from "@/components/premium/PremiumLock";
 
 function mapDbTicket(db: any): BettingTicket {
   return {
@@ -118,13 +119,7 @@ export function SureOddsDashboardSection() {
                 <div className="flex items-center gap-3"><Layers3 className="h-5 w-5 text-primary" /><div><p className="text-base font-extrabold capitalize text-foreground">{ticket.status}</p><p className="text-[10px] text-muted-foreground">Ticket status</p></div></div>
               </div>
             </div>
-            <div className="relative overflow-hidden rounded-xl bg-sidebar p-4 text-sidebar-foreground shadow-md">
-              <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full border-[18px] border-primary/20" />
-              <Crown className="mb-3 h-7 w-7 text-blue-300" />
-              <h3 className="text-base font-extrabold">Upgrade to Premium</h3>
-              <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/70">Get exclusive predictions, Sure Odds 2+ and more.</p>
-              <Button size="sm" className="relative mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/get-premium")}>Get Premium <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
-            </div>
+            {!hasAccess && <PremiumLockCard />}
           </aside>
         </div>
 
