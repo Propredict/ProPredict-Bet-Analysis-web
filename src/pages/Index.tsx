@@ -16,8 +16,9 @@ import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
 import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
 import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
+import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
+import { DashboardStatsStrip } from "@/components/dashboard/DashboardStatsStrip";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -29,6 +30,7 @@ const DashboardAIPredictions = lazy(() => import("@/components/dashboard/Dashboa
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
+const DashboardOverview = lazy(() => import("@/components/dashboard/DashboardOverview").then(m => ({ default: m.DashboardOverview })));
 
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
@@ -131,12 +133,17 @@ const Index = () => {
         </div>
         </div>
 
-        {/* Banners row: 1xBet + Telegram side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch w-full max-w-6xl mx-auto">
-        {/* Sponsored: 1xBet affiliate banner – web only */}
-        <div className="w-full">
-          <AffiliateBanner1xBet />
-        </div>
+        {/* Quick links strip */}
+        <QuickFeatureStrip />
+
+        {/* Top predictions + live + tips + Go Premium */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardOverview />
+        </Suspense>
+
+        {/* Telegram banner */}
+        <div className="grid grid-cols-1 gap-4 items-stretch w-full">
+
 
         {/* Telegram banner — 3D glossy bubble, high-impact CTA */}
         <a
@@ -312,6 +319,8 @@ const Index = () => {
         <Suspense fallback={<LazyFallback />}>
           <TodaysMatches />
         </Suspense>
+
+        <DashboardStatsStrip />
 
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />

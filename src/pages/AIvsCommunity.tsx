@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { Swords, Brain, Loader2, Info, CircleHelp, Bot, Users, Flame, Zap, Filter } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -207,11 +208,17 @@ export default function AIvsCommunity() {
       </Helmet>
 
       <div className="w-full px-3 sm:px-4 lg:px-6 py-4 space-y-5">
+        <PageHero
+          title="AI vs Members"
+          subtitle="Who gets it right today? Compare AI picks with the community."
+          icon={Swords}
+        />
+
         {/* === HERO HEADER === */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-card via-card to-primary/10 border border-primary/30 p-5">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-card p-5 shadow-md">
           {/* Glow effects */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-3xl" />
 
           <div className="relative z-10">
             {/* Title */}
@@ -237,7 +244,7 @@ export default function AIvsCommunity() {
             <div className="flex items-center justify-center gap-3 sm:gap-6">
               {/* AI Side */}
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/50 flex items-center justify-center shadow-[0_0_20px_rgba(15,155,142,0.2)]">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/50 flex items-center justify-center shadow-[0_0_20px_rgba(8,120,249,0.2)]">
                   <Bot className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 </div>
                 <span className="text-xs font-bold text-primary">🤖 AI</span>
@@ -247,7 +254,7 @@ export default function AIvsCommunity() {
               {/* VS Center */}
               <div className="flex flex-col items-center gap-1 shrink-0">
                 <div className="relative">
-                  <span className="text-2xl sm:text-3xl font-black text-foreground drop-shadow-[0_0_12px_rgba(15,155,142,0.4)]">
+                  <span className="text-2xl sm:text-3xl font-black text-foreground drop-shadow-[0_0_12px_rgba(8,120,249,0.35)]">
                     VS
                   </span>
                   <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
@@ -257,11 +264,11 @@ export default function AIvsCommunity() {
 
               {/* Members Side */}
               <div className="flex flex-col items-center gap-2 flex-1">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/50 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.2)]">
-                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-accent" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-blue-500/10 border-2 border-blue-500/50 flex items-center justify-center shadow-[0_0_20px_rgba(8,120,249,0.2)]">
+                  <Users className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
                 </div>
-                <span className="text-xs font-bold text-accent">👥 Members</span>
-                <Badge className="text-[9px] bg-accent/15 text-accent border-accent/30">CROWD PICK</Badge>
+                <span className="text-xs font-bold text-blue-600">👥 Members</span>
+                <Badge className="text-[9px] bg-blue-500/15 text-blue-600 border-blue-500/30">CROWD PICK</Badge>
               </div>
             </div>
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PageHero } from "@/components/layout/PageHero";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
@@ -74,26 +75,22 @@ export default function MyFavorites() {
   return (
     <div className="section-gap animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-pink-500/20 via-pink-500/10 to-transparent border border-pink-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-pink-500/20">
-            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-pink-400 fill-pink-400" />
-          </div>
-          <div>
-            <h1 className="text-sm sm:text-base font-bold text-foreground">My Favorites</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{favoriteMatches.length} saved matches</p>
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="h-8 w-8"
-        >
-          <RefreshCw className={cn("h-4 w-4 text-muted-foreground", refreshing && "animate-spin")} />
-        </Button>
-      </div>
+      <PageHero
+        title="My Favorites"
+        subtitle={`${favoriteMatches.length} saved matches`}
+        icon={Star}
+        actions={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/15"
+          >
+            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+          </Button>
+        }
+      />
 
       {/* FAVORITES */}
       {favoriteMatches.length > 0 ? (

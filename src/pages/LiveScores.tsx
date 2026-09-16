@@ -23,6 +23,7 @@ import { useGlobalAlertSettings } from "@/hooks/useGlobalAlertSettings";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
+import { PageHero } from "@/components/layout/PageHero";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -358,30 +359,33 @@ export default function LiveScores() {
       </Helmet>
       <div className="section-gap max-w-full overflow-x-hidden">
         {/* HEADER - CENTERED TITLE */}
-        <div className="relative overflow-hidden flex flex-col items-center justify-center gap-1 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-primary/20 via-primary/8 to-transparent border border-primary/30 shadow-[0_0_28px_-8px_hsl(var(--primary)/0.35)]">
-          <div className="pointer-events-none absolute -top-16 left-1/2 h-32 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-          <h1 className="relative text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-            Live Scores
-          </h1>
-          {liveCount > 0 && (
-            <span className="relative inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/35 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-70 animate-ping" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+        <PageHero
+          title="Live Scores"
+          subtitle="Real-time football results, updated every minute"
+          icon={Play}
+          badge={
+            liveCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/50 bg-success/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-success">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
+                </span>
+                {liveCount} live now
               </span>
-              {liveCount} live now
-            </span>
-          )}
-          <div className="absolute right-3 top-3 flex gap-1 items-center">
-            <Badge variant="outline" className="font-mono text-[9px] sm:text-[10px] px-1 py-0.5 hidden sm:inline-flex">
-              {format(currentTime, "HH:mm:ss")}
-            </Badge>
-            <Button size="sm" variant="outline" onClick={refetch} className="gap-0.5 h-6 px-1.5">
-              <RefreshCw className={cn("h-2.5 w-2.5", isLoading && "animate-spin")} />
-              <span className="hidden sm:inline text-[9px]">Refresh</span>
-            </Button>
-          </div>
-        </div>
+            ) : undefined
+          }
+          actions={
+            <>
+              <Badge variant="outline" className="hidden border-primary-foreground/30 font-mono text-[10px] text-primary-foreground sm:inline-flex">
+                {format(currentTime, "HH:mm:ss")}
+              </Badge>
+              <Button size="sm" variant="outline" onClick={refetch} className="h-8 gap-1 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">
+                <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
+                <span className="hidden sm:inline text-[11px]">Refresh</span>
+              </Button>
+            </>
+          }
+        />
 
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
