@@ -64,7 +64,7 @@ export function FreeInAppPopup({ open, onClose, onContinueWithPro }: FreeInAppPo
               <span className="text-[11px] text-foreground">Watch a 15s ad → get instant access</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
               <span className="text-[11px] text-foreground">Unlock all Sure Odds 2+ daily for free</span>
             </div>
             <div className="flex items-center gap-2.5">
@@ -76,7 +76,7 @@ export function FreeInAppPopup({ open, onClose, onContinueWithPro }: FreeInAppPo
           {/* Primary CTA */}
           <Button
             onClick={handleDownload}
-            className="w-full h-11 text-sm font-bold bg-gradient-to-r from-primary to-emerald-500 hover:opacity-90 text-white border-0 shadow-lg shadow-primary/20 gap-2"
+            className="w-full h-11 text-sm font-bold bg-gradient-to-r from-primary to-success hover:opacity-90 text-white border-0 shadow-lg shadow-primary/20 gap-2"
           >
             <Download className="h-4 w-4" />
             Download App & Unlock

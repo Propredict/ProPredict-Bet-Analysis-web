@@ -138,8 +138,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                   <Star
                     className={`h-9 w-9 transition-all duration-200 ${
                       star <= displayStars
-                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
-                        : "text-amber-400/80 fill-amber-400/80"
+                        ? "text-primary fill-primary drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+                        : "text-primary/80 fill-primary/80"
                     }`}
                   />
                 </button>
@@ -157,7 +157,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             >
               <Gift className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium text-foreground">
-                Get <span className="font-extrabold text-amber-400">+50 points</span> after rating
+                Get <span className="font-extrabold text-primary">+50 points</span> after rating
               </span>
               <span className="text-sm">🌟</span>
             </div>
@@ -166,7 +166,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             <div className="flex gap-2.5 mt-4">
               <button
                 onClick={() => handleStarSelect(5)}
-                className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-teal-600 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
+                className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-success text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95"
               >
                 <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                   <ThumbsUp className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                 Awesome! Rate us ⭐
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
-                Earn <span className="font-extrabold text-amber-400">+50 points</span> for rating!
+                Earn <span className="font-extrabold text-primary">+50 points</span> for rating!
               </p>
             </div>
 
@@ -231,7 +231,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                   <Star
                     className={`h-11 w-11 transition-all duration-200 ${
                       star <= displayStars
-                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+                        ? "text-primary fill-primary drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
                         : "text-muted-foreground/30 hover:text-muted-foreground/50"
                     }`}
                   />
@@ -263,12 +263,12 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               ⭐ Leave a 5-star rating on Google Play and add a short comment to get your reward 🎁
             </p>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-xs font-extrabold text-amber-400">🎁 +50 points waiting for you!</span>
+              <span className="text-xs font-extrabold text-primary">🎁 +50 points waiting for you!</span>
             </div>
             <button
               onClick={handleGoToPlayStore}
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all active:scale-95 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-primary text-white text-sm font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all active:scale-95 disabled:opacity-50"
             >
               <Star className="h-4 w-4 fill-white" />
               {submitting ? "Opening..." : "Go to Google Play ⭐"}
@@ -308,7 +308,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             <Button
               onClick={handleFeedbackSubmit}
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-primary to-teal-600 hover:from-primary/90 hover:to-teal-500 text-white font-semibold shadow-lg shadow-primary/20"
+              className="w-full bg-gradient-to-r from-primary to-success hover:from-primary/90 hover:to-success text-white font-semibold shadow-lg shadow-primary/20"
             >
               <Send className="h-4 w-4 mr-2" />
               {submitting ? "Sending..." : "Submit Feedback"}
@@ -331,19 +331,19 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               Thank you so much! 🚀
             </DialogTitle>
             <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-sm font-extrabold text-amber-400">🎁 +50 points added!</span>
+              <span className="text-sm font-extrabold text-primary">🎁 +50 points added!</span>
             </div>
             <div className="flex justify-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className="h-6 w-6 text-amber-400 fill-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
+                  className="h-6 w-6 text-primary fill-primary drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]"
                 />
               ))}
             </div>
             <Button
               onClick={handleClose}
-              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold shadow-lg shadow-amber-500/20"
+              className="w-full mt-2 bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white font-bold shadow-lg shadow-primary/20"
             >
               Awesome! 🚀
             </Button>

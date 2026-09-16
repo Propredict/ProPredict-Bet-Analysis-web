@@ -119,7 +119,7 @@ export function TelegramPromoPopup() {
               "100% free — no signup / 100% besplatno — bez registracije",
             ].map((t) => (
               <li key={t} className="flex items-center gap-2 text-white/95">
-                <Check className="h-4 w-4 text-emerald-300 shrink-0" />
+                <Check className="h-4 w-4 text-success shrink-0" />
                 <span>{t}</span>
               </li>
             ))}

@@ -24,6 +24,7 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { format, subDays, addDays } from "date-fns";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
+import { HeroStat } from "@/components/layout/HeroStat";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 
 /* -------------------- CONSTANTS -------------------- */
@@ -443,22 +444,25 @@ export default function LiveScores() {
             )}
           </div>
         )}
-        {/* STATS CARDS - COMPACT grid */}
-        <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
-          <StatCard title="Live" value={liveCount} icon={Play} variant="live" />
-          <StatCard title="Total" value={matches.length} icon={BarChart3} variant="matches" />
-          <StatCard title="Leagues" value={leaguesCount} icon={Trophy} variant="leagues" />
-          
-          {/* Favorites Quick Link */}
-          <Card onClick={() => navigate("/favorites")} className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-primary/15 to-primary/5 border-primary/20 hover:border-primary/40 cursor-pointer">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <Heart className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Favorites</p>
-              <p className="text-[9px] sm:text-[10px] font-semibold text-primary">View →</p>
-            </div>
-          </Card>
+        {/* STATS CARDS */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <HeroStat icon={Play} label="Live now" value={liveCount} caption="Matches in play" tone="live" />
+          <HeroStat icon={BarChart3} label="Today" value={matches.length} caption="Total matches" />
+          <HeroStat icon={Trophy} label="Leagues" value={leaguesCount} caption="Active leagues" />
+          <HeroStat
+            icon={Heart}
+            label="Favourites"
+            value={favorites.size}
+            caption="Your teams"
+            onClick={() => navigate("/favorites")}
+          />
+          <HeroStat
+            icon={Clock}
+            label="Today's date"
+            value={format(currentTime, "EEE, MMM d")}
+            caption="Live action worldwide"
+            className="col-span-2 sm:col-span-1"
+          />
         </div>
 
         {/* FILTERS - Enhanced visibility */}

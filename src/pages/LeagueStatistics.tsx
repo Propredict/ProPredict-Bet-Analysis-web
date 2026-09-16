@@ -19,6 +19,7 @@ import { LeagueStatsSquadsTab } from "@/components/league-statistics/LeagueStats
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
+import { HeroStat } from "@/components/layout/HeroStat";
 // Known league ID mappings for API-Football
 const LEAGUE_ID_MAP: Record<string, string> = {
   "Premier League": "39",
@@ -116,7 +117,7 @@ export default function LeagueStatistics() {
         {/* Header - COMPACT */}
         <PageHero
           title="All Leagues Standings"
-          subtitle="Stats & rankings"
+          subtitle="Stats, rankings and team performance from around the world"
           icon={BarChart3}
           actions={
             <LeagueSearchSelect
@@ -130,51 +131,17 @@ export default function LeagueStatistics() {
           }
         />
 
-        {/* Stats Summary - COMPACT cards */}
-        <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-destructive/10 flex items-center justify-center flex-shrink-0">
-              <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-destructive" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Live</p>
-              <p className="text-[10px] sm:text-xs font-bold text-destructive">{liveCount}</p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-success/10 to-success/5 border-success/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-success/10 flex items-center justify-center flex-shrink-0">
-              <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-success" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Matches</p>
-              <p className="text-[10px] sm:text-xs font-bold text-success">{filteredMatches.length}</p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
-              <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-accent" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Selected</p>
-              <p className="text-[9px] sm:text-[10px] font-semibold text-accent truncate">
-                {isAllLeagues ? "All" : selectedLeague?.name?.split(" ")[0]}
-              </p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Leagues</p>
-              <p className="text-[10px] sm:text-xs font-bold text-primary">{dynamicLeagues.length}</p>
-            </div>
-          </Card>
+        {/* Stats Summary */}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <HeroStat icon={Play} label="Live" value={liveCount} caption="Matches in play" tone="live" />
+          <HeroStat icon={Trophy} label="Matches" value={filteredMatches.length} caption="Total matches today" />
+          <HeroStat icon={Users} label="Selected" value={isAllLeagues ? "All Leagues" : selectedLeague?.name ?? "—"} caption="Current selection" />
+          <HeroStat icon={Target} label="Leagues" value={dynamicLeagues.length} caption="Active leagues" />
         </div>
 
         {/* Tabs - Enhanced visibility with container */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="w-full p-2 sm:p-3 rounded-xl bg-card/80 border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+          <div className="w-full rounded-2xl border-2 border-primary/30 bg-card p-2 shadow-md sm:p-3">
             <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
               {[
                 { value: "standings", icon: Trophy, label: "Standings" },
@@ -194,9 +161,9 @@ export default function LeagueStatistics() {
                   onClick={() => setActiveTab(value)}
                   className={`
                     flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-300 whitespace-nowrap max-w-full
-                    ${activeTab === value 
-                      ? "bg-[hsl(171,77%,36%)] text-white shadow-lg shadow-[rgba(15,155,142,0.4)] border-2 border-[hsl(171,77%,36%)] scale-[1.02]" 
-                      : "bg-muted/50 text-muted-foreground border border-border/50 hover:text-foreground hover:border-primary/50 hover:bg-muted hover:shadow-[0_0_15px_rgba(15,155,142,0.2)]"
+                    ${activeTab === value
+                      ? "bg-primary text-primary-foreground shadow-md border-2 border-primary scale-[1.02]"
+                      : "bg-secondary/60 text-muted-foreground border border-primary/20 hover:text-primary hover:border-primary/50 hover:bg-secondary"
                     }
                   `}
                 >

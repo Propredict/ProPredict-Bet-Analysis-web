@@ -18,9 +18,9 @@ function StatRow({ label, homeVal, awayVal, bold = false }: { label: string; hom
 
   return (
     <div className={`grid grid-cols-3 py-1.5 px-3 text-sm ${bold ? "font-semibold" : ""}`}>
-      <span className={`text-center ${homeWins ? "text-emerald-400 font-semibold" : "text-foreground/80"}`}>{homeVal}</span>
+      <span className={`text-center ${homeWins ? "text-success font-semibold" : "text-foreground/80"}`}>{homeVal}</span>
       <span className="text-center text-muted-foreground text-xs">{label}</span>
-      <span className={`text-center ${awayWins ? "text-emerald-400 font-semibold" : "text-foreground/80"}`}>{awayVal}</span>
+      <span className={`text-center ${awayWins ? "text-success font-semibold" : "text-foreground/80"}`}>{awayVal}</span>
     </div>
   );
 }
@@ -102,13 +102,13 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
       <div className="px-3 py-2 grid grid-cols-3 text-xs">
         <span className="text-center tracking-widest font-mono">
           {h.form.slice(-6).split("").map((c, i) => (
-            <span key={i} className={c === "W" ? "text-emerald-400" : c === "L" ? "text-red-400" : "text-amber-400"}>{c}</span>
+            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-red-400" : "text-primary"}>{c}</span>
           ))}
         </span>
         <span className="text-center text-muted-foreground">Form</span>
         <span className="text-center tracking-widest font-mono">
           {a.form.slice(-6).split("").map((c, i) => (
-            <span key={i} className={c === "W" ? "text-emerald-400" : c === "L" ? "text-red-400" : "text-amber-400"}>{c}</span>
+            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-red-400" : "text-primary"}>{c}</span>
           ))}
         </span>
       </div>
@@ -141,7 +141,7 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
       <StatRow label="Avg GA Away" homeVal={h.goals.against.average.away} awayVal={a.goals.against.average.away} />
 
       {/* Defensive */}
-      <SectionHeader icon={<Shield className="h-3.5 w-3.5 text-emerald-400" />} title="Defense & Scoring" />
+      <SectionHeader icon={<Shield className="h-3.5 w-3.5 text-success" />} title="Defense & Scoring" />
       <StatRow label="Clean Sheets" homeVal={h.cleanSheet.total} awayVal={a.cleanSheet.total} bold />
       <StatRow label="CS Home" homeVal={h.cleanSheet.home} awayVal={a.cleanSheet.home} />
       <StatRow label="CS Away" homeVal={h.cleanSheet.away} awayVal={a.cleanSheet.away} />
@@ -149,7 +149,7 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
       <StatRow label="Penalties" homeVal={`${h.penalty.scored.total}/${h.penalty.scored.total + h.penalty.missed.total}`} awayVal={`${a.penalty.scored.total}/${a.penalty.scored.total + a.penalty.missed.total}`} />
 
       {/* Streaks */}
-      <SectionHeader icon={<Flame className="h-3.5 w-3.5 text-amber-400" />} title="Biggest Streaks" />
+      <SectionHeader icon={<Flame className="h-3.5 w-3.5 text-primary" />} title="Biggest Streaks" />
       <StatRow label="Win Streak" homeVal={h.biggestStreak.wins} awayVal={a.biggestStreak.wins} />
       <StatRow label="Draw Streak" homeVal={h.biggestStreak.draws} awayVal={a.biggestStreak.draws} />
       <StatRow label="Loss Streak" homeVal={h.biggestStreak.losses} awayVal={a.biggestStreak.losses} />

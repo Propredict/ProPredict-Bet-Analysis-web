@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
+import { PageHero } from "@/components/layout/PageHero";
 import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
@@ -112,8 +113,8 @@ function getLeaguePriority(league: string | null): number {
 }
 
 function getRiskColor(bestPickPct: number) {
-  if (bestPickPct >= 80) return { label: "Low Risk", color: "text-emerald-400", dot: "bg-emerald-400" };
-  if (bestPickPct >= 65) return { label: "Medium Risk", color: "text-amber-400", dot: "bg-amber-400" };
+  if (bestPickPct >= 80) return { label: "Low Risk", color: "text-success", dot: "bg-success" };
+  if (bestPickPct >= 65) return { label: "Medium Risk", color: "text-primary", dot: "bg-primary" };
   return { label: "High Risk", color: "text-red-400", dot: "bg-red-400" };
 }
 
@@ -128,7 +129,7 @@ function getTeamInitials(name: string): string {
 }
 
 function getRankStyle(rank: number): { bg: string; text: string; border: string; label: string } {
-  if (rank === 1) return { bg: "bg-gradient-to-br from-yellow-400 to-amber-500", text: "text-yellow-900", border: "ring-2 ring-yellow-400/60", label: "🥇" };
+  if (rank === 1) return { bg: "bg-gradient-to-br from-primary to-primary", text: "text-primary", border: "ring-2 ring-primary/60", label: "🥇" };
   if (rank === 2) return { bg: "bg-gradient-to-br from-gray-300 to-gray-400", text: "text-gray-800", border: "ring-2 ring-gray-300/60", label: "🥈" };
   if (rank === 3) return { bg: "bg-gradient-to-br from-orange-400 to-orange-600", text: "text-orange-900", border: "ring-2 ring-orange-400/60", label: "🥉" };
   return { bg: "bg-muted", text: "text-muted-foreground", border: "", label: `#${rank}` };
@@ -256,61 +257,48 @@ export default function MatchPreviews() {
       </Helmet>
 
       <div className="page-content space-y-4">
-        {/* Premium Page Header */}
-        <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-background/80 to-background p-6 sm:p-8">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
-          </div>
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 border border-violet-400/50 shadow-lg shadow-violet-500/20">
-                <Trophy className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Top 30 AI Picks</h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Only the safest AI picks — <span className="text-violet-400 font-bold">75%+ confidence</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20">
-              <Sparkles className="h-4 w-4 text-violet-400" />
-              <span className="text-xs font-black text-violet-400 uppercase tracking-widest">AI Curated</span>
-            </div>
-          </div>
-        </div>
+        {/* Page Header */}
+        <PageHero
+          title="Top 30 AI Picks"
+          subtitle="Only the safest AI picks — 75%+ confidence"
+          icon={Trophy}
+          badge={
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/30 bg-primary-foreground/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
+              <Sparkles className="h-3 w-3" />
+              AI Curated
+            </span>
+          }
+        />
+
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
         <AffiliateBanner1xBet />
 
         {/* Premium Info Card */}
-        <Card className="relative overflow-hidden border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-background/80 to-background p-5">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full pointer-events-none" />
+        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-background/80 to-background p-5">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
             <div className="md:col-span-2 space-y-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 p-1 rounded-md bg-violet-500/20 border border-violet-500/40">
-                  <Check className="h-4 w-4 text-violet-400" />
+                <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
+                  <Check className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-sm text-foreground/90">
-                  Our AI selects only the safest matches (<span className="text-violet-400 font-bold">75%+ confidence</span>) from today's fixtures.
+                  Our AI selects only the safest matches (<span className="text-primary font-bold">75%+ confidence</span>) from today's fixtures.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 p-1 rounded-md bg-violet-500/20 border border-violet-500/40">
-                  <Check className="h-4 w-4 text-violet-400" />
+                <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
+                  <Check className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-sm text-foreground/90">
                   Click any match to unlock full AI-powered analysis, predictions, and key factors.
                 </p>
               </div>
-              <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-violet-500/10 border border-violet-500/20 w-fit">
-                <Diamond className="h-3.5 w-3.5 text-fuchsia-400" />
-                <span className="text-fuchsia-400 font-black tracking-widest uppercase text-[10px]">Premium</span>
-                <span className="h-1 w-1 rounded-full bg-violet-400" />
+              <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-primary/10 border border-primary/20 w-fit">
+                <Diamond className="h-3.5 w-3.5 text-primary" />
+                <span className="text-primary font-black tracking-widest uppercase text-[10px]">Premium</span>
+                <span className="h-1 w-1 rounded-full bg-primary" />
                 <span className="text-muted-foreground text-[10px] font-semibold">Unlimited Match Previews</span>
               </div>
             </div>
@@ -318,7 +306,7 @@ export default function MatchPreviews() {
               <img
                 src={aiBrainAsset.url}
                 alt="AI brain"
-                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_rgba(139,92,246,0.35)]"
+                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_hsl(var(--primary)/0.35)]"
                 loading="lazy"
                 width={96}
                 height={96}
@@ -328,11 +316,11 @@ export default function MatchPreviews() {
         </Card>
 
         {isFreeUser && (
-          <Card className="relative overflow-hidden p-5 border-fuchsia-500/20 bg-gradient-to-r from-fuchsia-500/10 via-violet-500/5 to-transparent">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-fuchsia-500/10 via-transparent to-transparent pointer-events-none" />
+          <Card className="relative overflow-hidden p-5 border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
             <div className="relative flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-600 flex items-center justify-center shadow-lg shadow-fuchsia-500/20">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary flex items-center justify-center shadow-lg shadow-primary/20">
                   <Crown className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -342,7 +330,7 @@ export default function MatchPreviews() {
               </div>
               <Button
                 variant="outline"
-                className="rounded-full border-fuchsia-500/50 text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white hover:border-fuchsia-500 px-6 shadow-[0_0_20px_rgba(232,121,249,0.15)]"
+                className="rounded-full border-primary/50 text-primary hover:bg-primary hover:text-white hover:border-primary px-6 shadow-[0_0_20px_rgba(232,121,249,0.15)]"
                 onClick={() => navigate("/get-premium")}
               >
                 <Crown className="h-4 w-4 mr-2" />
@@ -378,9 +366,9 @@ export default function MatchPreviews() {
                 <Card
                   key={match.id}
                   className={cn(
-                    "relative overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10",
+                    "relative overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10",
                     isTop3
-                      ? "border-violet-400/40"
+                      ? "border-primary/40"
                       : "border-border/60"
                   )}
                   onClick={() => handleCardClick(match)}
@@ -392,7 +380,7 @@ export default function MatchPreviews() {
                       "bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-transparent",
                       "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent"
                     )} />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-success/5 via-transparent to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
                     <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
                   </div>
@@ -409,12 +397,12 @@ export default function MatchPreviews() {
                           {rank}
                         </div>
                         {isTop3 && (
-                          <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xs">
+                          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs">
                             <Trophy className="h-3 w-3" />
                           </div>
                         )}
                       </div>
-                      <span className="text-[11px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-[0.3em] text-center">
+                      <span className="text-[11px] font-black text-primary dark:text-primary uppercase tracking-[0.3em] text-center">
                         {match.league || "Unknown"}
                       </span>
                     </div>
@@ -423,15 +411,15 @@ export default function MatchPreviews() {
                     <div className="flex items-center justify-between max-w-2xl mx-auto">
                       {/* Home team */}
                       <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
-                        <div className="relative p-1 rounded-full bg-gradient-to-br from-violet-500/20 to-transparent">
+                        <div className="relative p-1 rounded-full bg-gradient-to-br from-primary/20 to-transparent">
                           <div className={cn(
                             "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
-                            isTop3 ? "border-violet-400/50" : "border-border/50"
+                            isTop3 ? "border-primary/50" : "border-border/50"
                           )}>
                             {homeLogo ? (
                               <img src={homeLogo} alt={match.home_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
                             ) : (
-                              <span className="text-sm sm:text-lg font-bold text-violet-400">{getTeamInitials(match.home_team)}</span>
+                              <span className="text-sm sm:text-lg font-bold text-primary">{getTeamInitials(match.home_team)}</span>
                             )}
                           </div>
                           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
@@ -453,15 +441,15 @@ export default function MatchPreviews() {
 
                       {/* Away team */}
                       <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
-                        <div className="relative p-1 rounded-full bg-gradient-to-br from-violet-500/20 to-transparent">
+                        <div className="relative p-1 rounded-full bg-gradient-to-br from-primary/20 to-transparent">
                           <div className={cn(
                             "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
-                            isTop3 ? "border-violet-400/50" : "border-border/50"
+                            isTop3 ? "border-primary/50" : "border-border/50"
                           )}>
                             {awayLogo ? (
                               <img src={awayLogo} alt={match.away_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
                             ) : (
-                              <span className="text-sm sm:text-lg font-bold text-violet-400">{getTeamInitials(match.away_team)}</span>
+                              <span className="text-sm sm:text-lg font-bold text-primary">{getTeamInitials(match.away_team)}</span>
                             )}
                           </div>
                           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
@@ -472,11 +460,11 @@ export default function MatchPreviews() {
 
                     {/* Confidence + Risk */}
                     <div className="flex items-center justify-center gap-3 sm:gap-5 mt-8">
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 backdrop-blur-md">
-                        <ShieldCheck className="h-4 w-4 text-violet-400" />
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-md">
+                        <ShieldCheck className="h-4 w-4 text-primary" />
                         <span className="text-xs font-bold text-muted-foreground">Confidence <span className="text-foreground ml-1">{match.bestPick?.pct ?? match.confidence}%</span></span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-success/10 border border-success/20 backdrop-blur-md">
                         <span className={cn("w-2 h-2 rounded-full animate-pulse", risk.dot)} />
                         <span className={cn("text-xs font-black uppercase tracking-wide", risk.color)}>{risk.label}</span>
                       </div>
@@ -485,7 +473,7 @@ export default function MatchPreviews() {
                     {/* Locked badge */}
                     {isFreeUser && match.bestPick && (
                       <div className="flex justify-center mt-5">
-                        <div className="px-4 py-2 rounded-full border border-amber-500/40 bg-amber-500/5 text-amber-500 text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2">
+                        <div className="px-4 py-2 rounded-full border border-primary/40 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2">
                           <Lock className="h-3.5 w-3.5" />
                           AI Top Pick Locked
                         </div>
@@ -495,7 +483,7 @@ export default function MatchPreviews() {
                     {/* Features grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-0.5 mt-6 bg-border/30 rounded-3xl overflow-hidden border border-border/40 backdrop-blur-md">
                       <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0">
                           <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                         <div className="min-w-0">
@@ -505,7 +493,7 @@ export default function MatchPreviews() {
                       </div>
 
                       <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3 border-l-0 sm:border-l border-border/30">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center text-success shrink-0">
                           <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                         <div className="min-w-0">
@@ -530,8 +518,8 @@ export default function MatchPreviews() {
                       className={cn(
                         "w-full mt-5 h-auto py-4 sm:py-5 rounded-2xl font-black text-sm sm:text-base uppercase tracking-tight transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_20px_40px_-10px_rgba(139,92,246,0.4)]",
                         isFreeUser
-                          ? "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:from-violet-700 hover:via-fuchsia-600 hover:to-pink-600 animate-pulse"
-                          : "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 hover:from-violet-700 hover:via-fuchsia-600 hover:to-pink-600"
+                          ? "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary animate-pulse"
+                          : "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary"
                       )}
                       onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
                     >

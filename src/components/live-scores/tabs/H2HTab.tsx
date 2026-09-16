@@ -85,7 +85,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
       <div className="py-4 px-6 border-b border-border/30">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-400">{homeWins}</div>
+            <div className="text-3xl font-bold text-success">{homeWins}</div>
             <div className="text-xs text-muted-foreground mt-1">{shortHomeTeam} Wins</div>
           </div>
           <div className="text-center">
@@ -93,7 +93,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
             <div className="text-xs text-muted-foreground mt-1">Draws</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-orange-400">{awayWins}</div>
+            <div className="text-3xl font-bold text-primary">{awayWins}</div>
             <div className="text-xs text-muted-foreground mt-1">{shortAwayTeam} Wins</div>
           </div>
         </div>
@@ -151,14 +151,14 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
                     <div className="flex items-center gap-1 mx-2 bg-muted/30 px-2 py-0.5 rounded">
                       <span className={cn(
                         "text-sm font-bold",
-                        homeWon ? "text-emerald-400" : "text-foreground"
+                        homeWon ? "text-success" : "text-foreground"
                       )}>
                         {homeGoals}
                       </span>
                       <span className="text-muted-foreground text-sm">-</span>
                       <span className={cn(
                         "text-sm font-bold",
-                        awayWon ? "text-orange-400" : "text-foreground"
+                        awayWon ? "text-primary" : "text-foreground"
                       )}>
                         {awayGoals}
                       </span>
