@@ -190,7 +190,7 @@ export function FreeUserUpsellModal() {
               onClick={handleGetTicket}
               className="h-12 w-full rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 sm:text-base"
             >
-              GET TODAY'S TICKET / UZMI DANAŠNJI TIKET 🚀
+              GET TODAY'S TICKET / UZMI TIKET
             </Button>
 
             <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
