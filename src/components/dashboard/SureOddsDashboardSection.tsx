@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Star, Ticket, Loader2 } from "lucide-react";
+import { Star, Ticket, Loader2, CalendarDays, Layers3, Gauge, Crown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTickets } from "@/hooks/useTickets";
@@ -66,17 +66,16 @@ export function SureOddsDashboardSection() {
 
   return (
     <section className="space-y-4">
-      {/* Blue spotlight frame — clearly separates Sure Odds from the rest of the dashboard */}
-      <div className="rounded-xl border border-primary/25 bg-secondary p-3 sm:p-4 shadow-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-primary to-sidebar border border-primary/30 shadow-md">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="p-1.5 rounded-md bg-primary-foreground/15">
-              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground fill-primary-foreground/20" />
+      <div className="overflow-hidden rounded-2xl border border-primary/20 bg-secondary/70 shadow-lg shadow-primary/10">
+        <div className="relative flex items-center justify-between gap-3 overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-sidebar px-4 py-4 sm:px-6 sm:py-5">
+          <div className="pointer-events-none absolute -right-8 -top-16 h-40 w-40 rounded-full border-[28px] border-primary-foreground/10" />
+          <div className="relative flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary-foreground/20 bg-primary-foreground/15 shadow-inner">
+              <Star className="h-5 w-5 text-primary-foreground fill-primary-foreground/20" />
             </div>
-            <div>
-              <h2 className="text-sm font-semibold sm:text-lg text-primary-foreground">Sure Odds 2+</h2>
-              <p className="text-[9px] sm:text-[10px] text-primary-foreground/80">
+            <div className="min-w-0">
+              <h2 className="text-lg font-extrabold text-primary-foreground sm:text-2xl">Sure Odds 2+</h2>
+              <p className="truncate text-[10px] font-medium text-primary-foreground/80 sm:text-xs">
                 Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
               </p>
             </div>
@@ -84,7 +83,7 @@ export function SureOddsDashboardSection() {
           {hasAccess ? (
             <Button
               size="sm"
-              className="bg-primary-foreground hover:bg-primary-foreground/90 text-primary font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
+              className="relative h-10 shrink-0 border-0 bg-primary-foreground px-4 text-[11px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:text-xs"
               onClick={() => navigate("/sure-odds")}
             >
               <Ticket className="h-3.5 w-3.5 mr-1" />
@@ -93,7 +92,7 @@ export function SureOddsDashboardSection() {
           ) : (
             <Button
               size="sm"
-              className="bg-primary-foreground hover:bg-primary-foreground/90 text-primary font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
+              className="relative h-10 shrink-0 border-0 bg-primary-foreground px-4 text-[10px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:text-xs"
               onClick={handleBuyDailyTicket}
             >
               One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
@@ -101,41 +100,36 @@ export function SureOddsDashboardSection() {
           )}
         </div>
 
-        {/* Card */}
-        <div className="max-w-md mx-auto">
-          {hasAccess ? (
-            <TicketCard
-              ticket={ticket}
-              isLocked={false}
-              light
-              unlockMethod={{ type: "unlocked" }}
-              isUnlocking={unlockingId === ticket.id}
-              onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)}
-            />
-          ) : (
-            <SureOddsPromoCard
-              ticket={ticket}
-              isLocked={true}
-              unlockMethod={{ type: "upgrade_basic", message: "Unlock today's ticket" }}
-              onUnlockClick={handleBuyDailyTicket}
-              isUnlocking={unlockingId === ticket.id}
-              priceLabel={SURE_ODDS_PRICE_LABEL}
-            />
-          )}
+        <div className="grid gap-4 p-3 sm:p-5 lg:grid-cols-[minmax(0,2fr)_minmax(230px,0.8fr)]">
+          <div className="min-w-0">
+            {hasAccess ? (
+              <TicketCard ticket={ticket} isLocked={false} light unlockMethod={{ type: "unlocked" }} isUnlocking={unlockingId === ticket.id} onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)} />
+            ) : (
+              <SureOddsPromoCard ticket={ticket} isLocked={true} unlockMethod={{ type: "upgrade_basic", message: "Unlock today's ticket" }} onUnlockClick={handleBuyDailyTicket} isUnlocking={unlockingId === ticket.id} priceLabel={SURE_ODDS_PRICE_LABEL} />
+            )}
+          </div>
+
+          <aside className="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="rounded-xl border border-primary/15 bg-card p-4 shadow-sm">
+              <h3 className="mb-4 text-sm font-extrabold text-foreground">Today's Ticket</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3"><CalendarDays className="h-5 w-5 text-primary" /><div><p className="text-base font-extrabold text-foreground">{ticket.matchCount}</p><p className="text-[10px] text-muted-foreground">Matches</p></div></div>
+                <div className="flex items-center gap-3"><Gauge className="h-5 w-5 text-primary" /><div><p className="text-base font-extrabold text-foreground">{ticket.totalOdds > 0 ? ticket.totalOdds.toFixed(2) : "2.00+"}</p><p className="text-[10px] text-muted-foreground">Total odds</p></div></div>
+                <div className="flex items-center gap-3"><Layers3 className="h-5 w-5 text-primary" /><div><p className="text-base font-extrabold capitalize text-foreground">{ticket.status}</p><p className="text-[10px] text-muted-foreground">Ticket status</p></div></div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-xl bg-sidebar p-4 text-sidebar-foreground shadow-md">
+              <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full border-[18px] border-primary/20" />
+              <Crown className="mb-3 h-7 w-7 text-blue-300" />
+              <h3 className="text-base font-extrabold">Upgrade to Premium</h3>
+              <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/70">Get exclusive predictions, Sure Odds 2+ and more.</p>
+              <Button size="sm" className="relative mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/get-premium")}>Get Premium <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
+            </div>
+          </aside>
         </div>
 
-        {/* See all */}
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "text-primary hover:text-primary/80 hover:bg-primary/10 text-xs font-semibold"
-            )}
-            onClick={() => navigate("/sure-odds")}
-          >
-            See all Sure Odds Tickets / Pogledaj sve Sure Odds Tickets →
-          </Button>
+        <div className="flex justify-center border-t border-primary/10 bg-card/60 px-3 py-2">
+          <Button variant="ghost" size="sm" className={cn("text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary/80")} onClick={() => navigate("/sure-odds")}>See all Sure Odds Tickets / Pogledaj sve Sure Odds Tickets →</Button>
         </div>
       </div>
     </section>
