@@ -209,8 +209,8 @@ export function AppSidebar() {
 
         {/* Packages */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Packages"}
+          <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/80 px-3 py-1.5">
+            {!collapsed && "Premium"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
