@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   open: boolean;
@@ -17,7 +18,7 @@ const categories = [
   { label: "Sure Odds 2+ Ticket", icon: Ticket, color: "text-primary", path: "/exclusive-tickets" },
   { label: "Premium Picks", icon: Crown, color: "text-primary", path: "/premium-tips" },
   { label: "💎 Diamond Pick", icon: Diamond, color: "text-primary", path: "/diamond-pick" },
-  { label: "🎯 Risk of the Day", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
+  { label: "🎯 Risk of the Day", icon: Target, color: "text-primary", path: "/risk-of-the-day" },
 ];
 
 export function PicksCategoryModal({ open, onOpenChange }: Props) {
@@ -31,14 +32,15 @@ export function PicksCategoryModal({ open, onOpenChange }: Props) {
         </DialogHeader>
         <div className="space-y-2 pt-2">
           {categories.map((cat) => (
-            <button
+            <Button
+              variant="ghost"
               key={cat.path}
               onClick={() => { onOpenChange(false); navigate(cat.path); }}
-              className="flex items-center gap-3 w-full p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-colors"
+              className="flex h-auto w-full items-center justify-start gap-3 rounded-xl border border-primary/10 bg-secondary/60 p-3 text-foreground hover:bg-primary/10 hover:text-foreground"
             >
               <cat.icon className={`h-5 w-5 ${cat.color}`} />
               <span className="text-sm font-semibold text-foreground">{cat.label}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </DialogContent>
