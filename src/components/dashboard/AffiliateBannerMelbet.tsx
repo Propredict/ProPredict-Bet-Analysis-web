@@ -3,13 +3,19 @@ import melbetBanner from "@/assets/melbet-banner-hd.jpg";
 const MELBET_URL =
   "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
 
-export function AffiliateBannerMelbet() {
+interface AffiliateBannerMelbetProps {
+  compact?: boolean;
+}
+
+export function AffiliateBannerMelbet({ compact = false }: AffiliateBannerMelbetProps) {
   return (
     <a
       href={MELBET_URL}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className="group block relative overflow-hidden rounded-xl border border-border/40 shadow-md hover:opacity-95 transition-opacity w-full max-w-3xl mx-auto"
+      className={compact
+        ? "group relative block aspect-square w-full overflow-hidden rounded-xl border-2 border-primary/45 bg-sidebar shadow-lg transition-all hover:border-primary"
+        : "group relative mx-auto block w-full max-w-3xl overflow-hidden rounded-xl border border-border/40 shadow-md transition-opacity hover:opacity-95"}
       aria-label="Melbet — Exclusive $100 bonus on first deposit"
     >
       <span className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[9px] font-bold uppercase tracking-wider text-white/70">
@@ -18,7 +24,7 @@ export function AffiliateBannerMelbet() {
       <img
         src={melbetBanner}
         alt="Melbet Exclusive Bonus $100 on first deposit"
-        className="block w-full h-auto object-cover max-h-32 sm:max-h-40 md:max-h-44"
+        className={compact ? "h-full w-full object-cover" : "block h-auto max-h-32 w-full object-cover sm:max-h-40 md:max-h-44"}
         width={1600}
         height={544}
         loading="lazy"

@@ -17,3 +17,4 @@
 - [x] Verify the Dashboard click, desktop/mobile card styling, and overflow.
 - [x] Combine Daily and Premium tickets into one Stadium Glass Elite page while keeping Sure Odds separate.
 - [x] Redirect existing Daily/Premium ticket links and verify access states, desktop, and mobile layouts.
+- [x] Rename Ticket Hub to Tiket / Bet Slip, enlarge ticket text, standardize green picks, and integrate square sponsor cards.
