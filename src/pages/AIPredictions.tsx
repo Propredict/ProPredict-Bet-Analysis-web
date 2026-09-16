@@ -601,54 +601,57 @@ export default function AIPredictions() {
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
           {/* Top Header: Title + Day Selector */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3">
-            <div className="inline-flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-              <div className="p-1.5 rounded-md bg-primary/20">
-                <Brain className="h-4 w-4 text-primary" />
+          <div className="overflow-hidden rounded-2xl border-2 border-primary/50 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 shadow-lg shadow-primary/20">
+            <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/20 p-2.5 ring-1 ring-primary/40">
+                  <Brain className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <div className="text-left">
+                  <h1 className="text-xl font-black tracking-tight text-primary-foreground sm:text-2xl">AI Predictions</h1>
+                  <p className="text-xs text-primary-foreground/70 sm:text-sm">ML-powered match analysis</p>
+                  <div
+                    className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-success/50 bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success"
+                    title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    AI Balanced Picks
+                  </div>
+                </div>
               </div>
-              <div className="text-left">
-                <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">ML-powered match analysis</p>
-              </div>
-              <div
-                className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500/20 to-green-500/20 border border-green-400/40 text-[9px] font-semibold text-green-300 shadow-[0_0_8px_rgba(34, 197, 94,0.35)] whitespace-nowrap"
-                title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
-              >
-                <Sparkles className="h-2.5 w-2.5" />
-                AI Balanced Picks
-              </div>
-            </div>
 
-            {/* Day Selector */}
-            <div className="flex gap-2 sm:ml-auto">
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex-1 sm:flex-none h-10 text-xs rounded-xl transition-all duration-300 whitespace-nowrap",
-                  day === "today"
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
-                    : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
-                )}
-                onClick={() => setDay("today")}
-              >
-                <CalendarDays className="w-4 h-4 mr-1" />
-                <span className="hidden md:inline">Predictions for&nbsp;</span>Today
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex-1 sm:flex-none h-10 text-xs rounded-xl transition-all duration-300 whitespace-nowrap",
-                  day === "tomorrow"
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
-                    : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
-                )}
-                onClick={() => setDay("tomorrow")}
-              >
-                <CalendarDays className="w-4 h-4 mr-1" />
-                <span className="hidden md:inline">Predictions for&nbsp;</span>Tomorrow
-              </Button>
+              {/* Day Selector */}
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "h-11 flex-1 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 sm:flex-none",
+                    day === "today"
+                      ? "bg-card text-primary shadow-lg"
+                      : "border border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
+                  )}
+                  onClick={() => setDay("today")}
+                >
+                  <CalendarDays className="w-4 h-4 mr-1" />
+                  <span className="hidden md:inline">Predictions for&nbsp;</span>Today
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "h-11 flex-1 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 sm:flex-none",
+                    day === "tomorrow"
+                      ? "bg-card text-primary shadow-lg"
+                      : "border border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
+                  )}
+                  onClick={() => setDay("tomorrow")}
+                >
+                  <CalendarDays className="w-4 h-4 mr-1" />
+                  <span className="hidden md:inline">Predictions for&nbsp;</span>Tomorrow
+                </Button>
+              </div>
             </div>
           </div>
+
 
 
           {/* Stats Cards Row - Active / Analyzed / Accuracy */}
