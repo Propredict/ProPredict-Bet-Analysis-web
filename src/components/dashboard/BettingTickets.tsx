@@ -333,8 +333,6 @@ export function BettingTickets() {
    Ticket Tier Section (web)
 ======================= */
 
-type TicketTone = "free" | "pro" | "premium";
-
 const TICKET_TONE: Record<TicketTone, {
   border: string;
   bg: string;
