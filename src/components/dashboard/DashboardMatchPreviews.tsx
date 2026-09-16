@@ -38,82 +38,85 @@ export function DashboardMatchPreviews() {
   if (loading || topMatches.length === 0) return null;
 
   return (
-    <Card className="bg-card/80 border-border/50 overflow-hidden">
-      <CardContent className="p-3 md:p-4 space-y-3">
-        {/* Section Header — centered bold title */}
-        <div className="text-center space-y-1 pt-1">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-            <Eye className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-            Top 30 AI Picks
-          </h2>
-          <p className="text-[11px] text-muted-foreground">
-            In-depth AI analysis for top matches
-          </p>
+    <section className="space-y-3">
+      <div className="space-y-1 text-center">
+        <h2 className="flex items-center justify-center gap-2 text-xl font-black tracking-tight text-sidebar sm:text-2xl">
+          <Eye className="h-6 w-6 text-primary sm:h-7 sm:w-7" />
+          Top 30 AI Picks
+        </h2>
+        <p className="text-[11px] text-muted-foreground">In-depth AI analysis for top matches</p>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
+        <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3 sm:px-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <h3 className="text-base font-black text-sidebar sm:text-lg">Highest confidence today</h3>
+          </div>
+          <button
+            onClick={() => navigate("/match-previews")}
+            className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+          >
+            View All <ChevronRight className="h-3 w-3" />
+          </button>
         </div>
 
-        {/* Match Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
-          {topMatches.map((match) => {
-            const hw = match.home_win ?? 0;
-            const aw = match.away_win ?? 0;
-            const favored = hw >= aw ? match.home_team : match.away_team;
-            const favoredPct = Math.max(hw, aw);
+        {topMatches.map((match) => {
+          const hw = match.home_win ?? 0;
+          const aw = match.away_win ?? 0;
+          const favored = hw >= aw ? match.home_team : match.away_team;
+          const favoredPct = Math.max(hw, aw);
 
-            return (
-              <div
-                key={match.match_id}
-                className="bg-background/60 border border-border/40 rounded-lg p-2.5 md:p-3 cursor-pointer hover:border-blue-600/40 transition-colors group"
-                onClick={() => navigate(`/match-preview/${match.match_id}`, { state: { unlocked: true } })}
+          return (
+            <div
+              key={match.match_id}
+              onClick={() => navigate(`/match-preview/${match.match_id}`, { state: { unlocked: true } })}
+              className="flex cursor-pointer items-center gap-2 border-b border-border/70 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-secondary/40 sm:px-4"
+            >
+              <span className="hidden w-12 shrink-0 text-xs font-bold text-muted-foreground sm:inline">
+                {formatMatchTime((match as any).match_timestamp, match.match_time, (match as any).match_date)}
+              </span>
+              <span className="hidden w-28 shrink-0 truncate text-[11px] font-bold uppercase text-primary lg:inline">
+                {match.league}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase text-sidebar">
+                {match.home_team} <span className="text-muted-foreground">vs</span> {match.away_team}
+              </span>
+              <span
+                className={cn(
+                  "shrink-0 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-[11px] font-extrabold text-success sm:text-xs",
+                  isFree && "blur-sm select-none",
+                )}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[8px] md:text-[9px] text-muted-foreground truncate max-w-[100px]">
-                    {match.league}
-                  </span>
-                  <span className="text-[8px] md:text-[9px] text-muted-foreground">
-                    {formatMatchTime((match as any).match_timestamp, match.match_time, (match as any).match_date)}
-                  </span>
-                </div>
+                {favored}
+              </span>
+              <span
+                className={cn(
+                  "hidden shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary sm:inline",
+                  isFree && "blur-sm select-none",
+                )}
+              >
+                {favoredPct}%
+              </span>
+            </div>
+          );
+        })}
 
-                <h3 className="text-[10px] md:text-xs font-semibold text-foreground mb-2 line-clamp-1">
-                  {match.home_team} vs {match.away_team}
-                </h3>
-
-                <div className={cn(
-                  "flex items-center justify-between",
-                  isFree && "blur-md select-none pointer-events-none"
-                )}>
-                  <div className="flex items-center gap-1">
-                    <TrendingUp className="h-2.5 w-2.5 text-primary" />
-                    <span className="text-[9px] md:text-[10px] text-muted-foreground truncate max-w-[80px]">
-                      {favored}
-                    </span>
-                  </div>
-                  <Badge className={cn(
-                    "text-[8px] md:text-[9px] px-1.5 py-0 border-0 font-bold rounded",
-                    favoredPct >= 70 ? "bg-blue-600/20 text-blue-600" : "bg-primary/20 text-primary"
-                  )}>
-                    {favoredPct}%
-                  </Badge>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* CTA */}
-        <div className="flex justify-center pt-1">
+        <div className="border-t border-border px-3 py-3">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs px-6 rounded-full"
+            className="w-full rounded-lg bg-primary text-xs font-bold text-primary-foreground"
             onClick={() => navigate("/match-previews")}
           >
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            See all Top 30 AI Picks / Pogledaj sve Top 30 AI Picks
-            <ChevronRight className="h-3.5 w-3.5 ml-1" />
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+            <span className="truncate">See all Top 30 AI Picks / Pogledaj sve Top 30 AI Picks</span>
+            <ChevronRight className="ml-1 h-3.5 w-3.5" />
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
