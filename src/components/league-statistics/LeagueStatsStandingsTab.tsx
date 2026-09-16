@@ -74,9 +74,9 @@ const filters: { value: LeagueCategory; label: string }[] = [
 
 function getFormColor(result: string) {
   switch (result) {
-    case "W": return "bg-green-500";
-    case "D": return "bg-yellow-500";
-    case "L": return "bg-red-500";
+    case "W": return "bg-success";
+    case "D": return "bg-primary";
+    case "L": return "bg-destructive";
     default: return "bg-muted";
   }
 }
@@ -169,7 +169,7 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
       {/* Legend - wrap on mobile */}
       <div className="px-3 sm:px-4 py-2 border-t border-primary/20 flex flex-wrap gap-2 sm:gap-4 text-[9px] sm:text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+          <span className="w-2 h-2 rounded-full bg-success"></span>
           UCL
         </span>
         <span className="flex items-center gap-1">
@@ -177,7 +177,7 @@ function LeagueStandingsCard({ leagueId, leagueName, flag }: { leagueId: string;
           UEL
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-red-500"></span>
+          <span className="w-2 h-2 rounded-full bg-destructive"></span>
           Rel.
         </span>
       </div>

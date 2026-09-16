@@ -150,7 +150,7 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
   const riskColors: Record<string, string> = {
     Low: "bg-success/20 text-success border-success/30",
     Medium: "bg-primary/20 text-primary border-primary/30",
-    High: "bg-red-500/20 text-red-400 border-red-500/30",
+    High: "bg-destructive/20 text-destructive border-destructive/30",
   };
 
   const confidenceColor =
@@ -158,14 +158,14 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
       ? "text-success"
       : data.confidence >= 50
         ? "text-primary"
-        : "text-red-400";
+        : "text-destructive";
 
   const confidenceBgColor =
     data.confidence >= 70
       ? "bg-success"
       : data.confidence >= 50
         ? "bg-primary"
-        : "bg-red-500";
+        : "bg-destructive";
 
   return (
     <div className="p-4 max-h-[450px] overflow-y-auto space-y-4">

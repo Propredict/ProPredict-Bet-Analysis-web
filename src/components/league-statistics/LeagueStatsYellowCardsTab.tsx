@@ -25,7 +25,7 @@ export function LeagueStatsYellowCardsTab({ leagueId, leagueName }: Props) {
       </Card>
 
       <Card className="bg-card border-border overflow-hidden">
-        <div className="px-4 py-3 bg-yellow-500/20 text-center font-semibold text-sm">
+        <div className="px-4 py-3 bg-primary/20 text-center font-semibold text-sm">
           Top Yellow Cards
         </div>
 
@@ -46,8 +46,8 @@ export function LeagueStatsYellowCardsTab({ leagueId, leagueName }: Props) {
                   <th className="px-2 sm:px-3 py-2 text-left">Player</th>
                   <th className="px-2 sm:px-3 py-2 text-left hidden sm:table-cell">Team</th>
                   <th className="px-1 sm:px-3 py-2 text-center">GP</th>
-                  <th className="px-1 sm:px-3 py-2 text-center text-yellow-400">🟨</th>
-                  <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell text-red-400">🟥</th>
+                  <th className="px-1 sm:px-3 py-2 text-center text-muted-foreground">🟨</th>
+                  <th className="px-1 sm:px-3 py-2 text-center hidden sm:table-cell text-destructive">🟥</th>
                   <th className="px-1 sm:px-3 py-2 text-center hidden md:table-cell">Fouls</th>
                 </tr>
               </thead>
@@ -75,8 +75,8 @@ export function LeagueStatsYellowCardsTab({ leagueId, leagueName }: Props) {
                       </div>
                     </td>
                     <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground">{item.games.appearances}</td>
-                    <td className="px-1 sm:px-3 py-2 text-center font-bold text-yellow-400">{item.cards.yellow}</td>
-                    <td className="px-1 sm:px-3 py-2 text-center text-red-400 hidden sm:table-cell">{item.cards.red}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center font-bold text-muted-foreground">{item.cards.yellow}</td>
+                    <td className="px-1 sm:px-3 py-2 text-center text-destructive hidden sm:table-cell">{item.cards.red}</td>
                     <td className="px-1 sm:px-3 py-2 text-center text-muted-foreground hidden md:table-cell">{item.fouls.committed}</td>
                   </tr>
                 ))}

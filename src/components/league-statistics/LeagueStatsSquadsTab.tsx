@@ -18,10 +18,10 @@ const positionOrder: Record<string, number> = {
 };
 
 const positionColor: Record<string, string> = {
-  Goalkeeper: "bg-yellow-500/15 text-yellow-400",
+  Goalkeeper: "bg-primary/15 text-muted-foreground",
   Defender: "bg-blue-500/15 text-blue-400",
-  Midfielder: "bg-green-500/15 text-green-400",
-  Attacker: "bg-red-500/15 text-red-400",
+  Midfielder: "bg-success/15 text-success",
+  Attacker: "bg-destructive/15 text-destructive",
 };
 
 export function LeagueStatsSquadsTab({ leagueId, leagueName }: Props) {

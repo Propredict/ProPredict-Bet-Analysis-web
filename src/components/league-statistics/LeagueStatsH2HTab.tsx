@@ -149,7 +149,7 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
           </Card>
         ) : h2hError ? (
           <Card className="p-8 text-center bg-card border-border">
-            <p className="text-red-400">Failed to load H2H data. Please try again.</p>
+            <p className="text-destructive">Failed to load H2H data. Please try again.</p>
           </Card>
         ) : h2hData ? (
           <div className="space-y-4">
@@ -164,16 +164,16 @@ export function LeagueStatsH2HTab({ leagueId, leagueName }: LeagueStatsH2HTabPro
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto">
-                <div className="text-center p-2 sm:p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <p className="text-xl sm:text-3xl font-bold text-green-400">{h2hData.summary.team1Wins}</p>
+                <div className="text-center p-2 sm:p-4 rounded-lg bg-success/10 border border-success/20">
+                  <p className="text-xl sm:text-3xl font-bold text-success">{h2hData.summary.team1Wins}</p>
                   <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 truncate">{h2hData.team1.name}</p>
                 </div>
                 <div className="text-center p-2 sm:p-4 rounded-lg bg-white/5 border border-white/10">
                   <p className="text-xl sm:text-3xl font-bold text-muted-foreground">{h2hData.summary.draws}</p>
                   <p className="text-[9px] sm:text-xs text-muted-foreground mt-1">Draws</p>
                 </div>
-                <div className="text-center p-2 sm:p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="text-xl sm:text-3xl font-bold text-red-400">{h2hData.summary.team2Wins}</p>
+                <div className="text-center p-2 sm:p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <p className="text-xl sm:text-3xl font-bold text-destructive">{h2hData.summary.team2Wins}</p>
                   <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 truncate">{h2hData.team2.name}</p>
                 </div>
               </div>
@@ -247,7 +247,7 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
             <span 
               className={cn(
                 "text-[10px] sm:text-xs truncate text-right",
-                match.teams.home.winner && "font-semibold text-green-400"
+                match.teams.home.winner && "font-semibold text-success"
               )}
               title={match.teams.home.name}
             >
@@ -273,7 +273,7 @@ function H2HMatchRow({ match }: { match: H2HMatch }) {
             <span 
               className={cn(
                 "text-[10px] sm:text-xs truncate",
-                match.teams.away.winner && "font-semibold text-green-400"
+                match.teams.away.winner && "font-semibold text-success"
               )}
               title={match.teams.away.name}
             >

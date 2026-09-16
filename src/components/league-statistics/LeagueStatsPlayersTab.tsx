@@ -92,7 +92,7 @@ export function LeagueStatsPlayersTab({ leagueId, leagueName }: LeagueStatsPlaye
       <div className="space-y-1 max-h-[500px] overflow-y-auto">
         {sorted.slice(0, 30).map((player, idx) => {
           const rating = parseFloat(player.games.rating || "0");
-          const ratingColor = rating >= 7.5 ? "text-green-400" : rating >= 6.5 ? "text-yellow-400" : rating > 0 ? "text-orange-400" : "text-muted-foreground";
+          const ratingColor = rating >= 7.5 ? "text-success" : rating >= 6.5 ? "text-muted-foreground" : rating > 0 ? "text-primary" : "text-muted-foreground";
 
           return (
             <div
@@ -123,7 +123,7 @@ export function LeagueStatsPlayersTab({ leagueId, leagueName }: LeagueStatsPlaye
               {/* Quick stat badges */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 {player.goals > 0 && (
-                  <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-green-500/15 text-green-400 border-0">
+                  <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-success/15 text-success border-0">
                     ⚽{player.goals}
                   </Badge>
                 )}
@@ -147,7 +147,7 @@ export function LeagueStatsPlayersTab({ leagueId, leagueName }: LeagueStatsPlaye
                     {rating > 0 ? rating.toFixed(1) : "–"}
                   </span>
                 ) : sortKey === "cards" ? (
-                  <span className="text-sm font-bold text-amber-400">
+                  <span className="text-sm font-bold text-primary">
                     {player.cards.yellow + player.cards.red}
                   </span>
                 ) : (
