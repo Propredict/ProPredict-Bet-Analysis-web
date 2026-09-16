@@ -208,10 +208,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-base font-bold transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
                       activeClassName=""
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-5 w-5" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
