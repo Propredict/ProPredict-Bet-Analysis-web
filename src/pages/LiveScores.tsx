@@ -66,6 +66,11 @@ export default function LiveScores() {
     dateMode,
     statusFilter: statusTab
   });
+  // Unfiltered set for the stat cards — totals must not change with the tab
+  const { matches: allDayMatches } = useLiveScores({
+    dateMode,
+    statusFilter: "all"
+  });
   const {
     favorites,
     isFavorite,
@@ -236,8 +241,9 @@ export default function LiveScores() {
 
   /* -------------------- STATS -------------------- */
 
-  const liveCount = matches.filter(m => m.status === "live" || m.status === "halftime").length;
-  const leaguesCount = new Set(matches.map(m => m.league)).size;
+  const liveCount = allDayMatches.filter(m => m.status === "live" || m.status === "halftime").length;
+  const todayTotalCount = allDayMatches.length;
+  const leaguesCount = new Set(allDayMatches.map(m => m.league)).size;
 
   /* -------------------- FILTERING -------------------- */
 
@@ -447,7 +453,7 @@ export default function LiveScores() {
         {/* STATS CARDS */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           <HeroStat icon={Play} label="Live now" value={liveCount} caption="Matches in play" tone="live" />
-          <HeroStat icon={BarChart3} label="Today" value={matches.length} caption="Total matches" tone="success" />
+          <HeroStat icon={BarChart3} label="Today" value={todayTotalCount} caption="Total matches" tone="success" />
           <HeroStat icon={Trophy} label="Leagues" value={leaguesCount} caption="Active leagues" tone="sky" />
           <HeroStat
             icon={Heart}
