@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Single Tips", url: "/single-tips", icon: Lightbulb },
+  { title: "Free Tips", url: "/single-tips", icon: Lightbulb },
   { title: "Tiket / Bet Slip", url: "/tickets", icon: Ticket },
 ];
 
