@@ -130,46 +130,12 @@ export default function LeagueStatistics() {
           }
         />
 
-        {/* Stats Summary - COMPACT cards */}
-        <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-destructive/10 flex items-center justify-center flex-shrink-0">
-              <Play className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-destructive" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Live</p>
-              <p className="text-[10px] sm:text-xs font-bold text-destructive">{liveCount}</p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-success/10 to-success/5 border-success/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-success/10 flex items-center justify-center flex-shrink-0">
-              <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-success" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Matches</p>
-              <p className="text-[10px] sm:text-xs font-bold text-success">{filteredMatches.length}</p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-accent/10 to-accent/5 border-accent/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
-              <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-accent" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Selected</p>
-              <p className="text-[9px] sm:text-[10px] font-semibold text-accent truncate">
-                {isAllLeagues ? "All" : selectedLeague?.name?.split(" ")[0]}
-              </p>
-            </div>
-          </Card>
-          <Card className="flex items-center gap-1 p-1 sm:p-1.5 rounded-md bg-gradient-to-br from-primary/10 to-primary/5 border-primary/15">
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground uppercase">Leagues</p>
-              <p className="text-[10px] sm:text-xs font-bold text-primary">{dynamicLeagues.length}</p>
-            </div>
-          </Card>
+        {/* Stats Summary */}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <HeroStat icon={Play} label="Live" value={liveCount} caption="Matches in play" tone="live" />
+          <HeroStat icon={Trophy} label="Matches" value={filteredMatches.length} caption="Total matches today" />
+          <HeroStat icon={Users} label="Selected" value={isAllLeagues ? "All Leagues" : selectedLeague?.name ?? "—"} caption="Current selection" />
+          <HeroStat icon={Target} label="Leagues" value={dynamicLeagues.length} caption="Active leagues" />
         </div>
 
         {/* Tabs - Enhanced visibility with container */}
