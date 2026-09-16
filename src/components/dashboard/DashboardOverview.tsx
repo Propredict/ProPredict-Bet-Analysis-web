@@ -114,7 +114,7 @@ export function DashboardOverview() {
           )}
         </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {/* Live matches */}
           <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
