@@ -15,3 +15,5 @@
 - [x] Route the Dashboard Sure Odds ticket card to the Sure Odds page.
 - [x] Strengthen blue borders and use green prediction fields across tip and ticket cards.
 - [x] Verify the Dashboard click, desktop/mobile card styling, and overflow.
+- [x] Combine Daily and Premium tickets into one Stadium Glass Elite page while keeping Sure Odds separate.
+- [x] Redirect existing Daily/Premium ticket links and verify access states, desktop, and mobile layouts.

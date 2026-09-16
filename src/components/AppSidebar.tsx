@@ -3,7 +3,6 @@ import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { 
   LayoutDashboard, 
   Ticket, 
-  Calendar,
   Lightbulb,
   
   Crown,
@@ -53,8 +52,7 @@ const tipsItems = [
 ];
 
 const ticketsItems = [
-  { title: "Daily Ticket", url: "/daily-predictions", icon: Calendar },
-  { title: "Premium Ticket", url: "/premium-predictions", icon: Crown },
+  { title: "All Tickets", url: "/tickets", icon: Ticket },
 ];
 
 const packagesItems = [
