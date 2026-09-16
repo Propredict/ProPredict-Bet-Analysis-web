@@ -108,6 +108,7 @@ function TicketCard({
   isUnlocking = false,
   hideLockedMatches = false,
   customLockedCTA,
+  light = false,
 }: TicketCardProps) {
   const navigate = useNavigate();
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -169,10 +170,15 @@ function TicketCard({
   const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
 
 
-  const cardShell = cn(
-    "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
-    accent.glow
-  );
+  const cardShell = light
+    ? cn(
+        "relative rounded-xl border border-amber-200 bg-white overflow-hidden transition-all duration-300 hover:border-amber-300 cursor-pointer group",
+        "shadow-[0_10px_40px_-10px_rgba(245,158,11,0.45)]"
+      )
+    : cn(
+        "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
+        accent.glow
+      );
 
   // --- Shared header ---
   const renderHeader = () => (
