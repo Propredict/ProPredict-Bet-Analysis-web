@@ -434,54 +434,6 @@ const Profile = () => {
                 )}
               </Button>
 
-              {/* Arena Points Section */}
-              <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Diamond className="h-4 w-4 text-amber-400" />
-                  <span className="text-xs font-semibold text-foreground">Arena Points</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">Monthly Points</span>
-                  <span className="text-lg font-bold text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]">{arenaStats.points}</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px]">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="text-foreground font-medium">{arenaStats.points} / 1000</span>
-                  </div>
-                  <Progress value={Math.min((arenaStats.points / 1000) * 100, 100)} className="h-2.5" />
-                  {arenaStats.points < 1000 && (
-                    <p className="text-[9px] text-amber-400/80 font-medium">
-                      🔥 {1000 - arenaStats.points} points left to unlock a free Premium month!
-                    </p>
-                  )}
-                </div>
-
-                {/* Rewards breakdown */}
-                {arenaStats.points < 1000 && (
-                  <div className="text-[10px] text-muted-foreground space-y-0.5 pl-1 pt-1 border-t border-border/50">
-                    <p className="font-medium text-foreground text-[9px] mb-1">Rewards at 1,000 points:</p>
-                    <p>🆓 Free → <span className="text-primary font-semibold">1 month Premium free</span></p>
-                    <p>⭐ Reward → <span className="text-primary font-semibold">+1 month Premium access</span></p>
-                    <p>👑 Premium → <span className="text-amber-400 font-semibold">+1 month Premium extended</span></p>
-                  </div>
-                )}
-
-                {arenaStats.points >= 1000 && !arenaStats.rewardGranted && (
-                  <div className="p-2 rounded bg-amber-500/15 border border-amber-400/30 text-center">
-                    <p className="text-[10px] font-semibold text-amber-400">🎉 1000 points reached! Reward coming soon.</p>
-                  </div>
-                )}
-                {arenaStats.rewardGranted && (
-                  <div className="p-2 rounded bg-success/10 border border-success/30 text-center">
-                    <p className="text-[10px] text-success font-medium">✅ Free Premium month granted!</p>
-                  </div>
-                )}
-                <p className="text-[9px] text-muted-foreground/70 leading-relaxed">
-                  🎯 Collect 1000 points to unlock 1 free month of Premium access. Points reset to 0 after reaching 1000.
-                </p>
-              </div>
-
               {/* Show plan section: Android always, Web only for paid plans */}
               {(isAndroidApp || plan !== "free") && (
                 <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
