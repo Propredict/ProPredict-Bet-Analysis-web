@@ -11,7 +11,11 @@ import { HelmetProvider } from "react-helmet-async";
 /** Redirect that preserves query params (critical for push notification deep links) */
 function NavigateWithSearch({ to }: { to: string }) {
   const location = useLocation();
-  return <Navigate to={to + location.search} replace />;
+  const [pathname, targetSearch = ""] = to.split("?");
+  const params = new URLSearchParams(location.search);
+  new URLSearchParams(targetSearch).forEach((value, key) => params.set(key, value));
+  const search = params.toString();
+  return <Navigate to={`${pathname}${search ? `?${search}` : ""}`} replace />;
 }
 import AppLayout from "@/layouts/AppLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -51,6 +55,7 @@ const Tickets = lazy(() => import("./pages/Tickets"));
 const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
 const PremiumTips = lazy(() => import("./pages/PremiumTips"));
+const SingleTips = lazy(() => import("./pages/SingleTips"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
 const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
 const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
@@ -211,8 +216,9 @@ const App = () => {
                     <Route path="/get-premium" element={<GetPremium />} />
 
                     {/* Tips */}
-                    <Route path="/daily-analysis" element={<DailyTips />} />
-                    <Route path="/daily-tips" element={<NavigateWithSearch to="/daily-analysis" />} />
+                    <Route path="/single-tips" element={<SingleTips />} />
+                    <Route path="/daily-analysis" element={<NavigateWithSearch to="/single-tips?view=daily" />} />
+                    <Route path="/daily-tips" element={<NavigateWithSearch to="/single-tips?view=daily" />} />
                     <Route path="/daily-predictions" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/daily-tickets" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/top-picks" element={<ExclusiveTips />} />
@@ -221,8 +227,8 @@ const App = () => {
                     <Route path="/sure-odds" element={<ExclusiveTickets />} />
                     <Route path="/pro-predictions" element={<NavigateWithSearch to="/sure-odds" />} />
                     <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/sure-odds" />} />
-                    <Route path="/premium-analysis" element={<PremiumTips />} />
-                    <Route path="/premium-tips" element={<NavigateWithSearch to="/premium-analysis" />} />
+                    <Route path="/premium-analysis" element={<NavigateWithSearch to="/single-tips?view=premium" />} />
+                    <Route path="/premium-tips" element={<NavigateWithSearch to="/single-tips?view=premium" />} />
                     <Route path="/premium-predictions" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/premium-tickets" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
@@ -231,8 +237,8 @@ const App = () => {
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
-                    <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
-                    <Route path="/diamond-pick" element={<DiamondPick />} />
+                    <Route path="/risk-of-the-day" element={<NavigateWithSearch to="/single-tips?view=risk" />} />
+                    <Route path="/diamond-pick" element={<NavigateWithSearch to="/single-tips?view=diamond" />} />
                     
 
                     {/* Protected */}

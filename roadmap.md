@@ -1,1 +1,1 @@
-- [ ] Objediniti Daily Predictions, Premium Predictions, Risk of the Day i Diamond Pick u Single Tips stranicu bez promene pravila
+- [x] Objediniti Daily Predictions, Premium Predictions, Risk of the Day i Diamond Pick u Single Tips stranicu bez promene pravila
