@@ -83,9 +83,10 @@ function TicketGroup({
 
               return (
                 <article id={`ticket-${ticket.id}`} key={ticket.id} className="overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-accent/25">
-                  <button
+                  <Button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 border-b border-sidebar-border px-4 py-3 text-left transition-colors hover:bg-sidebar-accent/60"
+                    variant="ghost"
+                    className="flex h-auto w-full items-center justify-between gap-3 rounded-none border-b border-sidebar-border px-4 py-3 text-left hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                     onClick={() => navigate(`/tickets/${ticket.id}`)}
                   >
                     <div className="min-w-0">
@@ -96,7 +97,7 @@ function TicketGroup({
                       <p className="text-[9px] font-bold uppercase text-sidebar-foreground/45">Total odds</p>
                       <p className="font-bold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
-                  </button>
+                  </Button>
 
                   <div className="space-y-2 p-3">
                     {visibleMatches.map((match) => {

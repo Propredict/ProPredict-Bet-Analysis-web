@@ -47,11 +47,10 @@ const HowAIWorks = lazy(() => import("./pages/HowAIWorks"));
 
 // Tier pages - lazy loaded
 const DailyTips = lazy(() => import("./pages/DailyTips"));
-const DailyTickets = lazy(() => import("./pages/DailyTickets"));
+const Tickets = lazy(() => import("./pages/Tickets"));
 const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
 const PremiumTips = lazy(() => import("./pages/PremiumTips"));
-const PremiumTickets = lazy(() => import("./pages/PremiumTickets"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
 const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
 const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
@@ -208,13 +207,14 @@ const App = () => {
                     <Route path="/favorites" element={<MyFavorites />} />
                     <Route path="/winning-history" element={<Navigate to="/" replace />} />
                     <Route path="/tickets/:id" element={<TicketDetails />} />
+                    <Route path="/tickets" element={<Tickets />} />
                     <Route path="/get-premium" element={<GetPremium />} />
 
                     {/* Tips */}
                     <Route path="/daily-analysis" element={<DailyTips />} />
                     <Route path="/daily-tips" element={<NavigateWithSearch to="/daily-analysis" />} />
-                    <Route path="/daily-predictions" element={<DailyTickets />} />
-                    <Route path="/daily-tickets" element={<NavigateWithSearch to="/daily-predictions" />} />
+                    <Route path="/daily-predictions" element={<NavigateWithSearch to="/tickets" />} />
+                    <Route path="/daily-tickets" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/top-picks" element={<ExclusiveTips />} />
                     <Route path="/pro-analysis" element={<NavigateWithSearch to="/top-picks" />} />
                     <Route path="/exclusive-tips" element={<NavigateWithSearch to="/top-picks" />} />
@@ -223,8 +223,8 @@ const App = () => {
                     <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/sure-odds" />} />
                     <Route path="/premium-analysis" element={<PremiumTips />} />
                     <Route path="/premium-tips" element={<NavigateWithSearch to="/premium-analysis" />} />
-                    <Route path="/premium-predictions" element={<PremiumTickets />} />
-                    <Route path="/premium-tickets" element={<NavigateWithSearch to="/premium-predictions" />} />
+                    <Route path="/premium-predictions" element={<NavigateWithSearch to="/tickets" />} />
+                    <Route path="/premium-tickets" element={<NavigateWithSearch to="/tickets" />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
                     <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                     <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
