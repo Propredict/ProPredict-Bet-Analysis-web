@@ -58,6 +58,7 @@ const SingleTips = lazy(() => import("./pages/SingleTips"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
+const LiveChat = lazy(() => import("./pages/LiveChat"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 
 const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
@@ -294,6 +295,7 @@ const App = () => {
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/data-deletion" element={<DataDeletion />} />
                     <Route path="/help-support" element={<HelpSupport />} />
+                    <Route path="/live-chat" element={<LiveChat />} />
                     <Route path="/about-us" element={<AboutUs />} />
                   </Route>
 

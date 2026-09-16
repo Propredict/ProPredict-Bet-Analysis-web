@@ -301,6 +301,18 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/live-chat"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
+                    activeClassName="bg-primary/20 text-primary"
+                  >
+                    <MessageCircle className="h-[18px] w-[18px]" />
+                    {!collapsed && <span>Live Chat</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
