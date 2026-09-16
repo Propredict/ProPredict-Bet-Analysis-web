@@ -7,7 +7,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
-import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
+
 import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
 import { selectTopPicks, leagueTier } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
