@@ -52,6 +52,13 @@ const packagesItems = [
   { title: "Get Premium", url: "/get-premium", icon: Sparkles, highlight: true },
 ];
 
+const premiumItems = [
+  { title: "Premium Ticket", url: "/premium-tickets", icon: Ticket },
+  { title: "Premium Tips", url: "/single-tips?view=premium", icon: Crown },
+  { title: "Diamond Tips", url: "/single-tips?view=diamond", icon: Sparkles },
+  { title: "Risk of the Day", url: "/single-tips?view=risk", icon: AlertTriangle },
+];
+
 const tools = [
   { title: "AI vs Members", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
