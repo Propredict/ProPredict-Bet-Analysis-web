@@ -20,7 +20,7 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
   return (
     <div className="space-y-2 md:space-y-3">
       <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-        <Users className="w-3.5 md:w-4 h-3.5 md:h-4 text-purple-400" />
+        <Users className="w-3.5 md:w-4 h-3.5 md:h-4 text-blue-400" />
         <span className="text-xs md:text-sm font-medium text-foreground">Both Teams to Score</span>
       </div>
 
@@ -40,7 +40,7 @@ export function BTTSMarketTab({ prediction, hasAccess }: Props) {
                 {option.label}
               </span>
               {option.recommended && hasAccess && (
-                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
+                <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
                   <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                   AI
                 </Badge>

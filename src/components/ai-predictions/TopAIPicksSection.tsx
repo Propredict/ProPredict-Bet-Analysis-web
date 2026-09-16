@@ -114,20 +114,20 @@ export function TopAIPicksSection({
     <Card
       className={cn(
         "relative overflow-hidden border-2",
-        "bg-gradient-to-br from-amber-500/10 via-fuchsia-500/5 to-violet-600/10",
-        "border-amber-500/40",
-        "shadow-[0_0_40px_rgba(245,158,11,0.15)]",
+        "bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-blue-600/10",
+        "border-blue-500/40",
+        "shadow-[0_0_40px_rgba(8, 120, 249,0.15)]",
       )}
     >
       {/* Decorative glow orbs */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-amber-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-blue-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-blue-500/20 blur-3xl" />
 
       <div className="relative p-3 md:p-5">
         {/* Centered bold section header */}
         <div className="flex flex-col items-center text-center mb-4 md:mb-5 space-y-1">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-            <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
+            <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
             Top AI Picks Today
           </h2>
           <p className="text-[11px] text-muted-foreground max-w-md">
@@ -146,7 +146,7 @@ export function TopAIPicksSection({
             ref={scrollRef}
             className={cn(
               "flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1",
-              "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-amber-500/40",
+              "[scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-500/40",
               "lg:grid lg:grid-cols-3 lg:gap-3 lg:overflow-visible lg:snap-none lg:pb-0 lg:mx-0 lg:px-0",
             )}
           >
@@ -177,12 +177,12 @@ export function TopAIPicksSection({
                 {/* Label badge floating top-right */}
                 <div className="absolute top-0 left-2 z-10">
                   {rp.label === "elite" ? (
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-md shadow-amber-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
+                    <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md shadow-blue-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Sparkles className="w-2.5 h-2.5 mr-1 fill-current" />
                       ⭐ Elite
                     </Badge>
                   ) : (
-                    <Badge className="bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white border-0 shadow-md shadow-fuchsia-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
+                    <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md shadow-blue-500/40 text-[9px] md:text-[10px] font-semibold px-2 py-0.5">
                       <Zap className="w-2.5 h-2.5 mr-1" />
                       Strong AI Signal
                     </Badge>
@@ -244,7 +244,7 @@ export function TopAIPicksSection({
               {/* Soft fade gradient on the right edge */}
               <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[85%] w-12 bg-gradient-to-l from-background via-background/60 to-transparent rounded-r" />
               {/* Animated chevron pill */}
-              <div className="relative mr-1 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-fuchsia-600 text-white shadow-lg shadow-amber-500/40 animate-pulse">
+              <div className="relative mr-1 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/40 animate-pulse">
                 <span className="text-[9px] font-bold tracking-wide">Swipe</span>
                 <ChevronRight className="w-3.5 h-3.5 animate-[slide-in-right_1s_ease-in-out_infinite]" />
               </div>
@@ -257,7 +257,7 @@ export function TopAIPicksSection({
               type="button"
               aria-label="Previous pick"
               onClick={() => scrollByCard("left")}
-              className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-amber-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-amber-300 active:scale-95 transition"
+              className="lg:hidden absolute left-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-blue-300 active:scale-95 transition"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -269,7 +269,7 @@ export function TopAIPicksSection({
               type="button"
               aria-label="Next pick"
               onClick={() => scrollByCard("right")}
-              className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-amber-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-amber-300 active:scale-95 transition"
+              className="lg:hidden absolute right-1 top-1/2 -translate-y-1/2 z-30 h-9 w-9 rounded-full bg-background/90 backdrop-blur border border-blue-500/40 shadow-lg shadow-black/40 flex items-center justify-center text-blue-300 active:scale-95 transition"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -281,7 +281,7 @@ export function TopAIPicksSection({
               {visiblePicks.map((_, i) => (
                 <span
                   key={i}
-                  className="h-1 w-1 rounded-full bg-amber-500/40"
+                  className="h-1 w-1 rounded-full bg-blue-500/40"
                 />
               ))}
             </div>
@@ -290,11 +290,11 @@ export function TopAIPicksSection({
 
         {/* Free user upsell */}
         {showUpsell && (
-          <div className="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-violet-600/15 to-fuchsia-600/15 border border-fuchsia-500/30">
+          <div className="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 p-3 rounded-lg bg-gradient-to-r from-blue-600/15 to-blue-600/15 border border-blue-500/30">
             <div className="flex items-center gap-2 text-center sm:text-left">
-              <Lock className="w-4 h-4 text-fuchsia-400 shrink-0" />
+              <Lock className="w-4 h-4 text-blue-400 shrink-0" />
               <p className="text-xs md:text-sm text-foreground">
-                <span className="font-semibold text-fuchsia-300">
+                <span className="font-semibold text-blue-300">
                   +{lockedCount} more elite picks / +{lockedCount} dodatnih elite izbora
                 </span>{" "}
                 available with Pro & Premium / dostupno sa Pro & Premium
@@ -303,7 +303,7 @@ export function TopAIPicksSection({
             <Button
               size="sm"
               onClick={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white border-0 shadow-md shadow-fuchsia-500/30 h-8 text-xs"
+              className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white border-0 shadow-md shadow-blue-500/30 h-8 text-xs"
             >
               <Crown className="w-3 h-3 mr-1 fill-current" />
               Upgrade for {lockedCount} more / Nadogradi za još {lockedCount}

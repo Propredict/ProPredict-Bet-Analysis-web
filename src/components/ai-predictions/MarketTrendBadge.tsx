@@ -33,9 +33,9 @@ export function MarketTrendBadge({ trend, strength, movementPct, className, comp
     : "Market Trend";
 
   const tone = isDropping
-    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+    ? "bg-green-500/15 text-green-300 border-green-500/30"
     : isRising
-    ? "bg-orange-500/15 text-orange-300 border-orange-500/30"
+    ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
     : "bg-muted/20 text-muted-foreground border-border/40";
 
   const strengthLabel = strength === "strong" ? "Strong" : strength === "moderate" ? "Moderate" : null;

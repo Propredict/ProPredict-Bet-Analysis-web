@@ -49,7 +49,7 @@ export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }:
   return (
     <div className="space-y-2 md:space-y-3">
       <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-        <Crosshair className={cn("w-3.5 md:w-4 h-3.5 md:h-4", displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400")} />
+        <Crosshair className={cn("w-3.5 md:w-4 h-3.5 md:h-4", displayTier === "premium" ? "text-blue-400" : "text-blue-400")} />
         <span className="text-xs md:text-sm font-medium text-foreground">Top Correct Scores</span>
         <span className="text-[10px] md:text-xs text-muted-foreground font-medium">
           (1 of {Math.max(topScores.length, 1)})
@@ -67,8 +67,8 @@ export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }:
               "text-center py-3 md:py-4 rounded-md border",
               i === 0
                 ? displayTier === "premium"
-                  ? "border-fuchsia-500/40 bg-fuchsia-500/10"
-                  : "border-amber-500/40 bg-amber-500/10"
+                  ? "border-blue-500/40 bg-blue-500/10"
+                  : "border-blue-500/40 bg-blue-500/10"
                 : "border-border/30 bg-card/20"
             )}
           >
@@ -82,7 +82,7 @@ export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }:
               "text-[10px] md:text-xs font-medium",
               !hasAccess && "blur-[5px] select-none",
               i === 0
-                ? displayTier === "premium" ? "text-fuchsia-400" : "text-amber-400"
+                ? displayTier === "premium" ? "text-blue-400" : "text-blue-400"
                 : "text-muted-foreground"
             )}>
               {s.probability}%

@@ -47,7 +47,7 @@ export function DoubleChanceTab({ prediction, hasAccess }: Props) {
               {hasAccess ? markets.doubleChance.option : "••"}
             </span>
             {hasAccess && (
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 rounded-lg">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 AI
               </Badge>

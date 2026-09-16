@@ -50,8 +50,8 @@ export function KeyPlayerMissingBadge({
     severity === "high"
       ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/25"
       : severity === "medium"
-        ? "bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25"
-        : "bg-orange-500/15 text-orange-300 border-orange-500/40 hover:bg-orange-500/25";
+        ? "bg-blue-500/15 text-blue-300 border-blue-500/40 hover:bg-blue-500/25"
+        : "bg-blue-500/15 text-blue-300 border-blue-500/40 hover:bg-blue-500/25";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -78,10 +78,10 @@ export function KeyPlayerMissingBadge({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-[#1e3a5f]/40">
-          <UserX className="w-3.5 h-3.5 text-amber-400" />
+          <UserX className="w-3.5 h-3.5 text-blue-400" />
           <h4 className="text-xs font-semibold">Missing Key Players</h4>
           {lineupConfirmed && (
-            <Badge className="ml-auto bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-[8px] px-1 py-0 rounded">
+            <Badge className="ml-auto bg-green-500/15 text-green-300 border-green-500/30 text-[8px] px-1 py-0 rounded">
               Confirmed XI
             </Badge>
           )}

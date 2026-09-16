@@ -7,7 +7,7 @@ import heroAsset from "@/assets/ai-hero-banner.jpg.asset.json";
  */
 export function AIHeroBanner() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-fuchsia-500/25 bg-[#0a0512] shadow-[0_0_40px_-12px_rgba(217,70,239,0.45)]">
+    <div className="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-[#0a0512] shadow-[0_0_40px_-12px_rgba(8, 120, 249,0.45)]">
       <img
         src={heroAsset.url}
         alt="AI powered football predictions"
@@ -29,17 +29,17 @@ export function AIHeroBanner() {
 
         <div className="mt-3 sm:mt-5 hidden sm:flex flex-wrap gap-x-6 gap-y-3">
           <Feature
-            icon={<BrainCircuit className="h-4 w-4 text-fuchsia-300" />}
+            icon={<BrainCircuit className="h-4 w-4 text-blue-300" />}
             title="Smart Analysis"
             lines={["AI scans thousands", "of data points"]}
           />
           <Feature
-            icon={<ShieldCheck className="h-4 w-4 text-fuchsia-300" />}
+            icon={<ShieldCheck className="h-4 w-4 text-blue-300" />}
             title="High Accuracy"
             lines={["75%+ confidence", "on safe matches"]}
           />
           <Feature
-            icon={<Trophy className="h-4 w-4 text-fuchsia-300" />}
+            icon={<Trophy className="h-4 w-4 text-blue-300" />}
             title="Real Results"
             lines={["Join thousands", "of winning users"]}
           />
@@ -56,7 +56,7 @@ export function AIHeroBanner() {
 function Feature({ icon, title, lines }: { icon: React.ReactNode; title: string; lines: string[] }) {
   return (
     <div className="flex items-start gap-2">
-      <div className="mt-0.5 rounded-md border border-fuchsia-400/30 bg-fuchsia-500/10 p-1.5">{icon}</div>
+      <div className="mt-0.5 rounded-md border border-blue-400/30 bg-blue-500/10 p-1.5">{icon}</div>
       <div className="leading-tight">
         <p className="text-[11px] font-bold text-white">{title}</p>
         {lines.map((l) => (
