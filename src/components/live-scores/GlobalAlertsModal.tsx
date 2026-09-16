@@ -124,7 +124,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
 
             {/* Alert Types Section */}
             <div className="space-y-2">
-              <p className="px-1 text-xs font-bold uppercase tracking-wider text-primary">Alert Types</p>
+              <p className="px-1 text-xs font-extrabold uppercase tracking-widest text-sidebar">Alert Types</p>
               <div className="space-y-2.5">
                 <SettingRow
                   icon={<Goal className="h-5 w-5" />}
