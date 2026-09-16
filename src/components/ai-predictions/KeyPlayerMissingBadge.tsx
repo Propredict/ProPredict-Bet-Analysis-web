@@ -72,7 +72,7 @@ export function KeyPlayerMissingBadge({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 p-3 bg-card border-primary/25 text-white"
+        className="w-72 p-3 bg-card border-primary/25 text-foreground"
         align="end"
         sideOffset={4}
         onClick={(e) => e.stopPropagation()}
