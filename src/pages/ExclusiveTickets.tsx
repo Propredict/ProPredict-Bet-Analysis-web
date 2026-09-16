@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Loader2 } from "lucide-react";
+import { Ticket, Star, RefreshCw, Target, BarChart3, TrendingUp, Loader2, Crown, ShieldCheck, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,6 @@ import { PricingModal } from "@/components/PricingModal";
 import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
-import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
@@ -37,7 +36,6 @@ export default function ExclusiveTickets() {
   const {
     unlockingId
   } = useUnlockHandler();
-  const { isAndroidApp } = usePlatform();
   const { hasTodayUnlock, refetch: refetchUnlock } = useDailyTicketUnlock();
 
   const [searchParams] = useSearchParams();
@@ -106,7 +104,6 @@ export default function ExclusiveTickets() {
 
   const hasTicketAccess = isAdmin || plan === "premium" || hasTodayUnlock;
   const unlockedCount = hasTicketAccess ? exclusiveTickets.length : 0;
-  const showUpgradeBanner = !isAdmin && plan !== "premium";
 
   const handleBuyDailyTicket = () => {
     void trackSureOddsEvent("cta_click", "sure_odds_page");
@@ -141,89 +138,81 @@ export default function ExclusiveTickets() {
         <AffiliateBannerMelbet />
       </div>
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="p-1.5 rounded-md bg-amber-500/20">
-            <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
-          </div>
-          <div>
-            <h1 className="text-sm font-semibold sm:text-lg text-amber-400">Sure Odds 2+</h1>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-              Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
-            </p>
+      <section className="overflow-hidden rounded-2xl border border-primary/20 bg-secondary/70 shadow-lg shadow-primary/10">
+        {/* Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-sidebar px-4 py-5 sm:px-6 sm:py-7">
+          <div className="pointer-events-none absolute -right-10 -top-20 h-52 w-52 rounded-full border-[34px] border-primary-foreground/10" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary-foreground/20 bg-primary-foreground/15 shadow-inner sm:h-14 sm:w-14">
+                <Star className="h-6 w-6 fill-primary-foreground/20 text-primary-foreground sm:h-7 sm:w-7" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Modern Sports Pro</p>
+                <h1 className="text-2xl font-extrabold text-primary-foreground sm:text-3xl">Sure Odds 2+</h1>
+                <p className="mt-1 max-w-2xl text-[11px] font-medium leading-relaxed text-primary-foreground/80 sm:text-sm">
+                  Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
+                </p>
+              </div>
+            </div>
+            {hasTicketAccess ? (
+              <Badge className="h-10 w-full justify-center gap-2 border border-primary-foreground/20 bg-primary-foreground px-4 text-[11px] font-bold text-primary shadow-lg sm:w-auto sm:text-xs">
+                <ShieldCheck className="h-4 w-4" />
+                Unlocked today / Otključano danas
+              </Badge>
+            ) : (
+              <Button
+                className="h-11 w-full shrink-0 border-0 bg-primary-foreground px-4 text-[11px] font-extrabold text-primary shadow-lg hover:bg-primary-foreground/90 sm:w-auto sm:text-xs"
+                onClick={handleBuyDailyTicket}
+              >
+                <Ticket className="mr-2 h-4 w-4" />
+                One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
+              </Button>
+            )}
           </div>
         </div>
-        {hasTicketAccess ? (
-          <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[9px] sm:text-[10px] px-1.5 py-0.5">
-            Unlocked today / Otključano danas
-          </Badge>
-        ) : (
-          <Button
-            className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
-            onClick={handleBuyDailyTicket}
-          >
-            One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
-          </Button>
-        )}
-      </div>
 
-      {/* Description */}
-      <Card className="p-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border-amber-500/20">
-        <p className="text-[10px] sm:text-xs text-foreground/80 leading-relaxed">
-          Sure Odds 2+ is a one-time daily purchase. Unlock today's ticket for {SURE_ODDS_PRICE_LABEL} and it stays open until midnight (Europe/Belgrade). Premium members get it included at no extra cost. / Sure Odds 2+ je jednokratna dnevna kupovina. Otključaj današnji tiket za {SURE_ODDS_PRICE_LABEL} i ostaje otvoren do ponoći (Evropa/Beograd). Premium članovi dobijaju ga uključen bez dodatnog troška.
-        </p>
-      </Card>
-
-
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">80%</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Accuracy</p>
-            </div>
+        {/* Access explanation */}
+        <div className="grid border-b border-primary/10 bg-card sm:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="flex items-start gap-3 p-4 sm:p-5">
+            <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <p className="text-[11px] leading-relaxed text-foreground/75 sm:text-xs">
+              Unlock today's ticket for {SURE_ODDS_PRICE_LABEL} and it stays open until midnight (Europe/Belgrade). / Otključaj današnji tiket i ostaje otvoren do ponoći (Evropa/Beograd).
+            </p>
           </div>
-        </Card>
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-accent/20">
-              <BarChart3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-accent" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">{exclusiveTickets.length}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Total Predictions</p>
-            </div>
+          <div className="flex items-center gap-3 border-t border-primary/10 bg-primary/5 p-4 sm:border-l sm:border-t-0 sm:p-5">
+            <Crown className="h-5 w-5 shrink-0 text-primary" />
+            <p className="text-[11px] font-semibold leading-relaxed text-foreground sm:text-xs">Premium members get daily access included. / Premium članovima je pristup uključen.</p>
           </div>
-        </Card>
-        <Card className="p-1.5 sm:p-2 bg-card border-border">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 sm:p-1.5 rounded bg-primary/20">
-              <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">{unlockedCount}</p>
-              <p className="text-[8px] sm:text-[9px] text-muted-foreground">Available</p>
-            </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-px bg-primary/10">
+          <div className="flex items-center gap-2 bg-card px-3 py-4 sm:gap-3 sm:px-5">
+            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:flex"><Target className="h-4 w-4 text-primary" /></div>
+            <div><p className="text-base font-extrabold text-foreground sm:text-xl">80%</p><p className="text-[9px] text-muted-foreground sm:text-[10px]">Accuracy</p></div>
           </div>
-        </Card>
-      </div>
+          <div className="flex items-center gap-2 bg-card px-3 py-4 sm:gap-3 sm:px-5">
+            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:flex"><BarChart3 className="h-4 w-4 text-primary" /></div>
+            <div><p className="text-base font-extrabold text-foreground sm:text-xl">{exclusiveTickets.length}</p><p className="text-[9px] text-muted-foreground sm:text-[10px]">Today's Ticket</p></div>
+          </div>
+          <div className="flex items-center gap-2 bg-card px-3 py-4 sm:gap-3 sm:px-5">
+            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:flex"><TrendingUp className="h-4 w-4 text-primary" /></div>
+            <div><p className="text-base font-extrabold text-foreground sm:text-xl">{unlockedCount}</p><p className="text-[9px] text-muted-foreground sm:text-[10px]">Available</p></div>
+          </div>
+        </div>
+      </section>
 
       {/* Tickets Area */}
       {isLoading ? (
-        <Card className="p-8 bg-card border-border">
+        <Card className="border-primary/15 bg-card p-8 shadow-sm">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mb-2" />
             <p>Loading predictions...</p>
           </div>
         </Card>
       ) : exclusiveTickets.length === 0 ? (
-        <Card className="p-8 bg-card border-border">
+        <Card className="border-primary/15 bg-card p-8 shadow-sm">
           <div className="flex flex-col items-center justify-center text-muted-foreground">
             <Ticket className="h-12 w-12 mb-4 opacity-50" />
             <p className="text-primary mb-1">No Sure Odds 2+ ticket available</p>
