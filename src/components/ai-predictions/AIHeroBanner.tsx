@@ -7,7 +7,7 @@ import heroAsset from "@/assets/ai-hero-banner.jpg.asset.json";
  */
 export function AIHeroBanner() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-blue-500/25 bg-[#0a0512] shadow-[0_0_40px_-12px_rgba(8, 120, 249,0.45)]">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-[hsl(var(--sidebar-background))] shadow-[0_0_40px_-12px_rgba(8, 120, 249,0.45)]">
       <img
         src={heroAsset.url}
         alt="AI powered football predictions"
@@ -15,7 +15,7 @@ export function AIHeroBanner() {
         height={640}
         className="absolute inset-0 h-full w-full object-cover object-right opacity-90"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0512] via-[#0a0512]/85 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--sidebar-background))] via-[hsl(var(--sidebar-background))]/85 to-transparent" />
 
       <div className="relative px-4 py-5 sm:px-7 sm:py-8 md:py-10 max-w-[62%] sm:max-w-[58%]">
         <p className="text-sm sm:text-xl font-extrabold tracking-tight text-white">
