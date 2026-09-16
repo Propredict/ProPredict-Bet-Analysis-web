@@ -183,23 +183,32 @@ function TicketCard({
   // --- Shared header ---
   const renderHeader = () => (
     <>
-      <div className={cn("h-1 w-full", accent.line)} />
-      <div className={cn("bg-gradient-to-b", accent.gradient)}>
+      <div className={cn("h-1.5 w-full", light ? "bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400" : accent.line)} />
+      <div className={light ? "bg-gradient-to-b from-amber-50 to-white border-b border-amber-100" : cn("bg-gradient-to-b", accent.gradient)}>
         <div className="p-3.5 sm:p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               {getTierBadge(ticket.tier)}
-              <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
+              <span className={cn(
+                "text-[10px] px-2 py-0.5 rounded-full border",
+                light ? "text-amber-700 bg-amber-100/70 border-amber-200" : "text-muted-foreground bg-muted/40 border-border/30"
+              )}>
                 {ticket.matchCount} Matches
               </span>
             </div>
             {/* Status — hide when locked */}
             {!isLocked && getStatusBadge()}
           </div>
-          <h3 className="font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight text-center">
+          <h3 className={cn(
+            "font-bold text-base sm:text-lg leading-tight tracking-tight text-center",
+            light ? "text-slate-900" : "text-foreground"
+          )}>
             {ticket.title}
           </h3>
-          <div className="mt-1.5 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+          <div className={cn(
+            "mt-1.5 flex items-center justify-center gap-3 text-[11px]",
+            light ? "text-slate-500" : "text-muted-foreground"
+          )}>
             {ticketDate && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -209,7 +218,7 @@ function TicketCard({
             {ticket.totalOdds > 0 && (
               <span className="flex items-center gap-1">
                 <span className="opacity-60">Total odds</span>
-                <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
+                <span className={cn("font-bold", light ? "text-amber-600" : "text-foreground")}>{formatCombinedOdds(ticket.totalOdds)}</span>
               </span>
             )}
           </div>
