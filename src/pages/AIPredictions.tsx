@@ -705,44 +705,44 @@ export default function AIPredictions() {
               <div className="relative space-y-4 md:space-y-5">
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 md:w-5 md:h-5 text-blue-400 shrink-0" />
-                  <span className="text-sm md:text-xl font-bold text-foreground">
+                  <span className="text-sm md:text-xl font-bold text-sidebar-foreground">
                     {highValueCount > 0 ? (
-                      <>Today: <span className="text-blue-400">{highValueCount} high confidence picks</span> found</>
+                      <>Today: <span className="text-blue-300">{highValueCount} high confidence picks</span> found</>
                     ) : (
                       <>Premium picks unlock the strongest analysis</>
                     )}
                   </span>
-                  <span className="text-[9px] md:text-sm text-muted-foreground ml-auto flex items-center gap-1.5 shrink-0">
+                  <span className="text-[9px] md:text-sm text-sidebar-foreground/70 ml-auto flex items-center gap-1.5 shrink-0">
                     🔒 <span className="hidden sm:inline">Most available in Premium</span>
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 md:gap-4">
                   <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-green-500/[0.07] border border-green-500/30">
-                    <Gift className="w-3.5 h-3.5 md:w-7 md:h-7 text-green-400 shrink-0" />
+                    <Gift className="w-3.5 h-3.5 md:w-7 md:h-7 text-green-300 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-[9px] md:text-base text-green-400 font-semibold leading-tight">Free</p>
-                      <p className="text-xs md:text-3xl font-extrabold text-green-400 leading-tight">{tierCounts.free}</p>
+                      <p className="text-[9px] md:text-base text-green-300 font-semibold leading-tight">Free</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-green-300 leading-tight">{tierCounts.free}</p>
                     </div>
                     <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-green-500/30 text-xs text-green-100/80 whitespace-nowrap">
                       Safe picks
                     </span>
                   </div>
                   <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-blue-500/[0.07] border border-blue-500/40">
-                    <Star className="w-3.5 h-3.5 md:w-7 md:h-7 text-blue-400 fill-blue-400 shrink-0" />
+                    <Star className="w-3.5 h-3.5 md:w-7 md:h-7 text-blue-300 fill-blue-300 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-[9px] md:text-base text-blue-400 font-semibold leading-tight">Pro</p>
-                      <p className="text-xs md:text-3xl font-extrabold text-blue-400 leading-tight">{tierCounts.pro}</p>
+                      <p className="text-[9px] md:text-base text-blue-300 font-semibold leading-tight">Pro</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-blue-300 leading-tight">{tierCounts.pro}</p>
                     </div>
                     <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-blue-500/30 text-xs text-blue-100/80 whitespace-nowrap">
                       High confidence
                     </span>
                   </div>
                   <div className="flex items-center gap-2 md:gap-4 py-2 px-2.5 md:py-4 md:px-5 rounded-xl md:rounded-2xl bg-blue-500/[0.07] border border-blue-500/30">
-                    <Crown className="w-3.5 h-3.5 md:w-7 md:h-7 text-blue-400 shrink-0" />
+                    <Crown className="w-3.5 h-3.5 md:w-7 md:h-7 text-blue-300 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-[9px] md:text-base text-blue-400 font-semibold leading-tight">Premium</p>
-                      <p className="text-xs md:text-3xl font-extrabold text-blue-400 leading-tight">🔒 {tierCounts.premium}</p>
+                      <p className="text-[9px] md:text-base text-blue-300 font-semibold leading-tight">Premium</p>
+                      <p className="text-xs md:text-3xl font-extrabold text-blue-300 leading-tight">🔒 {tierCounts.premium}</p>
                     </div>
                     <span className="hidden md:inline-flex ml-auto px-3 py-1.5 rounded-full border border-blue-500/30 text-xs text-blue-100/80 whitespace-nowrap">
                       Top accuracy
