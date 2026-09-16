@@ -134,12 +134,17 @@ const Index = () => {
         </div>
         </div>
 
-        {/* Banners row: 1xBet + Telegram side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch w-full max-w-6xl mx-auto">
-        {/* Sponsored: 1xBet affiliate banner – web only */}
-        <div className="w-full">
-          <AffiliateBanner1xBet />
-        </div>
+        {/* Quick links strip */}
+        <QuickFeatureStrip />
+
+        {/* Top predictions + live + tips + Go Premium */}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardOverview />
+        </Suspense>
+
+        {/* Telegram banner */}
+        <div className="grid grid-cols-1 gap-4 items-stretch w-full">
+
 
         {/* Telegram banner — 3D glossy bubble, high-impact CTA */}
         <a
