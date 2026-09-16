@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Crown, Brain, LayoutDashboard } from "lucide-react";
+import { Zap, Heart, Crown, Ticket, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -18,10 +18,10 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/live-scores"]
   },
   {
-    label: "AI Prediction",
-    icon: Brain,
-    path: "/ai-predictions",
-    matchPaths: ["/ai-predictions"]
+    label: "Tickets",
+    icon: Ticket,
+    path: "/tickets",
+    matchPaths: ["/tickets", "/daily-predictions", "/premium-predictions"]
   },
   {
     label: "Dashboard",
