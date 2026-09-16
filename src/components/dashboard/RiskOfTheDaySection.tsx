@@ -36,13 +36,13 @@ export function RiskOfTheDaySection() {
     <section className="space-y-3">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Risk of the Day <Target className="h-5 w-5 text-red-500" />
+          Risk of the Day <Target className="h-5 w-5 text-primary" />
         </h2>
         <p className="text-xs text-muted-foreground">High odds • High reward</p>
       </div>
 
-      <Card className="relative p-4 border-2 border-red-500/40 rounded-xl bg-gradient-to-br from-red-500/10 via-primary/5 to-transparent shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-        <Badge className="absolute top-3 right-3 text-[10px] font-bold border-0 bg-red-500/20 text-red-400">
+      <Card className="relative p-4 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-[0_0_20px_rgba(0,148,230,0.2)]">
+        <Badge className="absolute top-3 right-3 text-[10px] font-bold border-0 bg-primary/20 text-blue-600">
           HIGH RISK
         </Badge>
 
@@ -51,10 +51,10 @@ export function RiskOfTheDaySection() {
           <p className="text-lg font-extrabold text-primary-foreground text-center leading-tight">
             {riskPick.home_team} vs {riskPick.away_team}
           </p>
-          <div className="flex items-center justify-center gap-2 py-1 border-y border-red-500/20">
-            <Star className="h-3 w-3 text-red-400 fill-red-400" />
-            <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.2em]">Prediction</span>
-            <Star className="h-3 w-3 text-red-400 fill-red-400" />
+          <div className="flex items-center justify-center gap-2 py-1 border-y border-primary/20">
+            <Star className="h-3 w-3 text-blue-600 fill-blue-600" />
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em]">Prediction</span>
+            <Star className="h-3 w-3 text-blue-600 fill-blue-600" />
           </div>
 
           {!isUnlocked ? (
@@ -76,7 +76,7 @@ export function RiskOfTheDaySection() {
               </Button>
               <button
                 onClick={() => navigate("/risk-of-the-day")}
-                className="block w-full text-center text-[11px] text-red-400/80 hover:text-red-400 font-semibold transition-colors"
+                className="block w-full text-center text-[11px] text-blue-600/80 hover:text-blue-600 font-semibold transition-colors"
               >
                 See all Risk Picks / Pogledaj sve Risk Picks →
               </button>
@@ -88,7 +88,7 @@ export function RiskOfTheDaySection() {
               </div>
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-red-500 to-primary hover:from-red-600 hover:to-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                className="w-full bg-gradient-to-r from-primary to-primary hover:from-blue-700 hover:to-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(0,148,230,0.4)]"
                 onClick={() => navigate("/risk-of-the-day")}
               >
                 <Eye className="h-3.5 w-3.5 mr-1" /> See all Risk Picks / Pogledaj sve Risk Picks

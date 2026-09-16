@@ -48,7 +48,7 @@ export function TodaysComboTicket() {
         <p className="text-xs text-muted-foreground">Multi-match combination • Higher returns</p>
       </div>
 
-      <Card className="relative p-4 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/15 via-red-500/10 to-transparent shadow-[0_0_20px_rgba(0,148,230,0.25)] overflow-hidden">
+      <Card className="relative p-4 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent shadow-[0_0_20px_rgba(0,148,230,0.25)] overflow-hidden">
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-bl-full" />
 
         <div className="flex items-center justify-between mb-3">

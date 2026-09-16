@@ -11,8 +11,8 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, totalPoints, on
   const pointsTo1000 = Math.max(0, 1000 - totalPoints);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
-      <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/40 bg-card shadow-2xl shadow-amber-500/10 overflow-visible">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-sidebar/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
+      <div className="relative w-full max-w-sm rounded-2xl border border-primary/40 bg-card shadow-2xl shadow-primary/10 overflow-visible">
         <button
           onClick={onClose}
           className="absolute -top-3 -right-3 z-10 rounded-full bg-muted border border-border p-1.5 hover:bg-destructive/20 transition-colors"
@@ -22,15 +22,15 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, totalPoints, on
 
         <div className="p-6 space-y-4 text-center">
           {/* Celebration icon */}
-          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-amber-400/30 to-primary/20 flex items-center justify-center border-2 border-amber-400/40 animate-bounce">
-            <Gift className="h-10 w-10 text-amber-400" />
+          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 flex items-center justify-center border-2 border-primary/40 animate-bounce">
+            <Gift className="h-10 w-10 text-primary" />
           </div>
 
           <div className="space-y-1.5">
             <h3 className="text-xl font-extrabold text-foreground">
               🔥 Daily Reward Claimed!
             </h3>
-            <p className="text-3xl font-black text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]">
+            <p className="text-3xl font-black text-primary drop-shadow-[0_0_10px_rgba(0,148,230,0.4)]">
               +{pointsEarned} Points
             </p>
           </div>
@@ -59,8 +59,8 @@ export function DailyRewardClaimPopup({ streakDay, pointsEarned, totalPoints, on
               </p>
             </div>
           ) : (
-            <div className="p-3 rounded-lg bg-amber-500/15 border border-amber-400/30">
-              <p className="text-xs font-bold text-amber-400">
+            <div className="p-3 rounded-lg bg-primary/15 border border-primary/30">
+              <p className="text-xs font-bold text-primary">
                 🎉 You've reached 1,000+ points! Reward available!
               </p>
             </div>

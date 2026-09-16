@@ -47,8 +47,8 @@ export function DailyRewardPopup() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
-      <div className="relative w-full max-w-sm rounded-2xl border border-amber-400/40 bg-card shadow-2xl shadow-amber-500/10 overflow-visible">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-sidebar/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
+      <div className="relative w-full max-w-sm rounded-2xl border border-primary/40 bg-card shadow-2xl shadow-primary/10 overflow-visible">
         <button
           onClick={dismiss}
           className="absolute -top-3 -right-3 z-10 rounded-full bg-muted border border-border p-1.5 hover:bg-destructive/20 transition-colors"
@@ -57,8 +57,8 @@ export function DailyRewardPopup() {
         </button>
 
         <div className="p-6 space-y-4 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-500/10 flex items-center justify-center border border-amber-400/30">
-            <Gift className="h-8 w-8 text-amber-400 animate-bounce" />
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30">
+            <Gift className="h-8 w-8 text-primary animate-bounce" />
           </div>
 
           <div className="space-y-1.5">
@@ -67,12 +67,12 @@ export function DailyRewardPopup() {
             </h3>
             <p className="text-sm text-muted-foreground">
               Collect <span className="text-primary font-bold">AI Arena points</span> every day
-              and unlock <span className="text-amber-400 font-bold">exclusive predictions</span>
+              and unlock <span className="text-primary font-bold">exclusive predictions</span>
             </p>
           </div>
 
           <div className="flex items-center justify-center gap-3 text-xs">
-            <div className="flex items-center gap-1 text-amber-400 font-semibold">
+            <div className="flex items-center gap-1 text-primary font-semibold">
               <Clock className="h-3.5 w-3.5" />
               ⏳ Your streak starts now
             </div>
@@ -84,7 +84,7 @@ export function DailyRewardPopup() {
 
           <button
             onClick={handleClaim}
-            className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-[hsl(30,100%,50%)] to-[hsl(145,70%,45%)] py-3 text-sm font-bold text-white shadow-lg shadow-[hsl(30,100%,50%)]/20 hover:opacity-90 transition-opacity animate-pulse"
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary to-blue-700 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity animate-pulse"
           >
             🚀 {user ? "Claim Now" : "Sign In & Claim"}
           </button>

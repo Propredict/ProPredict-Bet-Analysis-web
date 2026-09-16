@@ -59,13 +59,13 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-500/10 via-background to-orange-500/5 p-4 animate-fade-in">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-background to-primary/5 p-4 animate-fade-in">
       {/* Decorative glow */}
-      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-amber-400/10 blur-2xl" />
+      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
       
       <div className="relative flex items-start gap-3">
         {/* Animated emoji */}
-        <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-500/10 border border-amber-400/20 flex items-center justify-center">
+        <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center">
           <span className="text-2xl animate-bounce" style={{ animationDuration: "2s" }}>💛</span>
         </div>
 
@@ -74,14 +74,14 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
             Enjoying ProPredict? 
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            Your rating means a lot to us! Earn <span className="font-bold text-amber-500">+50 points</span> ⭐
+            Your rating means a lot to us! Earn <span className="font-bold text-primary">+50 points</span> ⭐
           </p>
 
           {/* Mini star preview */}
           <div className="flex items-center gap-3 mt-2.5">
             <button
               onClick={onRate}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary text-primary-foreground text-xs font-bold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
             >
               <Star className="h-3.5 w-3.5 fill-white" />
               Rate us
@@ -97,7 +97,7 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
         </div>
 
         {/* Heart decoration */}
-        <Heart className="absolute top-0 right-0 h-3 w-3 text-red-400/40 fill-red-400/40" />
+        <Heart className="absolute top-0 right-0 h-3 w-3 text-blue-600/40 fill-blue-600/40" />
       </div>
     </div>
   );

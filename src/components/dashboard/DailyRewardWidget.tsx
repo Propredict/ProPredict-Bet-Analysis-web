@@ -31,24 +31,24 @@ function WebRewardWidget() {
   const isLoading = loading || arenaStats.loading;
 
   return (
-    <Card className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-card via-card to-amber-500/5 p-0">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(45,100%,50%,0.08),transparent_50%)]" />
-      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
+    <Card className="relative overflow-hidden border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-0">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(var(--primary)/0.08),transparent_50%)]" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
 
       <div className="relative p-4 sm:p-5 space-y-4">
         {/* Header + stats row */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
                 <Gift className="h-5 w-5" />
               </div>
               <h3 className="text-base sm:text-lg font-extrabold text-foreground">
-                Collect daily <span className="text-amber-400">AI points</span>
+                Collect daily <span className="text-primary">AI points</span>
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Reach 1,000 points and get 1 month Premium free <span className="text-amber-400">⚡</span>
+              Reach 1,000 points and get 1 month Premium free <span className="text-primary">⚡</span>
             </p>
           </div>
 
@@ -57,16 +57,16 @@ function WebRewardWidget() {
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Current Streak</p>
               <p className="text-2xl sm:text-3xl font-black text-foreground">
                 {isLoading ? "–" : user ? streak : 0}{" "}
-                <Flame className="inline h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />
+                <Flame className="inline h-4 w-4 sm:h-5 sm:w-5 text-primary fill-primary" />
               </p>
             </div>
             <div className="text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">AI Points</p>
-              <p className="text-2xl sm:text-3xl font-black text-amber-400">
+              <p className="text-2xl sm:text-3xl font-black text-primary">
                 {isLoading ? "–" : (user ? points : 0).toLocaleString()}
               </p>
             </div>
-            <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden border border-amber-500/20 shadow-lg shadow-amber-500/10">
+            <div className="hidden sm:block w-24 h-16 rounded-lg overflow-hidden border border-primary/20 shadow-lg shadow-primary/10">
               <img
                 src={rewardChest}
                 alt="Treasure chest with AI points"
@@ -78,7 +78,7 @@ function WebRewardWidget() {
             </div>
           </div>
 
-          <span className="sm:hidden absolute top-4 right-4 flex items-center gap-1 text-[9px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-400/30 rounded-full px-2 py-0.5">
+          <span className="sm:hidden absolute top-4 right-4 flex items-center gap-1 text-[9px] font-semibold bg-primary/15 text-primary border border-primary/30 rounded-full px-2 py-0.5">
             <Smartphone className="h-3 w-3" /> App Only
           </span>
         </div>
@@ -104,12 +104,12 @@ function WebRewardWidget() {
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/40 border border-border/60">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
               <Flame className="h-4 w-4" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] sm:text-xs font-semibold text-foreground truncate">7-Day Streak</p>
-              <p className="text-[10px] sm:text-xs text-amber-400 font-bold">72 pts / week</p>
+              <p className="text-[10px] sm:text-xs text-primary font-bold">72 pts / week</p>
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ function WebRewardWidget() {
           to={PLAY_STORE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-amber-500/90 to-amber-600/90 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 hover:opacity-95 transition-opacity"
+          className="group flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary/90 to-blue-700/90 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-95 transition-opacity"
         >
           <Smartphone className="h-4 w-4" />
           <span>Unlock Rewards in App</span>
@@ -151,7 +151,7 @@ function AndroidRewardWidget() {
 
   if (loading) {
     return (
-      <Card className="p-6 border border-amber-500/30 bg-card flex items-center justify-center">
+      <Card className="p-6 border border-primary/30 bg-card flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </Card>
     );
@@ -159,11 +159,11 @@ function AndroidRewardWidget() {
 
   if (!user) {
     return (
-      <Card className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-card via-card to-amber-500/5 p-5 sm:p-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(45,100%,50%,0.08),transparent_50%)]" />
+      <Card className="relative overflow-hidden border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(var(--primary)/0.08),transparent_50%)]" />
         <div className="relative space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
               <Gift className="h-5 w-5" />
             </div>
             <h3 className="text-base sm:text-lg font-extrabold text-foreground">
@@ -175,7 +175,7 @@ function AndroidRewardWidget() {
           </p>
           <button
             onClick={() => navigate("/login")}
-            className="w-full rounded-xl bg-gradient-to-r from-amber-500/90 to-amber-600/90 py-3 text-sm font-bold text-white shadow-lg hover:opacity-95 transition-opacity"
+            className="w-full rounded-xl bg-gradient-to-r from-primary/90 to-blue-700/90 py-3 text-sm font-bold text-primary-foreground shadow-lg hover:opacity-95 transition-opacity"
           >
             Sign In to Claim
           </button>
@@ -192,15 +192,15 @@ function AndroidRewardWidget() {
 
   return (
     <>
-      <Card className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-card via-card to-amber-500/5 p-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(45,100%,50%,0.08),transparent_50%)]" />
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
+      <Card className="relative overflow-hidden border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(var(--primary)/0.08),transparent_50%)]" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
 
         <div className="relative p-5 sm:p-6 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="relative w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <div className="relative w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
                 <Gift className="h-5 w-5" />
                 {!claimedToday && (
                   <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-destructive rounded-full animate-ping" />
@@ -220,14 +220,14 @@ function AndroidRewardWidget() {
               <p className="text-[9px] text-muted-foreground">Total Points</p>
             </div>
             <div className="text-center p-2.5 bg-muted/30 rounded-lg border border-border/60">
-              <Flame className="h-4 w-4 mx-auto mb-1 text-amber-400" />
+              <Flame className="h-4 w-4 mx-auto mb-1 text-primary" />
               <p className="text-lg font-bold text-foreground">{displayStreak}/7</p>
               <p className="text-[9px] text-muted-foreground">Day Streak</p>
             </div>
-            <div className="text-center p-2.5 bg-amber-500/10 rounded-lg border border-amber-400/30">
-              <Zap className="h-4 w-4 mx-auto mb-1 text-amber-400" />
-              <p className="text-lg font-bold text-amber-400">+{claimedToday ? STREAK_POINTS[currentStreak] || 2 : nextDayPoints}</p>
-              <p className="text-[9px] text-amber-400/70">{claimedToday ? "Earned Today" : "Next Reward"}</p>
+            <div className="text-center p-2.5 bg-primary/10 rounded-lg border border-primary/30">
+              <Zap className="h-4 w-4 mx-auto mb-1 text-primary" />
+              <p className="text-lg font-bold text-primary">+{claimedToday ? STREAK_POINTS[currentStreak] || 2 : nextDayPoints}</p>
+              <p className="text-[9px] text-primary/70">{claimedToday ? "Earned Today" : "Next Reward"}</p>
             </div>
           </div>
 
@@ -249,7 +249,7 @@ function AndroidRewardWidget() {
                         isCompleted
                           ? "bg-primary/20 border-primary text-primary"
                           : isCurrent
-                          ? "border-amber-400 text-amber-400 bg-amber-400/10 animate-pulse"
+                          ? "border-primary text-primary bg-primary/10 animate-pulse"
                           : "border-border/50 text-muted-foreground bg-muted/30"
                       }`}
                     >
@@ -284,7 +284,7 @@ function AndroidRewardWidget() {
                 {pointsTo1000} pts to go! Check rewards in Profile.
               </p>
             ) : (
-              <p className="text-[10px] text-amber-400 font-bold">Milestone reached! Reward applied!</p>
+              <p className="text-[10px] text-primary font-bold">Milestone reached! Reward applied!</p>
             )}
           </div>
 
@@ -306,7 +306,7 @@ function AndroidRewardWidget() {
             <button
               onClick={claim}
               disabled={claiming}
-              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-amber-500/90 to-amber-600/90 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-amber-500/20 hover:opacity-95 transition-opacity disabled:opacity-50 disabled:animate-none"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-primary/90 to-blue-700/90 py-3.5 text-sm sm:text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-95 transition-opacity disabled:opacity-50 disabled:animate-none"
             >
               {claiming ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
