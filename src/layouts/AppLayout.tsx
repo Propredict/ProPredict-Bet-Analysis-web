@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles } from "lucide-react";
+import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles, Search } from "lucide-react";
 import { ArenaNotificationsDropdown } from "@/components/ArenaNotificationsDropdown";
 import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -77,6 +77,9 @@ export default function AppLayout() {
   useEffect(() => {
     initOneSignalWeb();
   }, []);
+
+  // Header search (navigates to Live Scores)
+  const [headerSearch, setHeaderSearch] = useState("");
 
   // Fetch user profile for welcome message
   const { data: profile } = useQuery({
@@ -170,12 +173,28 @@ export default function AppLayout() {
               />
             </div>
 
-            {/* Desktop Center Welcome Text */}
-            <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center">
-              <span className="text-sm font-semibold text-primary-foreground">
-                {user && displayName ? `Welcome, ${displayName}` : "Welcome to ProPredict"}
-              </span>
-            </div>
+            {/* Desktop Center Search */}
+            <form
+              className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center w-full max-w-md"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = headerSearch.trim();
+                navigate(q ? `/live-scores?q=${encodeURIComponent(q)}` : "/live-scores");
+              }}
+              role="search"
+            >
+              <div className="relative w-full">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-foreground/60" />
+                <input
+                  type="search"
+                  value={headerSearch}
+                  onChange={(e) => setHeaderSearch(e.target.value)}
+                  placeholder="Search teams, leagues, or matches..."
+                  aria-label="Search teams, leagues, or matches"
+                  className="h-9 w-full rounded-full border border-primary-foreground/25 bg-primary-foreground/10 pl-9 pr-4 text-sm text-primary-foreground placeholder:text-primary-foreground/60 outline-none transition-colors focus:border-primary-foreground/50 focus:bg-primary-foreground/15"
+                />
+              </div>
+            </form>
             
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
               {/* Subscription Badge */}

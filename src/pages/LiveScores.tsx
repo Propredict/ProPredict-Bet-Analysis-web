@@ -51,7 +51,7 @@ export default function LiveScores() {
   const [statusTab, setStatusTab] = useState<StatusTab>("live");
   const [dateMode, setDateMode] = useState<DateMode>("today");
   const [leagueFilter, setLeagueFilter] = useState("All Leagues");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [viewMode, setViewMode] = useState<"simple" | "structured">("structured");

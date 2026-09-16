@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { CalendarDays, Brain, Lightbulb, Ticket, Crown, Target } from "lucide-react";
+import { CalendarDays, Crosshair, Lightbulb, Ticket, Crown, Target } from "lucide-react";
 
 const items = [
   { title: "Live Scores", subtitle: "Real-time updates", icon: CalendarDays, to: "/live-scores" },
-  { title: "AI vs Members", subtitle: "Community arena", icon: Brain, to: "/ai-vs-community" },
+  { title: "Sure Odds 2+", subtitle: "Safe daily ticket", icon: Crosshair, to: "/sure-odds" },
   { title: "Free Tips", subtitle: "Selected by experts", icon: Lightbulb, to: "/single-tips" },
   { title: "Tiket / Bet Slip", subtitle: "Ready to play", icon: Ticket, to: "/tickets" },
   { title: "Premium Picks", subtitle: "High confidence", icon: Crown, to: "/premium-tickets" },
