@@ -89,16 +89,16 @@ export function BettingTickets() {
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.25)]")
+          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
           : cn(baseStyles, "border-primary/30 bg-primary/8 hover:bg-primary/15 hover:border-primary/50");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "border-amber-500 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.25)]")
-          : cn(baseStyles, "border-amber-500/30 bg-amber-500/8 hover:bg-amber-500/15 hover:border-amber-500/50");
+          ? cn(baseStyles, "border-blue-700 bg-blue-700/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
+          : cn(baseStyles, "border-blue-700/30 bg-blue-700/8 hover:bg-blue-700/15 hover:border-blue-700/50");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "border-fuchsia-500 bg-fuchsia-500/20 shadow-[0_0_15px_rgba(217,70,239,0.25)]")
-          : cn(baseStyles, "border-fuchsia-500/30 bg-fuchsia-500/8 hover:bg-fuchsia-500/15 hover:border-fuchsia-500/50");
+          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
+          : cn(baseStyles, "border-primary/30 bg-primary/8 hover:bg-primary/15 hover:border-primary/50");
       default:
         return cn(baseStyles, "border-border");
     }
@@ -107,8 +107,8 @@ export function BettingTickets() {
   const getTextColor = (tabId: string) => {
     switch (tabId) {
       case "daily": return "text-primary";
-      case "exclusive": return "text-amber-400";
-      case "premium": return "text-fuchsia-400";
+      case "exclusive": return "text-blue-600";
+      case "premium": return "text-primary";
       default: return "text-muted-foreground";
     }
   };
@@ -116,8 +116,8 @@ export function BettingTickets() {
   const getSubtitleColor = (tabId: string) => {
     switch (tabId) {
       case "daily": return "text-primary/70";
-      case "exclusive": return "text-amber-400/70";
-      case "premium": return "text-fuchsia-400/70";
+      case "exclusive": return "text-blue-600/70";
+      case "premium": return "text-primary/70";
       default: return "text-muted-foreground";
     }
   };
@@ -239,7 +239,7 @@ export function BettingTickets() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(0,148,230,0.15)]">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-primary/20">
             <Ticket className="h-4 w-4 text-primary" />
@@ -302,8 +302,8 @@ export function BettingTickets() {
         <Card className="empty-state-compact bg-card/50 border-border/50">
           <div className="flex flex-col items-center gap-1">
             {activeTab === "daily" && <Sparkles className="h-5 w-5 text-primary/50" />}
-            {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
-            {activeTab === "premium" && <Crown className="h-5 w-5 text-fuchsia-500/50" />}
+            {activeTab === "exclusive" && <Star className="h-5 w-5 text-blue-700/50" />}
+            {activeTab === "premium" && <Crown className="h-5 w-5 text-primary/50" />}
             <p className="text-[10px] text-muted-foreground">
               No {activeTab === "exclusive" ? "Pro" : activeTab} AI Combos available
             </p>
@@ -315,7 +315,7 @@ export function BettingTickets() {
       {filtered.length > 0 && (
         <div className="flex justify-center">
           <Button
-            className="px-6 group bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white text-xs border-0 rounded-full"
+            className="px-6 group bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs border-0 rounded-full"
             onClick={() => navigate(TAB_ROUTES[activeTab])}
           >
             <span>{getCtaLabel()}</span>
@@ -351,21 +351,21 @@ const TICKET_TONE: Record<TicketTone, {
     bg: "from-primary/10 via-primary/5 to-transparent",
     badge: "bg-primary/15 text-primary border-primary/30",
     text: "text-primary",
-    cta: "from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+    cta: "from-primary to-blue-600 hover:from-blue-700 hover:to-blue-700",
   },
   pro: {
-    border: "border-amber-500/30",
-    bg: "from-amber-500/10 via-amber-500/5 to-transparent",
-    badge: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-    text: "text-amber-400",
-    cta: "from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600",
+    border: "border-blue-700/30",
+    bg: "from-blue-700/10 via-blue-700/5 to-transparent",
+    badge: "bg-blue-700/15 text-blue-600 border-blue-700/30",
+    text: "text-blue-600",
+    cta: "from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700",
   },
   premium: {
-    border: "border-fuchsia-500/30",
-    bg: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
-    badge: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30",
-    text: "text-fuchsia-400",
-    cta: "from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600",
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700",
   },
 };
 
@@ -420,7 +420,7 @@ function TicketTierSection({
       <div className="flex justify-center pt-1">
         <Button
           size="sm"
-          className={cn("px-5 group text-white text-xs border-0 rounded-full bg-gradient-to-r", styles.cta)}
+          className={cn("px-5 group text-primary-foreground text-xs border-0 rounded-full bg-gradient-to-r", styles.cta)}
           onClick={onCta}
         >
           <span>{ctaLabel}</span>

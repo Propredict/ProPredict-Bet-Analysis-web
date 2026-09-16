@@ -65,33 +65,33 @@ export function TodaysTopPicks() {
   const picks = [
     {
       label: "FREE", tier: "free" as const, pick: freePick,
-      accent: "text-green-400", border: "border-green-500/40", glow: "shadow-[0_0_15px_rgba(34,197,94,0.2)]",
+      accent: "text-green-400", border: "border-green-500/40", glow: "shadow-[0_0_15px_rgba(0,148,230,0.2)]",
       bg: "bg-green-500/10", badgeBg: "bg-green-500/20 text-green-400",
       locked: false,
       seeAllLabel: "See all Free Picks / Pogledaj sve Free AI Predikcije",
       seeAllRoute: "/daily-analysis",
       sectionTitle: "Free Picks",
-      ctaGradient: "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-[0_0_15px_rgba(34,197,94,0.4)]",
+      ctaGradient: "bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-[0_0_15px_rgba(0,148,230,0.4)]",
     },
     {
       label: "PRO", tier: "exclusive" as const, pick: proPick,
-      accent: "text-amber-400", border: "border-amber-500/40", glow: "shadow-[0_0_15px_rgba(245,158,11,0.25)]",
-      bg: "bg-amber-500/10", badgeBg: "bg-amber-500/20 text-amber-400",
+      accent: "text-blue-600", border: "border-blue-700/40", glow: "shadow-[0_0_15px_rgba(0,148,230,0.25)]",
+      bg: "bg-blue-700/10", badgeBg: "bg-blue-700/20 text-blue-600",
       locked: true,
       seeAllLabel: "See all Top Picks / Pogledaj sve Top AI Predikcije",
       seeAllRoute: "/ai-predictions?tier=pro",
       sectionTitle: "Top Picks",
-      ctaGradient: "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 shadow-[0_0_15px_rgba(245,158,11,0.4)]",
+      ctaGradient: "bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 shadow-[0_0_15px_rgba(0,148,230,0.4)]",
     },
     {
       label: "PREMIUM", tier: "premium" as const, pick: premiumPick,
-      accent: "text-purple-400", border: "border-purple-500/40", glow: "shadow-[0_0_20px_rgba(168,85,247,0.3)]",
-      bg: "bg-purple-500/10", badgeBg: "bg-purple-500/20 text-purple-400",
+      accent: "text-primary", border: "border-primary/40", glow: "shadow-[0_0_20px_rgba(0,148,230,0.3)]",
+      bg: "bg-primary/10", badgeBg: "bg-primary/20 text-primary",
       locked: true,
       seeAllLabel: "See all Premium Picks / Pogledaj sve Premium Picks",
       seeAllRoute: "/premium-analysis",
       sectionTitle: "Premium Picks",
-      ctaGradient: "bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 shadow-[0_0_15px_rgba(168,85,247,0.4)]",
+      ctaGradient: "bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 shadow-[0_0_15px_rgba(0,148,230,0.4)]",
     },
   ];
 
@@ -108,7 +108,7 @@ export function TodaysTopPicks() {
       {/* Header */}
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Today's Top Picks <Flame className="h-5 w-5 text-orange-500" />
+          Today's Top Picks <Flame className="h-5 w-5 text-primary" />
         </h2>
         <p className="text-xs text-muted-foreground">Hand-picked best value predictions for today</p>
       </div>
@@ -131,7 +131,7 @@ export function TodaysTopPicks() {
 
           return (
             <div key={tier} className="space-y-2">
-              <h3 className="text-base font-extrabold text-white text-center tracking-tight">
+              <h3 className="text-base font-extrabold text-primary-foreground text-center tracking-tight">
                 {sectionTitle}
               </h3>
               <Card className={cn("relative p-4 border-2 rounded-xl", border, glow, bg)}>
@@ -141,7 +141,7 @@ export function TodaysTopPicks() {
 
               <div className="space-y-2">
                 <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{pick.league}</p>
-                <p className="text-lg font-extrabold text-white text-center leading-tight">
+                <p className="text-lg font-extrabold text-primary-foreground text-center leading-tight">
                   {pick.home_team} vs {pick.away_team}
                 </p>
                 <div className="flex items-center justify-center gap-2 py-1 border-y border-white/10">
@@ -162,14 +162,14 @@ export function TodaysTopPicks() {
 
                     {/* FOMO for Pro */}
                     {tier === "exclusive" && (
-                      <p className="text-[10px] text-amber-400/80">👀 85% of users unlocked this</p>
+                      <p className="text-[10px] text-blue-600/80">👀 85% of users unlocked this</p>
                     )}
 
                     {tier === "exclusive" ? (
                       <div className="space-y-1.5">
                         <Button
                           size="sm"
-                          className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
+                          className="w-full bg-primary hover:bg-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(0,148,230,0.3)]"
                           onClick={() => handleUnlock("tip", pick.id, tier)}
                           disabled={isUnlocking}
                         >
@@ -178,13 +178,13 @@ export function TodaysTopPicks() {
                         </Button>
                         <button
                           onClick={() => navigate("/get-premium")}
-                          className="block w-full text-center text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors"
+                          className="block w-full text-center text-[10px] text-blue-600/70 hover:text-blue-600 transition-colors"
                         >
                           or unlock with Pro
                         </button>
                         <button
                           onClick={() => navigate(seeAllRoute)}
-                          className="block w-full text-center text-[11px] text-amber-400/80 hover:text-amber-400 font-semibold transition-colors"
+                          className="block w-full text-center text-[11px] text-blue-600/80 hover:text-blue-600 font-semibold transition-colors"
                         >
                           {seeAllLabel} →
                         </button>
@@ -193,14 +193,14 @@ export function TodaysTopPicks() {
                       <div className="space-y-1.5">
                         <Button
                           size="sm"
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                          className="w-full bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(0,148,230,0.4)]"
                           onClick={() => navigate("/get-premium")}
                         >
                           Get Premium / Kupi Premium
                         </Button>
                         <button
                           onClick={() => navigate(seeAllRoute)}
-                          className="block w-full text-center text-[11px] text-purple-400/80 hover:text-purple-400 font-semibold transition-colors"
+                          className="block w-full text-center text-[11px] text-primary/80 hover:text-primary font-semibold transition-colors"
                         >
                           {seeAllLabel} →
                         </button>
@@ -210,11 +210,11 @@ export function TodaysTopPicks() {
                 ) : (
                   <div className="space-y-2 pt-1">
                     <div className="flex flex-col items-center gap-1">
-                      <span className="text-sm font-bold text-white text-center">{pick.prediction}</span>
+                      <span className="text-sm font-bold text-primary-foreground text-center">{pick.prediction}</span>
                     </div>
                     <Button
                       size="sm"
-                      className={cn("w-full text-xs font-bold text-white rounded-lg border-0", ctaGradient)}
+                      className={cn("w-full text-xs font-bold text-primary-foreground rounded-lg border-0", ctaGradient)}
                       onClick={() => navigate(seeAllRoute)}
                     >
                       <Eye className="h-3.5 w-3.5 mr-1" /> {seeAllLabel}

@@ -174,7 +174,7 @@
 
   .gradient-premium {
     /* Premium (pink/fuchsia) */
-    background: linear-gradient(to right, hsl(292 84% 61%), hsl(330 81% 60%));
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(211 100% 42%));
   }
 
   .gradient-card {
@@ -205,29 +205,29 @@
 
   /* Tier accent borders (top border glow) */
   .tier-card--daily {
-    border-top: 3px solid hsl(var(--accent));
+    border-top: 3px solid hsl(var(--primary));
   }
 
   .tier-card--daily:hover {
-    box-shadow: 0 -4px 20px -8px hsl(var(--accent) / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
+    box-shadow: 0 -4px 20px -8px hsl(var(--primary) / 0.35), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--pro {
     /* Pro/Exclusive (yellow/amber) */
-    border-top: 3px solid hsl(45 93% 47%);
+    border-top: 3px solid hsl(211 100% 42%);
   }
 
   .tier-card--pro:hover {
-    box-shadow: 0 -4px 20px -8px hsl(45 93% 47% / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
+    box-shadow: 0 -4px 20px -8px hsl(211 100% 42% / 0.35), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--premium {
     /* Premium (pink/fuchsia) */
-    border-top: 3px solid hsl(292 84% 61%);
+    border-top: 3px solid hsl(var(--primary));
   }
 
   .tier-card--premium:hover {
-    box-shadow: 0 -4px 20px -8px hsl(292 84% 61% / 0.5), 0 8px 30px -12px hsl(var(--background) / 0.6);
+    box-shadow: 0 -4px 20px -8px hsl(var(--primary) / 0.4), 0 8px 30px -12px hsl(var(--background) / 0.6);
   }
 
   .tier-card--free {
@@ -245,21 +245,21 @@
 
   /* Tier badge styling */
   .tier-badge--daily {
-    @apply bg-accent/20 text-accent border-accent/30;
+    @apply bg-primary/10 text-primary border-primary/25;
   }
 
   .tier-badge--pro {
     /* Pro/Exclusive (yellow/amber) */
-    background: hsl(45 93% 47% / 0.2);
-    color: hsl(45 93% 58%);
-    border-color: hsl(45 93% 47% / 0.3);
+    background: hsl(211 100% 42% / 0.12);
+    color: hsl(211 100% 42%);
+    border-color: hsl(211 100% 42% / 0.3);
   }
 
   .tier-badge--premium {
     /* Premium (pink/fuchsia) */
-    background: hsl(292 84% 61% / 0.2);
-    color: hsl(292 84% 70%);
-    border-color: hsl(292 84% 61% / 0.3);
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.3);
   }
 
   .tier-badge--free {
@@ -281,7 +281,7 @@
 
   .glow-pro {
     /* Pro/Exclusive (yellow/amber) */
-    box-shadow: 0 0 20px hsl(45 93% 47% / 0.3);
+    box-shadow: 0 0 20px hsl(211 100% 42% / 0.25);
   }
 
   /* Soft shadows for depth */
@@ -393,11 +393,11 @@
 @keyframes ctaBlink {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 hsl(45 93% 47% / 0.45);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35);
   }
   50% {
     transform: scale(1.04);
-    box-shadow: 0 0 22px 6px hsl(45 93% 47% / 0.35), 0 0 44px 12px hsl(45 93% 47% / 0.12);
+    box-shadow: 0 0 22px 6px hsl(var(--primary) / 0.3), 0 0 44px 12px hsl(var(--primary) / 0.1);
   }
 }
 

@@ -99,16 +99,16 @@ export function MatchPredictions() {
     switch (tabId) {
       case "daily":
         return isActive 
-          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(15,155,142,0.25)]")
+          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
           : cn(baseStyles, "border-primary/30 bg-primary/8 hover:bg-primary/15 hover:border-primary/50");
       case "exclusive":
         return isActive 
-          ? cn(baseStyles, "border-amber-500 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.25)]")
-          : cn(baseStyles, "border-amber-500/30 bg-amber-500/8 hover:bg-amber-500/15 hover:border-amber-500/50");
+          ? cn(baseStyles, "border-blue-700 bg-blue-700/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
+          : cn(baseStyles, "border-blue-700/30 bg-blue-700/8 hover:bg-blue-700/15 hover:border-blue-700/50");
       case "premium":
         return isActive 
-          ? cn(baseStyles, "border-fuchsia-500 bg-fuchsia-500/20 shadow-[0_0_15px_rgba(217,70,239,0.25)]")
-          : cn(baseStyles, "border-fuchsia-500/30 bg-fuchsia-500/8 hover:bg-fuchsia-500/15 hover:border-fuchsia-500/50");
+          ? cn(baseStyles, "border-primary bg-primary/20 shadow-[0_0_15px_rgba(0,148,230,0.25)]")
+          : cn(baseStyles, "border-primary/30 bg-primary/8 hover:bg-primary/15 hover:border-primary/50");
       default:
         return cn(baseStyles, "border-border");
     }
@@ -117,8 +117,8 @@ export function MatchPredictions() {
   const getTextColor = (tabId: string) => {
     switch (tabId) {
       case "daily": return "text-primary";
-      case "exclusive": return "text-amber-400";
-      case "premium": return "text-fuchsia-400";
+      case "exclusive": return "text-blue-600";
+      case "premium": return "text-primary";
       default: return "text-muted-foreground";
     }
   };
@@ -126,8 +126,8 @@ export function MatchPredictions() {
   const getSubtitleColor = (tabId: string) => {
     switch (tabId) {
       case "daily": return "text-primary/70";
-      case "exclusive": return "text-amber-400/70";
-      case "premium": return "text-fuchsia-400/70";
+      case "exclusive": return "text-blue-600/70";
+      case "premium": return "text-primary/70";
       default: return "text-muted-foreground";
     }
   };
@@ -221,10 +221,10 @@ export function MatchPredictions() {
 
             {/* SECTION 2: PRO — Exclusive only */}
             {proTips.length > 0 && (
-            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-3 sm:p-4 space-y-3">
+            <div className="rounded-2xl border border-blue-700/30 bg-gradient-to-br from-blue-700/10 via-blue-700/5 to-transparent p-3 sm:p-4 space-y-3">
               <div className="text-center space-y-1">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   Top Picks
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
@@ -239,7 +239,7 @@ export function MatchPredictions() {
               <div className="flex justify-center pt-1">
                 <Button
                   size="sm"
-                  className="px-5 group bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-xs border-0 rounded-full"
+                  className="px-5 group bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs border-0 rounded-full"
                   onClick={() => navigate("/top-picks")}
                 >
                   <span>See all Top Picks / Pogledaj sve Top AI Predikcije</span>
@@ -250,10 +250,10 @@ export function MatchPredictions() {
 
             {/* SECTION 2b: RISK OF THE DAY — standalone */}
             {riskTips.length > 0 && (
-              <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent p-3 sm:p-4 space-y-3">
+              <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-red-500/5 to-transparent p-3 sm:p-4 space-y-3">
                 <div className="text-center space-y-1">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-                    <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
+                    <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     Risk of the Day
                   </h3>
                   <p className="text-[11px] text-muted-foreground">
@@ -268,7 +268,7 @@ export function MatchPredictions() {
                 <div className="flex justify-center pt-1">
                   <Button
                     size="sm"
-                    className="px-5 group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-xs border-0 rounded-full"
+                    className="px-5 group bg-gradient-to-r from-primary to-red-500 hover:from-blue-700 hover:to-red-600 text-primary-foreground text-xs border-0 rounded-full"
                     onClick={() => navigate("/risk-of-the-day")}
                   >
                     <span>See Risk of the Day / Pogledaj Risk dana</span>
@@ -298,7 +298,7 @@ export function MatchPredictions() {
                 <div className="flex justify-center pt-1">
                   <Button
                     size="sm"
-                    className="px-5 group bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs border-0 rounded-full"
+                    className="px-5 group bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-primary-foreground text-xs border-0 rounded-full"
                     onClick={() => navigate("/diamond-pick")}
                   >
                     <span>See Diamond Pick / Pogledaj Diamond Pick</span>
@@ -338,7 +338,7 @@ export function MatchPredictions() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(0,148,230,0.15)]">
         <div className="p-1.5 rounded-md bg-primary/20">
           <TrendingUp className="h-4 w-4 text-primary" />
         </div>
@@ -401,8 +401,8 @@ export function MatchPredictions() {
         <Card className="empty-state-compact bg-card/50 border-border/50">
           <div className="flex flex-col items-center gap-1">
             {activeTab === "daily" && <Sparkles className="h-5 w-5 text-primary/50" />}
-            {activeTab === "exclusive" && <Star className="h-5 w-5 text-amber-500/50" />}
-            {activeTab === "premium" && <Crown className="h-5 w-5 text-fuchsia-500/50" />}
+            {activeTab === "exclusive" && <Star className="h-5 w-5 text-blue-700/50" />}
+            {activeTab === "premium" && <Crown className="h-5 w-5 text-primary/50" />}
             <p className="text-[10px] text-muted-foreground">
               No {activeTab === "exclusive" ? "Pro" : activeTab} predictions available
             </p>
@@ -414,7 +414,7 @@ export function MatchPredictions() {
       {filteredTips.length > 0 && (
         <div className="flex justify-center">
           <Button
-            className="px-6 group bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white text-xs border-0 rounded-full"
+            className="px-6 group bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs border-0 rounded-full"
             onClick={() => navigate(TAB_ROUTES[activeTab])}
           >
             <span>{getCtaLabel()}</span>
@@ -450,14 +450,14 @@ const TIP_TONE: Record<TipTone, {
     bg: "from-primary/10 via-primary/5 to-transparent",
     badge: "bg-primary/15 text-primary border-primary/30",
     text: "text-primary",
-    cta: "from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+    cta: "from-primary to-blue-600 hover:from-blue-700 hover:to-blue-700",
   },
   premium: {
-    border: "border-fuchsia-500/30",
-    bg: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
-    badge: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30",
-    text: "text-fuchsia-400",
-    cta: "from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600",
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700",
   },
 };
 
@@ -512,7 +512,7 @@ function TipTierSection({
       <div className="flex justify-center pt-1">
         <Button
           size="sm"
-          className={cn("px-5 group text-white text-xs border-0 rounded-full bg-gradient-to-r", styles.cta)}
+          className={cn("px-5 group text-primary-foreground text-xs border-0 rounded-full bg-gradient-to-r", styles.cta)}
           onClick={onCta}
         >
           <span>{ctaLabel}</span>

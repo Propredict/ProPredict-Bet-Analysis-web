@@ -43,7 +43,7 @@ export function DiamondPickSection() {
 
         <div className="space-y-2">
           <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider">{diamondPick.league}</p>
-          <p className="text-lg font-extrabold text-white text-center leading-tight">
+          <p className="text-lg font-extrabold text-primary-foreground text-center leading-tight">
             {diamondPick.home_team} vs {diamondPick.away_team}
           </p>
           <div className="flex items-center justify-center gap-2 py-1 border-y border-cyan-400/20">
@@ -57,12 +57,12 @@ export function DiamondPickSection() {
               <div className="flex flex-col items-center gap-1">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Lock className="h-3.5 w-3.5" />
-                  <span className="text-sm font-bold text-white blur-sm select-none">Premium Pick</span>
+                  <span className="text-sm font-bold text-primary-foreground blur-sm select-none">Premium Pick</span>
                 </div>
               </div>
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                className="w-full bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(0,148,230,0.4)]"
                 onClick={() => { setHighlightPlan("premium"); setShowPricingModal(true); }}
               >
                 <Crown className="h-3.5 w-3.5 mr-1" /> Get Premium / Kupi Premium
@@ -77,11 +77,11 @@ export function DiamondPickSection() {
           ) : (
             <div className="space-y-2 pt-1">
               <div className="flex flex-col items-center gap-1">
-                <p className="text-sm font-bold text-white text-center">{diamondPick.prediction}</p>
+                <p className="text-sm font-bold text-primary-foreground text-center">{diamondPick.prediction}</p>
               </div>
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)]"
+                className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.4)]"
                 onClick={() => navigate("/diamond-pick")}
               >
                 <Eye className="h-3.5 w-3.5 mr-1" /> See all Diamond Picks / Pogledaj sve Diamond Picks

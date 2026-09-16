@@ -86,7 +86,7 @@ export function DashboardDailyTips() {
         <div className="flex justify-center pt-1">
           <Button
             size="sm"
-            className="px-5 group bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white text-xs border-0 rounded-full"
+            className="px-5 group bg-gradient-to-r from-primary to-blue-600 hover:from-blue-700 hover:to-blue-700 text-primary-foreground text-xs border-0 rounded-full"
             onClick={() => navigate("/daily-analysis")}
           >
             <span>See all Daily Tips / Pogledaj sve Daily Tips</span>
