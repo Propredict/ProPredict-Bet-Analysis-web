@@ -99,7 +99,7 @@ function TicketGroup({
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-xs font-bold uppercase text-sidebar-foreground/55">Total odds</p>
-                      <p className="text-xl font-extrabold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
+                      <p className="text-xl font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
                   </Button>
 
@@ -157,7 +157,7 @@ function TicketGroup({
                     </div>
                     <div className="px-2 py-3">
                       <p className="text-xs font-bold uppercase text-muted-foreground">Total odds</p>
-                      <p className="text-lg font-extrabold text-primary">{isLocked ? "—" : formatCombinedOdds(ticket.total_odds)}</p>
+                      <p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
                     <div className="px-2 py-3">
                       <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
