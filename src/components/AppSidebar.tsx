@@ -224,6 +224,20 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {premiumItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
+                      activeClassName="bg-primary/20 text-primary"
+                    >
+                      <item.icon className="h-[18px] w-[18px]" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
