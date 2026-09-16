@@ -7,7 +7,7 @@ import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { usePlatform } from "@/hooks/usePlatform";
 
 import { AIPredictionCard } from "@/components/ai-predictions/AIPredictionCard";
-import { AIPredictionsSidebar } from "@/components/ai-predictions/AIPredictionsSidebar";
+
 import { TopAIPicksSection } from "@/components/ai-predictions/TopAIPicksSection";
 import { selectTopPicks, leagueTier } from "@/components/ai-predictions/utils/topPicksRanking";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck, ChevronRight } from "lucide-react";
+import { Search, Activity, Target, Brain, BarChart3, Sparkles, TrendingUp, RefreshCw, Star, ArrowUpDown, Heart, Gift, Crown, LogIn, Lock, Trophy, Zap, Flame, CheckCircle2, ShieldCheck, ChevronRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdSlot from "@/components/ads/AdSlot";
 import { AIHeroBanner } from "@/components/ai-predictions/AIHeroBanner";
@@ -598,89 +598,58 @@ export default function AIPredictions() {
         <meta property="og:type" content="website" />
       </Helmet>
       <div className="flex gap-2 md:gap-4 lg:gap-6">
-        {/* Left Sidebar - Hidden on mobile */}
-      <aside className="hidden lg:block w-56 xl:w-64 flex-shrink-0">
-          <div className="sticky top-4 space-y-3">
-            <div className="text-center pb-2 border-b border-border">
-              <div className="inline-flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-                <div className="p-1.5 rounded-md bg-primary/20">
-                  <Brain className="h-4 w-4 text-primary" />
-                </div>
-                <div className="text-left">
-                  <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground">ML-powered match analysis</p>
-                </div>
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
+          {/* Top Header: Title + Day Selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3">
+            <div className="inline-flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+              <div className="p-1.5 rounded-md bg-primary/20">
+                <Brain className="h-4 w-4 text-primary" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">ML-powered match analysis</p>
               </div>
               <div
-                className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-[9px] font-semibold text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.35)]"
+                className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-[9px] font-semibold text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.35)] whitespace-nowrap"
                 title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
               >
                 <Sparkles className="h-2.5 w-2.5" />
                 AI Balanced Picks
               </div>
             </div>
-            <AIPredictionsSidebar
-              selectedDay={day}
-              onDayChange={setDay}
-              selectedLeague={selectedLeague}
-              onLeagueChange={setSelectedLeague}
-            />
-          </div>
-        </aside>
 
-        {/* Main Content */}
-        <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
-          {/* Header Section */}
-          <div className="flex flex-col gap-1.5 md:gap-2">
-            {/* Mobile Title */}
-            <div className="lg:hidden p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-primary/20">
-                  <Brain className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-sm sm:text-base font-bold text-foreground">AI Predictions</h1>
-                  <p className="text-muted-foreground text-[9px] sm:text-[10px]">ML-powered match analysis</p>
-                </div>
-                <div
-                  className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-[9px] font-semibold text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.35)] whitespace-nowrap"
-                  title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
-                >
-                  <Sparkles className="h-2.5 w-2.5" />
-                  AI Balanced
-                </div>
-              </div>
+            {/* Day Selector */}
+            <div className="flex gap-2 sm:ml-auto">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "flex-1 sm:flex-none h-10 text-xs rounded-xl transition-all duration-300 whitespace-nowrap",
+                  day === "today"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
+                    : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                )}
+                onClick={() => setDay("today")}
+              >
+                <CalendarDays className="w-4 h-4 mr-1" />
+                <span className="hidden md:inline">Predictions for&nbsp;</span>Today
+              </Button>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "flex-1 sm:flex-none h-10 text-xs rounded-xl transition-all duration-300 whitespace-nowrap",
+                  day === "tomorrow"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary"
+                    : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                )}
+                onClick={() => setDay("tomorrow")}
+              >
+                <CalendarDays className="w-4 h-4 mr-1" />
+                <span className="hidden md:inline">Predictions for&nbsp;</span>Tomorrow
+              </Button>
             </div>
-            
           </div>
 
-          {/* Mobile Day Selector - Bordered tabs with hover glow */}
-          <div className="flex gap-2 lg:hidden">
-            <Button
-              variant="ghost"
-              className={cn(
-                "flex-1 h-10 text-xs rounded-xl transition-all duration-300",
-                day === "today" 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
-              )}
-              onClick={() => setDay("today")}
-            >
-              Today
-            </Button>
-            <Button
-              variant="ghost"
-              className={cn(
-                "flex-1 h-10 text-xs rounded-xl transition-all duration-300",
-                day === "tomorrow" 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 border-2 border-primary" 
-                  : "bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 hover:bg-card hover:shadow-[0_0_15px_rgba(34,197,94,0.15)]"
-              )}
-              onClick={() => setDay("tomorrow")}
-            >
-              Tomorrow
-            </Button>
-          </div>
 
           {/* Stats Cards Row - Active / Analyzed / Accuracy */}
           <div className="grid grid-cols-3 gap-1.5 md:gap-3">
