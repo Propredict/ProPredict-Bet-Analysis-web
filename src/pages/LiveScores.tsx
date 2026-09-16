@@ -447,8 +447,8 @@ export default function LiveScores() {
         {/* STATS CARDS */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           <HeroStat icon={Play} label="Live now" value={liveCount} caption="Matches in play" tone="live" />
-          <HeroStat icon={BarChart3} label="Today" value={matches.length} caption="Total matches" />
-          <HeroStat icon={Trophy} label="Leagues" value={leaguesCount} caption="Active leagues" />
+          <HeroStat icon={BarChart3} label="Today" value={matches.length} caption="Total matches" tone="success" />
+          <HeroStat icon={Trophy} label="Leagues" value={leaguesCount} caption="Active leagues" tone="sky" />
           <HeroStat
             icon={Heart}
             label="Favourites"
