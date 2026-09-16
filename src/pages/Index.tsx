@@ -55,6 +55,28 @@ const Index = () => {
   const firedRef = useRef(false);
   
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const { user } = useAuth();
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  // Fetch first name for the hero welcome message
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) {
+      setFirstName(null);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("full_name, username")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const raw = data?.full_name || data?.username || null;
+        setFirstName(raw ? raw.split(" ")[0] : null);
+      });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   // Android only: show one interstitial on Home (max 1 per app session)
   useEffect(() => {
