@@ -80,7 +80,8 @@ export function DashboardOverview() {
   const todays = (dbTips as any[]).filter((t) => t.tip_date === today).map(mapTip);
   const sorted = [...todays].sort((a, b) => b.confidence - a.confidence);
   const topRows = sorted.slice(0, 5);
-  const tipRows = sorted.slice(0, 4);
+  const tipRows = sorted.filter((r) => r.category !== "risk_of_day").slice(0, 4);
+  const riskRows = sorted.filter((r) => r.category === "risk_of_day").slice(0, 4);
 
   const liveMatches = matches
     .filter((m) => m.status === "live" || m.status === "halftime")
