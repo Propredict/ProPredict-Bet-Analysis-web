@@ -209,60 +209,6 @@ const HelpSupport = () => {
       ],
     },
     {
-      title: "AI vs Members Arena",
-      icon: Swords,
-      color: "text-orange-400",
-      questions: [
-        {
-          q: "What is the AI vs Members Arena?",
-          a: "The Arena is a gamified prediction challenge where you compete against our AI. Pick outcomes for selected matches across Match Result (1X2), Goals (Over/Under 2.5), or BTTS markets — and earn points for every correct prediction."
-        },
-        {
-          q: "How do I earn points and what's the reward?",
-          a: "Each correct prediction earns you +1 point. Reach 1000 points and you earn a free 30-day Premium Access extension. Your points only reset after you claim the reward, so you never lose progress."
-        },
-        {
-          q: "How many predictions can I make per day?",
-          a: "Daily limits depend on your plan: Free users get 4 predictions per day and Premium users get 6. Predictions are available for priority league matches only."
-        },
-        {
-          q: "When are Arena predictions resolved?",
-          a: "Predictions are automatically resolved every 30 minutes after matches finish. Your stats, points, and notifications update in real time — no manual action needed."
-        },
-        {
-          q: "What do 'AI agrees' and 'AI challenged' badges mean?",
-          a: "'AI agrees' means the AI's prediction matches yours — a confidence signal. 'AI challenged' means your pick differs from the AI's, adding a competitive edge to the experience."
-        },
-      ],
-    },
-    ...(getIsAndroidApp() ? [{
-      title: "Rewards & Points",
-      icon: Gift,
-      color: "text-primary",
-      questions: [
-        {
-          q: "What are Daily Rewards?",
-          a: "Daily Rewards let you earn AI points every day by opening the app and claiming your reward. Build a 7-day streak to earn bonus points — the longer your streak, the more you earn per day."
-        },
-        {
-          q: "How does the 7-day streak work?",
-          a: "Each consecutive day you claim your reward, your streak grows (Day 1: +3 pts, Day 2: +6 pts, Day 3: +9 pts, Day 4: +12 pts, Day 5: +13 pts, Day 6: +14 pts, Day 7: +15 pts). After Day 7 the cycle resets. If you miss a day, your streak resets to Day 1."
-        },
-        {
-          q: "What happens when I reach 1,000 points?",
-          a: "When you accumulate 1,000 points (from Daily Rewards + Arena predictions combined), you earn a free subscription reward. Free users get 1 month of Premium, and Premium users get +1 month Premium extension. Points reset after the reward is applied."
-        },
-        {
-          q: "Where can I see my points and rewards?",
-          a: "Your total points, streak progress, and milestone tracker are visible in your Profile page under the Rewards section. You can also track your progress from the Daily Reward widget on the dashboard."
-        },
-        {
-          q: "Do Arena points and Daily Reward points combine?",
-          a: "Yes! Points from the AI vs Members Arena (+1 per correct prediction) and Daily Reward claims all contribute to the same 1,000-point milestone. Both help you reach the free subscription reward faster."
-        },
-      ],
-    }] : []),
-    {
       title: "Privacy & Security",
       icon: Lock,
       color: "text-destructive",
