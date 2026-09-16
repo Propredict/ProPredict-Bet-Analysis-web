@@ -29,6 +29,105 @@ const stableDailyScore = (value: string) => {
   return hash >>> 0;
 };
 
+function derivePickLabel(prediction: any) {
+  const bestType = (() => {
+    try {
+      return getBestPickType(prediction as any);
+    } catch {
+      return null;
+    }
+  })();
+  const labelFromBestType = (() => {
+    switch (bestType) {
+      case "home_win": return `${prediction.home_team} Win`;
+      case "away_win": return `${prediction.away_team} Win`;
+      case "draw": return "Draw";
+      case "dc_1x": return `${prediction.home_team} or Draw`;
+      case "dc_x2": return `Draw or ${prediction.away_team}`;
+      case "dc_12": return `${prediction.home_team} or ${prediction.away_team}`;
+      case "over15": return "Over 1.5 Goals";
+      case "over25": return "Over 2.5 Goals";
+      case "over35": return "Over 3.5 Goals";
+      case "under25": return "Under 2.5 Goals";
+      case "under35": return "Under 3.5 Goals";
+      case "btts_yes": return "BTTS Yes";
+      case "btts_no": return "BTTS No";
+      default: return null;
+    }
+  })();
+  const labelMap: Record<string, string> = { "1": "Home Win", X: "Draw", "2": "Away Win" };
+  const rawPred = String(prediction.prediction ?? "").trim();
+  return labelFromBestType ?? labelMap[rawPred] ?? rawPred;
+}
+
+function PredictionListRow({
+  prediction,
+  onClick,
+  lockTier = null,
+  showWatchAd = false,
+  isUnlocking = false,
+  onWatchAd,
+}: {
+  prediction: any;
+  onClick: () => void;
+  lockTier?: LockTier;
+  showWatchAd?: boolean;
+  isUnlocking?: boolean;
+  onWatchAd?: () => void;
+}) {
+  const locked = lockTier !== null;
+  const isPremiumLock = lockTier === "premium";
+  const watchAdMode = locked && showWatchAd && !isPremiumLock;
+  const pick = derivePickLabel(prediction);
+  const confidence = prediction.confidence ?? 0;
+
+  return (
+    <div
+      onClick={onClick}
+      className="flex cursor-pointer items-center gap-2 border-b border-border/70 px-3 py-2.5 transition-colors last:border-b-0 hover:bg-secondary/40 sm:px-4"
+    >
+      <span className="hidden w-12 shrink-0 text-xs font-bold text-muted-foreground sm:inline">
+        {prediction.match_time}
+      </span>
+      <span className="hidden w-28 shrink-0 truncate text-[11px] font-bold uppercase text-primary lg:inline">
+        AI Prediction
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase text-sidebar">
+        {prediction.home_team} <span className="text-muted-foreground">vs</span> {prediction.away_team}
+      </span>
+
+      {watchAdMode ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onWatchAd?.();
+          }}
+          disabled={isUnlocking}
+          className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[11px] font-bold text-primary-foreground disabled:opacity-70"
+        >
+          {isUnlocking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 fill-current" />}
+          Watch Ad
+        </button>
+      ) : locked ? (
+        <span className="shrink-0 inline-flex items-center gap-1 rounded-md border border-primary/45 bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary">
+          {isPremiumLock ? <Crown className="h-3 w-3" /> : <Star className="h-3 w-3" />}
+          {isPremiumLock ? "Premium" : "Pro"}
+        </span>
+      ) : (
+        <span className="shrink-0 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-[11px] font-extrabold text-success sm:text-xs">
+          {pick || "—"}
+        </span>
+      )}
+
+      {confidence > 0 && (
+        <span className="hidden shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary sm:inline">
+          {confidence}%
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ConfidenceBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2 w-full">
