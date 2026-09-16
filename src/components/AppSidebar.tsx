@@ -52,7 +52,7 @@ const tipsItems = [
 ];
 
 const ticketsItems = [
-  { title: "All Tickets", url: "/tickets", icon: Ticket },
+  { title: "Ticket Hub", url: "/tickets", icon: Ticket },
 ];
 
 const packagesItems = [
