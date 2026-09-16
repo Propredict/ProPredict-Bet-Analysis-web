@@ -27,7 +27,7 @@ const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStanding
 const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
-const DashboardSocialProof = lazy(() => import("@/components/dashboard/DashboardSocialProof").then(m => ({ default: m.DashboardSocialProof })));
+
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
 const DashboardOverview = lazy(() => import("@/components/dashboard/DashboardOverview").then(m => ({ default: m.DashboardOverview })));
 
@@ -220,10 +220,6 @@ const Index = () => {
         </div>
 
 
-        {/* Social Proof Section */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardSocialProof />
-        </Suspense>
 
 
 
