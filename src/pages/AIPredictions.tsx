@@ -699,7 +699,7 @@ export default function AIPredictions() {
 
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
-            <Card className="p-4 md:p-6 bg-gradient-to-br from-[#0b0f14] via-card to-[#0b0f14] border-green-500/20 rounded-2xl relative overflow-hidden">
+            <Card className="p-4 md:p-6 bg-gradient-to-br from-sidebar via-sidebar-accent to-sidebar border-2 border-primary/40 rounded-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-green-500/5 rounded-full blur-3xl pointer-events-none" />
               <div className="relative space-y-4 md:space-y-5">
@@ -1035,7 +1035,7 @@ export default function AIPredictions() {
                       {/* Unlock CTA */}
                       <Button
                         onClick={() => navigate("/get-premium")}
-                        className="w-full mt-3 md:mt-4 h-auto py-2.5 md:h-12 md:py-0 text-sm md:text-base font-black bg-gradient-to-r from-blue-500 via-blue-500 to-rose-500 hover:opacity-95 text-white border-0 shadow-lg shadow-blue-500/40 rounded-xl gap-2 animate-cta-blink whitespace-normal"
+                        className="w-full mt-3 md:mt-4 h-auto py-2.5 md:h-12 md:py-0 text-sm md:text-base font-black bg-gradient-to-r from-blue-500 via-blue-500 to-blue-500 hover:opacity-95 text-white border-0 shadow-lg shadow-blue-500/40 rounded-xl gap-2 animate-cta-blink whitespace-normal"
                       >
                         <Lock className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
                         <span className="flex flex-col items-center leading-tight">
@@ -1049,7 +1049,7 @@ export default function AIPredictions() {
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 mt-3 md:mt-4">
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-2">
-                            {["bg-cyan-500", "bg-blue-500", "bg-blue-500", "bg-rose-500"].map((bg, i) => (
+                            {["bg-cyan-500", "bg-blue-500", "bg-blue-500", "bg-blue-500"].map((bg, i) => (
                               <div key={i} className={`w-6 h-6 md:w-7 md:h-7 rounded-full ${bg} border-2 border-slate-900 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white`}>
                                 {String.fromCharCode(65 + i)}
                               </div>
@@ -1070,7 +1070,7 @@ export default function AIPredictions() {
                     </div>
 
                     {/* Premium-only explanation card */}
-                    <div className="ring-1 ring-blue-400/30 rounded-xl bg-gradient-to-br from-blue-950/30 via-slate-900/70 to-rose-950/30 p-4 md:p-5 flex flex-col items-center text-center gap-3">
+                    <div className="ring-1 ring-blue-400/30 rounded-xl bg-gradient-to-br from-blue-950/30 via-slate-900/70 to-blue-950/30 p-4 md:p-5 flex flex-col items-center text-center gap-3">
                       <div className="flex items-center gap-2">
                         <div className="p-2 rounded-full bg-blue-500/15 border border-blue-400/30">
                           <Lock className="w-5 h-5 text-blue-300" />
@@ -1090,7 +1090,7 @@ export default function AIPredictions() {
                       <Button
                         onClick={() => navigate("/get-premium")}
                         size="sm"
-                        className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-blue-500 via-blue-500 to-rose-500 hover:opacity-90 text-white border-0 shadow-lg shadow-blue-500/40 rounded-full gap-1.5"
+                        className="h-9 px-5 text-xs md:text-sm font-bold bg-gradient-to-r from-blue-500 via-blue-500 to-blue-500 hover:opacity-90 text-white border-0 shadow-lg shadow-blue-500/40 rounded-full gap-1.5"
                       >
                         <Crown className="w-3.5 h-3.5" />
                         Unlock with Premium / Otključaj sa Premium
