@@ -7,12 +7,13 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { canShowPopup, markPopupShown, msUntilNextPopup } from "@/lib/popupCooldown";
 
 const SESSION_KEY = "propredict:tips_popup_shown_v7";
 
 const categories = [
-  { label: "🎯 Risk of the Day", sub: "🔥 High odds pick • Unlock instantly", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
+  { label: "🎯 Risk of the Day", sub: "🔥 High odds pick • Unlock instantly", icon: Target, color: "text-primary", path: "/risk-of-the-day" },
   { label: "Sure Odds 2+ Ticket", sub: "🎫 Daily ticket • Higher confidence", icon: Ticket, color: "text-primary", path: "/exclusive-tickets" },
   { label: "💎 Diamond Pick", sub: "💎 Best value pick today • Top confidence", icon: Diamond, color: "text-primary", path: "/diamond-pick" },
   { label: "Premium Picks", sub: "🔒 Exclusive picks • Members only", icon: Crown, color: "text-primary", path: "/premium-tips" },
@@ -67,16 +68,19 @@ export function DashboardTipsPopup() {
         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         {/* Header */}
         <div className="relative px-5 pt-5 pb-3 text-center">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Close"
             onClick={() => setOpen(false)}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-secondary/60 hover:bg-secondary transition-colors"
+            className="absolute right-3 top-3 h-8 w-8 rounded-full bg-sidebar-foreground/10 text-sidebar-foreground hover:bg-sidebar-foreground/20 hover:text-sidebar-foreground"
           >
-            <X className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
-          <DialogTitle className="text-base font-bold text-foreground">
+            <X className="h-3.5 w-3.5" />
+          </Button>
+          <DialogTitle className="text-base font-bold text-sidebar-foreground">
             Choose Your Picks 🔥
           </DialogTitle>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="mt-0.5 text-xs text-sidebar-foreground/70">
             Select what you want to unlock today
           </p>
         </div>
@@ -85,17 +89,18 @@ export function DashboardTipsPopup() {
         <div className="px-4 pb-2 space-y-1.5">
           {categories.map((cat, i) => (
             <div key={cat.path}>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => goTo(cat.path)}
-                className="flex items-center gap-3 w-full p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors group"
+                className="group flex h-auto w-full items-center gap-3 rounded-xl border border-sidebar-foreground/10 bg-sidebar-foreground/10 p-3 text-sidebar-foreground transition-colors hover:bg-sidebar-foreground/20 hover:text-sidebar-foreground"
               >
                 <cat.icon className={`h-5 w-5 shrink-0 ${cat.color}`} />
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight">{cat.label}</p>
-                  <p className="text-[11px] text-muted-foreground leading-tight">{cat.sub}</p>
+                  <p className="text-sm font-semibold leading-tight text-sidebar-foreground">{cat.label}</p>
+                  <p className="text-[11px] leading-tight text-sidebar-foreground/65">{cat.sub}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors shrink-0" />
-              </button>
+                <ChevronRight className="h-4 w-4 shrink-0 text-sidebar-foreground/50 transition-colors group-hover:text-sidebar-foreground" />
+              </Button>
               {i < categories.length - 1 && (
                 <div className="mx-3 mt-1.5 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
               )}
@@ -105,12 +110,13 @@ export function DashboardTipsPopup() {
 
         {/* Dismiss */}
         <div className="px-4 pb-4 pt-1.5">
-          <button
-            className="w-full py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          <Button
+            variant="ghost"
+            className="w-full text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground"
             onClick={() => setOpen(false)}
           >
             Continue → Dashboard
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

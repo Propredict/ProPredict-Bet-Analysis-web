@@ -10,3 +10,5 @@
 - [x] Verify the full Sure Odds page on desktop and mobile, including locked and unlocked rendering logic.
 - [x] Restyle the app/web choice page in Stadium Blue without changing its countdown, links, popup, or live predictions.
 - [x] Verify the app/web choice page on desktop and mobile.
+- [x] Audit popup text contrast and fix unreadable combinations without changing behavior.
+- [x] Verify the dashboard rewards popup visually on desktop and mobile.
