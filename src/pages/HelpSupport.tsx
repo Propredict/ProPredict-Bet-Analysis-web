@@ -108,7 +108,7 @@ const HelpSupport = () => {
     {
       title: "Sure Odds 2+ Ticket",
       icon: Ticket,
-      color: "text-amber-400",
+      color: "text-primary",
       questions: [
         {
           q: "What is the Sure Odds 2+ Ticket?",
@@ -214,7 +214,7 @@ const HelpSupport = () => {
     {
       title: "App & Technical",
       icon: Smartphone,
-      color: "text-blue-400",
+      color: "text-primary",
       questions: [
         {
           q: "How do I enable notifications?",
@@ -264,7 +264,7 @@ const HelpSupport = () => {
     ...(getIsAndroidApp() ? [{
       title: "Rewards & Points",
       icon: Gift,
-      color: "text-amber-400",
+      color: "text-primary",
       questions: [
         {
           q: "What are Daily Rewards?",
@@ -396,7 +396,7 @@ const HelpSupport = () => {
       {/* Support Contact Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
         {supportCards.map((card) => (
-          <Card key={card.title} className="hover:border-primary/50 transition-colors cursor-pointer">
+          <Card key={card.title} className="border-2 border-primary/25 transition-colors hover:border-primary/60 cursor-pointer">
             <CardContent className="p-3 text-center">
               <card.icon className={`h-5 w-5 mx-auto mb-1.5 ${card.color}`} />
               <p className="text-xs font-medium text-foreground">{card.title}</p>
@@ -434,11 +434,11 @@ const HelpSupport = () => {
                       value={`${category.title}-${index}`}
                       className={`border rounded-md px-3 data-[state=open]:bg-muted/30 ${faq.highlight ? "border-destructive/60 bg-destructive/5" : "border-border"}`}
                     >
-                      <AccordionTrigger className={`text-[11px] sm:text-xs hover:no-underline py-2 ${faq.highlight ? "text-destructive font-semibold" : "text-foreground"}`}>
+                      <AccordionTrigger className={`text-xs sm:text-sm hover:no-underline py-2.5 ${faq.highlight ? "text-destructive font-semibold" : "text-foreground"}`}>
                         {faq.highlight && <span className="mr-1.5">🔥</span>}
                         {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent className="text-[10px] sm:text-xs text-muted-foreground pb-2">
+                      <AccordionContent className="text-xs text-muted-foreground pb-2">
                         {faq.a}
                       </AccordionContent>
                     </AccordionItem>
