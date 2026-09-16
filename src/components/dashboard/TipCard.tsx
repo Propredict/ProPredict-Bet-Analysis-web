@@ -45,10 +45,10 @@ interface TipCardProps {
 
 // --- Tier accent helpers ---
 const TIER_ACCENT = {
-  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
-  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]", text: "text-primary", ring: "border-primary/60", halo: "shadow-[0_0_25px_rgba(15,155,142,0.35)]", btn: "bg-gradient-to-r from-teal-500 to-teal-400 hover:opacity-90 text-white border-0" },
-  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]", text: "text-amber-400", ring: "border-amber-400/70", halo: "shadow-[0_0_25px_rgba(245,158,11,0.4)]", btn: "bg-gradient-to-r from-amber-400 to-yellow-400 hover:opacity-90 text-black border-0" },
-  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]", text: "text-fuchsia-400", ring: "border-fuchsia-400/70", halo: "shadow-[0_0_25px_rgba(217,70,239,0.4)]", btn: "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0" },
+  free: { gradient: "from-primary/15 to-secondary/30", line: "bg-primary", glow: "shadow-md", text: "text-primary", ring: "border-primary/60", halo: "shadow-lg shadow-primary/20", btn: "bg-gradient-to-r from-primary to-blue-600 hover:opacity-90 text-primary-foreground border-0" },
+  daily: { gradient: "from-primary/15 to-secondary/30", line: "bg-primary", glow: "shadow-md", text: "text-primary", ring: "border-primary/60", halo: "shadow-lg shadow-primary/20", btn: "bg-gradient-to-r from-primary to-blue-600 hover:opacity-90 text-primary-foreground border-0" },
+  exclusive: { gradient: "from-blue-600/15 to-secondary/30", line: "bg-blue-700", glow: "shadow-md", text: "text-blue-700", ring: "border-blue-600/60", halo: "shadow-lg shadow-blue-600/20", btn: "bg-gradient-to-r from-blue-700 to-primary hover:opacity-90 text-primary-foreground border-0" },
+  premium: { gradient: "from-primary/15 to-blue-600/5", line: "bg-primary", glow: "shadow-md", text: "text-primary", ring: "border-primary/60", halo: "shadow-lg shadow-primary/20", btn: "bg-gradient-to-r from-primary to-blue-700 hover:opacity-90 text-primary-foreground border-0" },
 } as const;
 
 
@@ -279,7 +279,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
                 <Button size="sm" className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0" disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); onUnlockClick(); }}>
                   {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <><Sparkles className="h-3.5 w-3.5" />{unlockMethod.primaryMessage}</>}
                 </Button>
-                <Button size="sm" className={cn("w-full h-7 text-[10px] font-medium", getIsAndroidApp() ? "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0" : "text-muted-foreground hover:text-foreground")} variant={getIsAndroidApp() ? "default" : "ghost"} onClick={(e) => { e.stopPropagation(); handleSecondaryClick(); }}>
+                <Button size="sm" className={cn("w-full h-7 text-[10px] font-medium", getIsAndroidApp() ? "bg-gradient-to-r from-blue-700 to-primary hover:opacity-90 text-primary-foreground border-0" : "text-muted-foreground hover:text-foreground")} variant={getIsAndroidApp() ? "default" : "ghost"} onClick={(e) => { e.stopPropagation(); handleSecondaryClick(); }}>
                   <Star className="h-3 w-3 mr-1 fill-current" />{unlockMethod.secondaryMessage}
                 </Button>
               </div>

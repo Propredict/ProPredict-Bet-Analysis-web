@@ -90,8 +90,8 @@ function PredictionCard({
   const isPremiumLock = lockTier === "premium";
   const ctaLabel = isPremiumLock ? "Premium · Tap to unlock" : "Pro · Tap to unlock";
   const ctaGradient = isPremiumLock
-    ? "from-violet-600 to-fuchsia-500"
-    : "from-amber-500 to-yellow-500";
+    ? "from-blue-700 to-primary"
+    : "from-primary to-primary";
   const CtaIcon = isPremiumLock ? Crown : Star;
   // On Android, Free users can watch an ad to unlock Pro AND non-premium picks.
   const watchAdMode = locked && showWatchAd && !isPremiumLock;
@@ -129,14 +129,14 @@ function PredictionCard({
           {/* Prediction value — blurred when locked (CTA renders on top) */}
           <div className="flex items-center justify-center relative min-h-[2rem]">
             <span
-              className={`text-base sm:text-lg font-extrabold text-white tracking-wide text-center ${
+              className={`text-base sm:text-lg font-extrabold text-primary-foreground tracking-wide text-center ${
                 locked ? "blur-md select-none pointer-events-none" : ""
               }`}
             >
               {displayPrediction}
             </span>
             {confidence >= 65 && !locked && (
-              <div className={`absolute right-0 flex items-center gap-0.5 ${confidence >= 85 ? "text-fuchsia-400" : "text-amber-400"}`}>
+              <div className={`absolute right-0 flex items-center gap-0.5 ${confidence >= 85 ? "text-primary" : "text-primary"}`}>
                 {confidence >= 85 ? <Crown className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
                 <span className="text-[9px] font-semibold">{confidence >= 85 ? "PREMIUM" : "PRO"}</span>
               </div>
@@ -148,8 +148,8 @@ function PredictionCard({
       {locked && !watchAdMode && (
         <div className="absolute inset-x-0 bottom-3 flex items-center justify-center pointer-events-none">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${ctaGradient} shadow-lg`}>
-            <CtaIcon className="h-3 w-3 text-white" />
-            <span className="text-[10px] font-bold text-white uppercase tracking-wider">{ctaLabel}</span>
+            <CtaIcon className="h-3 w-3 text-primary-foreground" />
+            <span className="text-[10px] font-bold text-primary-foreground uppercase tracking-wider">{ctaLabel}</span>
           </div>
         </div>
       )}
@@ -162,14 +162,14 @@ function PredictionCard({
               onWatchAd?.();
             }}
             disabled={isUnlocking}
-            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 shadow-lg hover:from-teal-600 hover:to-emerald-600 transition-colors disabled:opacity-70"
+            className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-blue-600 shadow-lg hover:from-blue-700 hover:to-blue-700 transition-colors disabled:opacity-70"
           >
             {isUnlocking ? (
-              <Loader2 className="h-3 w-3 text-white animate-spin" />
+              <Loader2 className="h-3 w-3 text-primary-foreground animate-spin" />
             ) : (
-              <Play className="h-3 w-3 text-white fill-current" />
+              <Play className="h-3 w-3 text-primary-foreground fill-current" />
             )}
-            <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-primary-foreground uppercase tracking-wider">
               {isUnlocking ? "Loading…" : "Watch Ad to Unlock / Otključaj posle reklame"}
             </span>
           </button>
@@ -345,21 +345,21 @@ const TONE_STYLES: Record<Tone, {
     bg: "from-primary/10 via-primary/5 to-transparent",
     badge: "bg-primary/15 text-primary border-primary/30",
     text: "text-primary",
-    cta: "from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600",
+    cta: "from-primary to-blue-600 hover:from-blue-700 hover:to-blue-700",
   },
   pro: {
-    border: "border-amber-500/30",
-    bg: "from-amber-500/10 via-amber-500/5 to-transparent",
-    badge: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-    text: "text-amber-400",
-    cta: "from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600",
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-primary to-primary hover:from-blue-700 hover:to-blue-700",
   },
   premium: {
-    border: "border-fuchsia-500/30",
-    bg: "from-fuchsia-500/10 via-fuchsia-500/5 to-transparent",
-    badge: "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30",
-    text: "text-fuchsia-400",
-    cta: "from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600",
+    border: "border-primary/30",
+    bg: "from-primary/10 via-primary/5 to-transparent",
+    badge: "bg-primary/15 text-primary border-primary/30",
+    text: "text-primary",
+    cta: "from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700",
   },
 };
 
@@ -417,7 +417,7 @@ function TierSection({
       <div className="flex justify-center pt-1">
         <Button
           size="sm"
-          className={`px-5 group bg-gradient-to-r ${styles.cta} text-white text-xs border-0 rounded-full`}
+          className={`px-5 group bg-gradient-to-r ${styles.cta} text-primary-foreground text-xs border-0 rounded-full`}
           onClick={onCta}
         >
           <span>{ctaLabel}</span>

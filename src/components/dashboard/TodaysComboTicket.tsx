@@ -43,18 +43,18 @@ export function TodaysComboTicket() {
     <section className="space-y-3">
       <div className="text-center space-y-1">
         <h2 className="text-lg font-extrabold text-foreground flex items-center justify-center gap-2">
-          Today's Combo Prediction <Ticket className="h-5 w-5 text-orange-500" />
+          Today's Combo Prediction <Ticket className="h-5 w-5 text-primary" />
         </h2>
         <p className="text-xs text-muted-foreground">Multi-match combination • Higher returns</p>
       </div>
 
-      <Card className="relative p-4 border-2 border-orange-500/40 rounded-xl bg-gradient-to-br from-orange-500/15 via-red-500/10 to-transparent shadow-[0_0_20px_rgba(249,115,22,0.25)] overflow-hidden">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-orange-500/20 to-transparent rounded-bl-full" />
+      <Card className="relative p-4 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent shadow-[0_0_20px_rgba(0,148,230,0.25)] overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-bl-full" />
 
         <div className="flex items-center justify-between mb-3">
           <Badge className={cn(
             "text-[10px] font-bold border-0",
-            isPremium ? "bg-purple-500/20 text-purple-400" : "bg-amber-500/20 text-amber-400"
+            isPremium ? "bg-primary/20 text-primary" : "bg-blue-700/20 text-blue-600"
           )}>
             {isPremium ? "PREMIUM COMBO" : combo.tier === "exclusive" ? "PRO COMBO" : "DAILY COMBO"}
           </Badge>
@@ -85,7 +85,7 @@ export function TodaysComboTicket() {
             {isPremium ? (
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                className="w-full bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(0,148,230,0.4)]"
                 onClick={() => navigate("/get-premium")}
               >
                 Get Premium / Kupi Premium
@@ -94,7 +94,7 @@ export function TodaysComboTicket() {
               <>
                 <Button
                   size="sm"
-                  className="w-full bg-teal-500 hover:bg-teal-600 text-white text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(20,184,166,0.3)]"
+                  className="w-full bg-primary hover:bg-blue-700 text-primary-foreground text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(0,148,230,0.3)]"
                   onClick={() => handleUnlock("ticket", combo.id, combo.tier as any)}
                   disabled={isUnlocking}
                 >
@@ -103,7 +103,7 @@ export function TodaysComboTicket() {
                 </Button>
                 <button
                   onClick={() => navigate("/get-premium")}
-                  className="block w-full text-center text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors"
+                  className="block w-full text-center text-[10px] text-blue-600/70 hover:text-blue-600 transition-colors"
                 >
                   or unlock with Pro
                 </button>
@@ -115,7 +115,7 @@ export function TodaysComboTicket() {
 
       <button
         onClick={() => navigate("/premium-tickets")}
-        className="block w-full text-center text-sm font-semibold text-[#a855f7] hover:text-purple-300 hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] transition-all"
+        className="block w-full text-center text-sm font-semibold text-[#a855f7] hover:text-blue-400 hover:drop-shadow-[0_0_8px_rgba(0,148,230,0.5)] transition-all"
       >
         Check All Today's Premium →
       </button>

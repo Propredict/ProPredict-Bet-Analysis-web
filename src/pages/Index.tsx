@@ -105,7 +105,7 @@ const Index = () => {
                   href="https://play.google.com/store/apps/details?id=com.propredict.app"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-extrabold hover:opacity-90 transition-all shadow-lg shadow-amber-500/40 animate-pulse ring-2 ring-amber-300/50"
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary to-blue-700 text-primary-foreground text-sm font-extrabold hover:opacity-90 transition-all shadow-lg shadow-primary/30 animate-pulse ring-2 ring-primary/25"
                 >
                   ⬇️ Download App 🔓
                 </a>
@@ -115,7 +115,7 @@ const Index = () => {
             <p className="text-xs text-primary-foreground/70 flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
             <Link
               to="/get-premium"
-              className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-fuchsia-600 via-violet-600 to-fuchsia-600 text-white text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-fuchsia-500/40 ring-2 ring-fuchsia-300/40 hover:opacity-95 hover:scale-[1.03] transition-all animate-blink"
+              className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-blue-700 via-primary to-blue-600 text-primary-foreground text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-primary/30 ring-2 ring-primary/25 hover:opacity-95 hover:scale-[1.03] transition-all animate-blink"
               aria-label="Become Premium and unlock all tips and predictions for one month / Postani Premium korisnik i otključaj sve predikcije na mesec dana"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">

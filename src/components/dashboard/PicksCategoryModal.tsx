@@ -14,9 +14,9 @@ interface Props {
 
 const categories = [
   { label: "Daily Picks", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
-  { label: "Sure Odds 2+ Ticket", icon: Ticket, color: "text-amber-400", path: "/exclusive-tickets" },
-  { label: "Premium Picks", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
-  { label: "💎 Diamond Pick", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
+  { label: "Sure Odds 2+ Ticket", icon: Ticket, color: "text-primary", path: "/exclusive-tickets" },
+  { label: "Premium Picks", icon: Crown, color: "text-primary", path: "/premium-tips" },
+  { label: "💎 Diamond Pick", icon: Diamond, color: "text-primary", path: "/diamond-pick" },
   { label: "🎯 Risk of the Day", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
 ];
 

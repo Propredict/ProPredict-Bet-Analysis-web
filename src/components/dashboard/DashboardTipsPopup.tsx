@@ -13,9 +13,9 @@ const SESSION_KEY = "propredict:tips_popup_shown_v7";
 
 const categories = [
   { label: "🎯 Risk of the Day", sub: "🔥 High odds pick • Unlock instantly", icon: Target, color: "text-red-400", path: "/risk-of-the-day" },
-  { label: "Sure Odds 2+ Ticket", sub: "🎫 Daily ticket • Higher confidence", icon: Ticket, color: "text-amber-400", path: "/exclusive-tickets" },
-  { label: "💎 Diamond Pick", sub: "💎 Best value pick today • Top confidence", icon: Diamond, color: "text-purple-400", path: "/diamond-pick" },
-  { label: "Premium Picks", sub: "🔒 Exclusive picks • Members only", icon: Crown, color: "text-fuchsia-400", path: "/premium-tips" },
+  { label: "Sure Odds 2+ Ticket", sub: "🎫 Daily ticket • Higher confidence", icon: Ticket, color: "text-primary", path: "/exclusive-tickets" },
+  { label: "💎 Diamond Pick", sub: "💎 Best value pick today • Top confidence", icon: Diamond, color: "text-primary", path: "/diamond-pick" },
+  { label: "Premium Picks", sub: "🔒 Exclusive picks • Members only", icon: Crown, color: "text-primary", path: "/premium-tips" },
   { label: "Daily Picks", sub: "✅ Free picks available today", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
 ];
 
@@ -62,9 +62,9 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden" style={{ border: '1px solid rgba(20,184,166,0.4)', boxShadow: '0 0 20px rgba(20,184,166,0.15), 0 25px 50px -12px rgba(0,0,0,0.5)', background: 'linear-gradient(180deg, #0f172a, #020617)' }}>
+      <DialogContent className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl border border-primary/40 bg-sidebar text-sidebar-foreground shadow-2xl shadow-primary/15 [&>button]:hidden">
         {/* Top glow line */}
-        <div className="h-[1px] w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(20,184,166,0.6), transparent)' }} />
+        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         {/* Header */}
         <div className="relative px-5 pt-5 pb-3 text-center">
           <button
@@ -97,7 +97,7 @@ export function DashboardTipsPopup() {
                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors shrink-0" />
               </button>
               {i < categories.length - 1 && (
-                <div className="mx-3 mt-1.5 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(20,184,166,0.25), transparent)' }} />
+                <div className="mx-3 mt-1.5 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
               )}
             </div>
           ))}

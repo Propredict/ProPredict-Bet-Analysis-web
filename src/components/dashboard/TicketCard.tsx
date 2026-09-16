@@ -61,10 +61,10 @@ interface TicketCardProps {
 ======================= */
 
 const TIER_ACCENT = {
-  free: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  daily: { gradient: "from-teal-500/20 to-teal-600/5", line: "bg-primary", glow: "shadow-[0_0_20px_rgba(15,155,142,0.15)]" },
-  exclusive: { gradient: "from-amber-500/20 to-amber-600/5", line: "bg-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.15)]" },
-  premium: { gradient: "from-fuchsia-500/20 to-fuchsia-600/5", line: "bg-fuchsia-500", glow: "shadow-[0_0_20px_rgba(217,70,239,0.15)]" },
+  free: { gradient: "from-primary/15 to-secondary/30", line: "bg-primary", glow: "shadow-md" },
+  daily: { gradient: "from-primary/15 to-secondary/30", line: "bg-primary", glow: "shadow-md" },
+  exclusive: { gradient: "from-blue-600/15 to-secondary/30", line: "bg-blue-700", glow: "shadow-md" },
+  premium: { gradient: "from-primary/15 to-blue-600/5", line: "bg-primary", glow: "shadow-md" },
 } as const;
 
 function getTierBadge(tier: ContentTier) {
@@ -147,9 +147,9 @@ function TicketCard({
     if (!unlockMethod || unlockMethod.type === "unlocked") return "";
     if (unlockMethod.type === "login_required") return "";
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") return "bg-primary hover:bg-primary/90 text-white border-0";
-    if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
-    if (unlockMethod.type === "upgrade_premium") return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+    if (unlockMethod.type === "android_premium_only") return "bg-gradient-to-r from-primary to-blue-700 hover:opacity-90 text-primary-foreground border-0";
+    if (unlockMethod.type === "upgrade_basic") return "bg-gradient-to-r from-blue-700 to-primary hover:opacity-90 text-primary-foreground border-0";
+    if (unlockMethod.type === "upgrade_premium") return "bg-gradient-to-r from-primary to-blue-700 hover:opacity-90 text-primary-foreground border-0";
     return "";
   };
 
@@ -287,7 +287,7 @@ function TicketCard({
                 <Button size="sm" className="w-full gap-1.5 h-9 text-xs font-medium bg-primary hover:bg-primary/90 text-white border-0" disabled={isUnlocking} onClick={(e) => { e.stopPropagation(); onUnlockClick(); }}>
                   {isUnlocking ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Watching ad...</> : <><Sparkles className="h-3.5 w-3.5" />{unlockMethod.primaryMessage}</>}
                 </Button>
-                <Button size="sm" className={cn("w-full h-7 text-[10px] font-medium", getIsAndroidApp() ? "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0" : "text-muted-foreground hover:text-foreground")} variant={getIsAndroidApp() ? "default" : "ghost"} onClick={(e) => { e.stopPropagation(); handleSecondaryClick(); }}>
+                <Button size="sm" className={cn("w-full h-7 text-[10px] font-medium", getIsAndroidApp() ? "bg-gradient-to-r from-blue-700 to-primary hover:opacity-90 text-primary-foreground border-0" : "text-muted-foreground hover:text-foreground")} variant={getIsAndroidApp() ? "default" : "ghost"} onClick={(e) => { e.stopPropagation(); handleSecondaryClick(); }}>
                   <Star className="h-3 w-3 mr-1 fill-current" />{unlockMethod.secondaryMessage}
                 </Button>
               </div>

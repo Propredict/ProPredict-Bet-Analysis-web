@@ -43,7 +43,7 @@ export function DashboardMatchPreviews() {
         {/* Section Header — centered bold title */}
         <div className="text-center space-y-1 pt-1">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-            <Eye className="h-6 w-6 sm:h-7 sm:w-7 text-violet-400" />
+            <Eye className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
             Top 30 AI Picks
           </h2>
           <p className="text-[11px] text-muted-foreground">
@@ -62,7 +62,7 @@ export function DashboardMatchPreviews() {
             return (
               <div
                 key={match.match_id}
-                className="bg-background/60 border border-border/40 rounded-lg p-2.5 md:p-3 cursor-pointer hover:border-violet-500/40 transition-colors group"
+                className="bg-background/60 border border-border/40 rounded-lg p-2.5 md:p-3 cursor-pointer hover:border-blue-600/40 transition-colors group"
                 onClick={() => navigate(`/match-preview/${match.match_id}`, { state: { unlocked: true } })}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -83,14 +83,14 @@ export function DashboardMatchPreviews() {
                   isFree && "blur-md select-none pointer-events-none"
                 )}>
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="h-2.5 w-2.5 text-violet-400" />
+                    <TrendingUp className="h-2.5 w-2.5 text-primary" />
                     <span className="text-[9px] md:text-[10px] text-muted-foreground truncate max-w-[80px]">
                       {favored}
                     </span>
                   </div>
                   <Badge className={cn(
                     "text-[8px] md:text-[9px] px-1.5 py-0 border-0 font-bold rounded",
-                    favoredPct >= 70 ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"
+                    favoredPct >= 70 ? "bg-blue-600/20 text-blue-600" : "bg-primary/20 text-primary"
                   )}>
                     {favoredPct}%
                   </Badge>
@@ -104,7 +104,7 @@ export function DashboardMatchPreviews() {
         <div className="flex justify-center pt-1">
           <Button
             size="sm"
-            className="bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white text-xs px-6 rounded-full"
+            className="bg-gradient-to-r from-blue-700 to-primary hover:from-blue-800 hover:to-blue-700 text-primary-foreground text-xs px-6 rounded-full"
             onClick={() => navigate("/match-previews")}
           >
             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
