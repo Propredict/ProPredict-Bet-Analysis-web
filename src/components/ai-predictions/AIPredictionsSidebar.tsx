@@ -89,67 +89,6 @@ export function AIPredictionsSidebar({
         </CardContent>
       </Card>
 
-      {/* Top Leagues Section */}
-      <Card className="bg-[#0a1628]/80 border-[#1e3a5f]/40">
-        <CardContent className="p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Top Leagues</h3>
-          
-          {/* League List */}
-          <div className="space-y-1 mb-4 max-h-[300px] overflow-y-auto">
-            {/* All Leagues Option */}
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start text-sm px-3 py-2 h-auto",
-                selectedLeague === null
-                  ? "bg-primary/10 text-primary hover:bg-primary/20"
-                  : "text-muted-foreground hover:bg-[#1e3a5f]/30"
-              )}
-              onClick={() => onLeagueChange(null)}
-            >
-              <Trophy className="w-4 h-4 mr-2" />
-              All Leagues
-            </Button>
-
-            {leaguesLoading ? (
-              <div className="text-xs text-muted-foreground text-center py-2">Loading...</div>
-            ) : (
-              filteredLeagues.map((league) => (
-                <Button
-                  key={league.league}
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start text-sm px-3 py-2 h-auto",
-                    selectedLeague === league.league
-                      ? "bg-primary/10 text-primary hover:bg-primary/20"
-                      : "text-muted-foreground hover:bg-[#1e3a5f]/30"
-                  )}
-                  onClick={() => onLeagueChange(league.league)}
-                >
-                  <span className="w-5 h-4 flex items-center justify-center mr-2 text-[10px] text-muted-foreground">
-                    🏆
-                  </span>
-                  <span className="truncate flex-1 text-left">{league.league}</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    ({league.matches_count})
-                  </span>
-                </Button>
-              ))
-            )}
-          </div>
-
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Country or league"
-              value={leagueSearch}
-              onChange={(e) => setLeagueSearch(e.target.value)}
-              className="pl-10 bg-[#0a1628]/60 border-[#1e3a5f]/50 text-sm"
-            />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
