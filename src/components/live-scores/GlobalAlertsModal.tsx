@@ -178,12 +178,12 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
           </div>
 
           {/* Footer */}
-          <div className="border-t border-border bg-secondary/40 px-5 py-3">
-            <p className="text-center text-xs font-semibold text-muted-foreground">
+          <div className="border-t-2 border-primary/20 bg-secondary/60 px-5 py-3.5">
+            <p className="text-center text-xs font-bold">
               {settings.enabled ? (
                 <span className="text-success">✓ Notifications are enabled</span>
               ) : (
-                "Enable notifications to receive match alerts"
+                <span className="text-sidebar">Enable notifications to receive match alerts</span>
               )}
             </p>
           </div>
