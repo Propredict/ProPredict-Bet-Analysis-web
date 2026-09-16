@@ -23,7 +23,7 @@ import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
 
 
 // Heavy components – lazy loaded for faster initial paint
-const MatchPredictions = lazy(() => import("@/components/dashboard/MatchPredictions").then(m => ({ default: m.MatchPredictions })));
+
 const BettingTickets = lazy(() => import("@/components/dashboard/BettingTickets").then(m => ({ default: m.BettingTickets })));
 const LeagueStandings = lazy(() => import("@/components/dashboard/LeagueStandings").then(m => ({ default: m.LeagueStandings })));
 const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").then(m => ({ default: m.TodaysMatches })));
@@ -293,9 +293,6 @@ const Index = () => {
               <SureOddsDashboardSection />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
-              <MatchPredictions />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
               <BettingTickets />
             </Suspense>
           </>
@@ -351,9 +348,11 @@ const Index = () => {
           </>
         )}
 
-        <Suspense fallback={<LazyFallback />}>
-          <TodaysMatches />
-        </Suspense>
+        {isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <TodaysMatches />
+          </Suspense>
+        )}
 
 
         <Suspense fallback={<LazyFallback />}>
