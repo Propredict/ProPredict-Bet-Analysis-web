@@ -19,6 +19,7 @@ import { LeagueStatsSquadsTab } from "@/components/league-statistics/LeagueStats
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
+import { HeroStat } from "@/components/layout/HeroStat";
 // Known league ID mappings for API-Football
 const LEAGUE_ID_MAP: Record<string, string> = {
   "Premier League": "39",
