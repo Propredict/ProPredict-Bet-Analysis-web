@@ -1250,14 +1250,14 @@ export default function AIPredictions() {
                                 <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
                               <div className="p-3 space-y-2">
-                                <h3 className="text-xs md:text-sm font-semibold text-foreground">
-                                  {prediction.home_team} vs {prediction.away_team}
-                                </h3>
-                                <div className="flex items-center gap-2">
-                                  <span className={cn(
-                                    "text-xl font-extrabold",
-                                    displayedPct >= 80 ? "text-green-400" : displayedPct >= 70 ? "text-blue-400" : "text-blue-400"
-                                  )}>
+                                 <h3 className="font-extrabold uppercase tracking-wide text-base md:text-lg text-sidebar text-center truncate">
+                                   {prediction.home_team} vs {prediction.away_team}
+                                 </h3>
+                                 <div className="flex items-center gap-2">
+                                   <span className={cn(
+                                     "text-xl font-extrabold",
+                                     displayedPct >= 80 ? "text-green-400" : displayedPct >= 70 ? "text-blue-400" : "text-blue-400"
+                                   )}>
                                     {displayedPct}%
                                   </span>
                                   <Badge className={cn(
@@ -1366,9 +1366,9 @@ export default function AIPredictions() {
                                 <span className="text-[9px] text-muted-foreground">{prediction.league || "League"}</span>
                               </div>
                               <div className="p-3 space-y-2">
-                                <h3 className="text-xs md:text-sm font-semibold text-foreground">
-                                  {prediction.home_team} vs {prediction.away_team}
-                                </h3>
+                                 <h3 className="font-extrabold uppercase tracking-wide text-base md:text-lg text-sidebar text-center truncate">
+                                   {prediction.home_team} vs {prediction.away_team}
+                                 </h3>
                                 <div className="flex items-center gap-2">
                                   <span className={cn(
                                     "text-xl font-extrabold",
