@@ -52,6 +52,13 @@ const packagesItems = [
   { title: "Get Premium", url: "/get-premium", icon: Sparkles, highlight: true },
 ];
 
+const premiumItems = [
+  { title: "Premium Ticket", url: "/premium-tickets", icon: Ticket },
+  { title: "Premium Tips", url: "/single-tips?view=premium", icon: Crown },
+  { title: "Diamond Tips", url: "/single-tips?view=diamond", icon: Sparkles },
+  { title: "Risk of the Day", url: "/single-tips?view=risk", icon: AlertTriangle },
+];
+
 const tools = [
   { title: "AI vs Members", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
@@ -212,6 +219,20 @@ export function AppSidebar() {
                       activeClassName=""
                     >
                       <item.icon className="h-5 w-5" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              {premiumItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
+                      activeClassName="bg-primary/20 text-primary"
+                    >
+                      <item.icon className="h-[18px] w-[18px]" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>

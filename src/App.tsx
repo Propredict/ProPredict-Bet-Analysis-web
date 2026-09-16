@@ -51,6 +51,7 @@ const HowAIWorks = lazy(() => import("./pages/HowAIWorks"));
 
 // Tier pages - lazy loaded
 const Tickets = lazy(() => import("./pages/Tickets"));
+const PremiumTickets = lazy(() => import("./pages/PremiumTickets"));
 const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
 const SingleTips = lazy(() => import("./pages/SingleTips"));
@@ -225,8 +226,8 @@ const App = () => {
                     <Route path="/exclusive-tickets" element={<NavigateWithSearch to="/sure-odds" />} />
                     <Route path="/premium-analysis" element={<NavigateWithSearch to="/single-tips?view=premium" />} />
                     <Route path="/premium-tips" element={<NavigateWithSearch to="/single-tips?view=premium" />} />
-                    <Route path="/premium-predictions" element={<NavigateWithSearch to="/tickets" />} />
-                    <Route path="/premium-tickets" element={<NavigateWithSearch to="/tickets" />} />
+                    <Route path="/premium-predictions" element={<NavigateWithSearch to="/premium-tickets" />} />
+                    <Route path="/premium-tickets" element={<PremiumTickets />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
                     <Route path="/ai-vs-community" element={<AIvsCommunity />} />
                     <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
