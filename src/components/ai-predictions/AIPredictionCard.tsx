@@ -485,7 +485,7 @@ const AIPredictionCardInner = ({
             ) : (
               <Button
                 className={cn(
-                  "w-full h-7 md:h-8 text-[10px] md:text-xs hover:opacity-90 text-white border-0 font-medium rounded",
+                  "w-full h-auto min-h-7 md:min-h-8 py-1.5 whitespace-normal text-center text-[10px] md:text-xs leading-tight hover:opacity-90 text-white border-0 font-medium rounded",
                   unlockMethod.type === "upgrade_basic" 
                     ? "bg-gradient-to-r from-blue-500 to-blue-500" 
                     : "bg-gradient-to-r from-blue-500 to-blue-500"
