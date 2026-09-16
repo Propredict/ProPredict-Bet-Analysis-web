@@ -141,7 +141,7 @@ export default function LeagueStatistics() {
 
         {/* Tabs - Enhanced visibility with container */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="w-full p-2 sm:p-3 rounded-xl bg-card/80 border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+          <div className="w-full rounded-2xl border-2 border-primary/30 bg-card p-2 shadow-md sm:p-3">
             <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full">
               {[
                 { value: "standings", icon: Trophy, label: "Standings" },
