@@ -67,7 +67,7 @@ export function SureOddsDashboardSection() {
   return (
     <section className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-primary/20 bg-secondary/70 shadow-lg shadow-primary/10">
-        <div className="relative flex items-center justify-between gap-3 overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-sidebar px-4 py-4 sm:px-6 sm:py-5">
+        <div className="relative flex flex-col items-stretch justify-between gap-3 overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-sidebar px-4 py-4 sm:flex-row sm:items-center sm:px-6 sm:py-5">
           <div className="pointer-events-none absolute -right-8 -top-16 h-40 w-40 rounded-full border-[28px] border-primary-foreground/10" />
           <div className="relative flex min-w-0 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary-foreground/20 bg-primary-foreground/15 shadow-inner">
@@ -83,7 +83,7 @@ export function SureOddsDashboardSection() {
           {hasAccess ? (
             <Button
               size="sm"
-              className="relative h-10 shrink-0 border-0 bg-primary-foreground px-4 text-[11px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:text-xs"
+              className="relative h-10 w-full shrink-0 border-0 bg-primary-foreground px-4 text-[11px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:w-auto sm:text-xs"
               onClick={() => navigate("/sure-odds")}
             >
               <Ticket className="h-3.5 w-3.5 mr-1" />
@@ -92,7 +92,7 @@ export function SureOddsDashboardSection() {
           ) : (
             <Button
               size="sm"
-              className="relative h-10 shrink-0 border-0 bg-primary-foreground px-4 text-[10px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:text-xs"
+              className="relative h-10 w-full shrink-0 border-0 bg-primary-foreground px-4 text-[10px] font-bold text-primary shadow-lg hover:bg-primary-foreground/90 sm:w-auto sm:text-xs"
               onClick={handleBuyDailyTicket}
             >
               One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
