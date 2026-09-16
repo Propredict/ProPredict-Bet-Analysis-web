@@ -6,19 +6,19 @@ export function LiveScoresFallback() {
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Warning Banner */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-amber-500/20">
-          <AlertTriangle className="h-4 w-4 text-amber-400" />
+      <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 border border-primary/30 rounded-lg">
+        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/20">
+          <AlertTriangle className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1">
-          <p className="text-amber-300 text-sm font-medium">
+          <p className="text-primary text-sm font-medium">
             Live data is temporarily unavailable
           </p>
-          <p className="text-amber-300/70 text-xs">
+          <p className="text-primary/70 text-xs">
             Reconnecting to live feed...
           </p>
         </div>
-        <RefreshCw className="h-4 w-4 text-amber-400 animate-spin" />
+        <RefreshCw className="h-4 w-4 text-primary animate-spin" />
       </div>
 
       {/* Skeleton Match Cards */}

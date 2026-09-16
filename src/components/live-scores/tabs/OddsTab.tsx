@@ -13,7 +13,7 @@ function OddsChip({ label, value, variant = "default" }: { label: string; value:
       <span className="text-xs text-muted-foreground">{label}:</span>
       <span className={cn(
         "text-xs font-bold",
-        variant === "positive" ? "text-emerald-400" : 
+        variant === "positive" ? "text-success" : 
         variant === "negative" ? "text-primary" : 
         "text-primary"
       )}>

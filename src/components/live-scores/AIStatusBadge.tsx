@@ -16,8 +16,8 @@ export function AIStatusBadge({ status }: AIStatusBadgeProps) {
       className={cn(
         "text-[10px] px-1.5 py-0.5 gap-1 font-medium",
         isOnTrack
-          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-          : "bg-amber-500/15 text-amber-400 border-amber-500/30"
+          ? "bg-success/15 text-success border-success/30"
+          : "bg-primary/15 text-primary border-primary/30"
       )}
     >
       <Brain className="h-3 w-3" />

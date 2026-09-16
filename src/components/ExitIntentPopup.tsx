@@ -50,7 +50,7 @@ export function ExitIntentPopup() {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="h-1 w-full bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 rounded-t-2xl" />
+        <div className="h-1 w-full bg-gradient-to-r from-primary via-primary to-primary rounded-t-2xl" />
 
         <div className="p-6 text-center space-y-4">
           <div className="text-4xl">🔥</div>
@@ -69,7 +69,7 @@ export function ExitIntentPopup() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-orange-500/20"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
           >
             <Smartphone className="h-4 w-4" />
             Download App

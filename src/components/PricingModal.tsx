@@ -125,7 +125,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
           {/* FOMO Badge */}
           {showFomoBadge && (
             <div className="flex justify-center mt-1 mb-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold animate-pulse bg-primary/20 text-primary border border-primary/40">
                 <Flame className="h-3 w-3" />
                 Premium Prediction Just Dropped
               </div>
@@ -134,10 +134,10 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
 
           {/* Header */}
           <div className="text-center mt-1 mb-3">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2 bg-gradient-to-br from-fuchsia-500/30 to-purple-600/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]">
-              <Crown className="h-5 w-5 text-fuchsia-400" />
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2 bg-gradient-to-br from-primary/30 to-primary/30 shadow-[0_0_20px_rgba(217,70,239,0.3)]">
+              <Crown className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-lg font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400">
+            <h2 className="text-lg font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary to-primary">
               Unlock Premium Access
             </h2>
             <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
@@ -146,15 +146,15 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
           </div>
 
           {/* Features */}
-          <div className="rounded-xl p-3 mb-3 border bg-fuchsia-500/5 border-fuchsia-500/20">
+          <div className="rounded-xl p-3 mb-3 border bg-primary/5 border-primary/20">
             <h3 className="text-[11px] font-semibold text-foreground mb-2">
               Everything you get:
             </h3>
             <ul className="space-y-1.5">
               {features.map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-2.5">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-fuchsia-500/15">
-                    <feature.icon className="h-3 w-3 text-fuchsia-400" />
+                  <div className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-primary/15">
+                    <feature.icon className="h-3 w-3 text-primary" />
                   </div>
                   <span className="text-[11px] text-foreground">{feature.label}</span>
                 </li>
@@ -165,7 +165,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
           {/* Social Proof */}
           <div className="text-center mb-1">
             <p className="text-[11px] text-muted-foreground">
-              <span className="font-semibold text-fuchsia-400">2,400+</span> users already upgraded
+              <span className="font-semibold text-primary">2,400+</span> users already upgraded
             </p>
           </div>
         </div>
@@ -196,7 +196,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
                 )}
               >
                 Annual
-                <span className="ml-1 text-[10px] font-bold text-fuchsia-400">
+                <span className="ml-1 text-[10px] font-bold text-primary">
                   {pricing.saveBadge}
                 </span>
               </button>
@@ -206,7 +206,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
-            className="w-full h-11 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg bg-gradient-to-r from-fuchsia-600 via-purple-600 to-pink-600 hover:from-fuchsia-500 hover:via-purple-500 hover:to-pink-500 text-white shadow-fuchsia-500/30"
+            className="w-full h-11 text-sm font-bold rounded-xl transition-all duration-200 shadow-lg bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary text-white shadow-primary/30"
           >
             <span className="flex items-center gap-2">
               <Crown className="h-4 w-4" />

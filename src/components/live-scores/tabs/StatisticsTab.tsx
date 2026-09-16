@@ -83,7 +83,7 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
       return <span className={iconSize}>⚽</span>;
     }
     if (event.type === "Card" && event.detail === "Yellow Card") {
-      return <span className={cn("rounded-[2px] inline-block", size === "md" ? "w-3.5 h-[18px]" : "w-3 h-4", "bg-amber-400")} />;
+      return <span className={cn("rounded-[2px] inline-block", size === "md" ? "w-3.5 h-[18px]" : "w-3 h-4", "bg-primary")} />;
     }
     if (event.type === "Card" && event.detail === "Red Card") {
       return <span className={cn("rounded-[2px] inline-block", size === "md" ? "w-3.5 h-[18px]" : "w-3 h-4", "bg-destructive")} />;
@@ -172,7 +172,7 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
                           : event.type === "Card"
                             ? event.detail === "Red Card"
                               ? "bg-destructive/20 border-destructive text-destructive"
-                              : "bg-amber-400/20 border-amber-400 text-amber-400"
+                              : "bg-primary/20 border-primary text-primary"
                             : "bg-muted/50 border-border text-muted-foreground"
                       )}>
                         {event.time.elapsed}'
@@ -239,14 +239,14 @@ export function StatisticsTab({ statistics, events = [], loading, homeTeam, away
                   {/* Home bar - grows from right to left */}
                   <div className="flex-1 flex justify-end h-2 bg-muted/30 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      className="h-full bg-success rounded-full transition-all duration-500"
                       style={{ width: `${homePercent}%` }}
                     />
                   </div>
                   {/* Away bar - grows from left to right */}
                   <div className="flex-1 h-2 bg-muted/30 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                      className="h-full bg-primary rounded-full transition-all duration-500"
                       style={{ width: `${awayPercent}%` }}
                     />
                   </div>

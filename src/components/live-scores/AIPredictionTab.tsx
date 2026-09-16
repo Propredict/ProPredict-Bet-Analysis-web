@@ -148,23 +148,23 @@ export function AIPredictionTab({ fixtureId, isActive = true }: AIPredictionTabP
 
   // Real data display
   const riskColors: Record<string, string> = {
-    Low: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    Medium: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    Low: "bg-success/20 text-success border-success/30",
+    Medium: "bg-primary/20 text-primary border-primary/30",
     High: "bg-red-500/20 text-red-400 border-red-500/30",
   };
 
   const confidenceColor =
     data.confidence >= 70
-      ? "text-emerald-400"
+      ? "text-success"
       : data.confidence >= 50
-        ? "text-amber-400"
+        ? "text-primary"
         : "text-red-400";
 
   const confidenceBgColor =
     data.confidence >= 70
-      ? "bg-emerald-500"
+      ? "bg-success"
       : data.confidence >= 50
-        ? "bg-amber-500"
+        ? "bg-primary"
         : "bg-red-500";
 
   return (
