@@ -126,16 +126,16 @@ export function TodaysTopTickets() {
                 {previewMatches.map((m: any, i: number) => {
                   const parsed = parseMatchName(m.match_name);
                   return (
-                    <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-2.5 space-y-2">
+                    <div key={i} className="space-y-2 rounded-lg border-2 border-primary/50 bg-card p-2.5">
                       {parsed.league && (
                         <p className="text-[9px] text-muted-foreground truncate text-center">{parsed.league}</p>
                       )}
                       <div className="flex items-center justify-center gap-2">
-                        <span className="flex-1 text-right text-[12px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                        <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[12px] font-semibold leading-tight text-foreground">
                           {parsed.homeTeam}
                         </span>
                         <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                        <span className="flex-1 text-left text-[12px] font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                        <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[12px] font-semibold leading-tight text-foreground">
                           {parsed.awayTeam}
                         </span>
                       </div>
@@ -145,8 +145,8 @@ export function TodaysTopTickets() {
                           <span className="text-[11px] text-muted-foreground blur-sm select-none">Over 2.5</span>
                         </div>
                       ) : (
-                        <div className={cn("rounded-md border py-1.5 px-3 text-center", border, bg)}>
-                          <span className={cn("text-[12px] font-bold tracking-wide", accent)}>
+                        <div className="rounded-md border border-success/45 bg-success/10 px-3 py-1.5 text-center">
+                          <span className="text-[12px] font-extrabold tracking-wide text-success">
                             {m.prediction}
                           </span>
                         </div>

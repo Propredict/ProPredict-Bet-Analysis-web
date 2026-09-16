@@ -167,7 +167,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
   // --- Shared card shell ---
   const cardShell = cn(
-    "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border",
+    "relative rounded-xl border-2 border-primary/65 bg-card overflow-hidden transition-all duration-300 hover:border-primary",
     accent.glow
   );
 
@@ -194,11 +194,11 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
           {/* Match name — always visible, even when locked */}
           <div className="flex items-center justify-center gap-2">
-            <span className="flex-1 text-right font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight px-2.5 py-1.5 rounded-lg border border-border/50 bg-muted/20 truncate">
+            <span className="flex-1 truncate rounded-lg border border-primary/35 bg-card px-2.5 py-1.5 text-right text-base font-bold leading-tight text-foreground sm:text-lg">
               {tip.homeTeam}
             </span>
             <span className="shrink-0 text-muted-foreground font-normal text-xs">vs</span>
-            <span className="flex-1 text-left font-bold text-base sm:text-lg text-foreground leading-tight tracking-tight px-2.5 py-1.5 rounded-lg border border-border/50 bg-muted/20 truncate">
+            <span className="flex-1 truncate rounded-lg border border-primary/35 bg-card px-2.5 py-1.5 text-left text-base font-bold leading-tight text-foreground sm:text-lg">
               {tip.awayTeam}
             </span>
           </div>
@@ -332,8 +332,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
         </div>
 
         {/* Prediction row */}
-        <div className="flex items-center justify-center gap-2 rounded-xl border border-success/30 bg-gradient-to-r from-success/10 to-success/5 p-2.5">
-          <span className="text-sm sm:text-base font-extrabold text-white uppercase tracking-wide truncate">
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-success/45 bg-success/10 p-2.5">
+          <span className="truncate text-sm font-extrabold uppercase text-success sm:text-base">
             {tip.prediction}
           </span>
         </div>

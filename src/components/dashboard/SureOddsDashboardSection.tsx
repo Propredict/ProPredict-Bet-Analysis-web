@@ -103,7 +103,7 @@ export function SureOddsDashboardSection() {
         <div className="grid gap-4 p-3 sm:p-5 lg:grid-cols-[minmax(0,2fr)_minmax(230px,0.8fr)]">
           <div className="min-w-0">
             {hasAccess ? (
-              <TicketCard ticket={ticket} isLocked={false} light unlockMethod={{ type: "unlocked" }} isUnlocking={unlockingId === ticket.id} onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)} />
+              <TicketCard ticket={ticket} isLocked={false} light unlockMethod={{ type: "unlocked" }} isUnlocking={unlockingId === ticket.id} onUnlockClick={() => handleUnlock("ticket", ticket.id, ticket.tier)} onViewTicket={() => navigate("/sure-odds")} />
             ) : (
               <SureOddsPromoCard ticket={ticket} isLocked={true} unlockMethod={{ type: "upgrade_basic", message: "Unlock today's ticket" }} onUnlockClick={handleBuyDailyTicket} isUnlocking={unlockingId === ticket.id} priceLabel={SURE_ODDS_PRICE_LABEL} />
             )}

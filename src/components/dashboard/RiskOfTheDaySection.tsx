@@ -41,7 +41,7 @@ export function RiskOfTheDaySection() {
         <p className="text-xs text-muted-foreground">High odds • High reward</p>
       </div>
 
-      <Card className="relative p-4 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-[0_0_20px_rgba(0,148,230,0.2)]">
+      <Card className="relative rounded-xl border-2 border-primary/65 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-lg shadow-primary/15">
         <Badge className="absolute top-3 right-3 text-[10px] font-bold border-0 bg-primary/20 text-blue-600">
           HIGH RISK
         </Badge>
@@ -83,8 +83,8 @@ export function RiskOfTheDaySection() {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-sm font-bold text-primary-foreground text-center">{riskPick.prediction}</p>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-success/45 bg-success/10 px-3 py-2">
+                <p className="text-center text-sm font-extrabold text-success">{riskPick.prediction}</p>
               </div>
               <Button
                 size="sm"

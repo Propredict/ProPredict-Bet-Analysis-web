@@ -59,7 +59,7 @@ export function SureOddsPromoCard({
     return (
       <div
         className={cn(
-          "relative rounded-2xl border border-border/60 bg-card overflow-hidden",
+          "relative rounded-2xl border-2 border-primary/70 bg-card overflow-hidden",
           "shadow-[0_0_30px_rgba(0,148,230,0.12)]"
         )}
       >
@@ -104,23 +104,23 @@ export function SureOddsPromoCard({
           {matches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="rounded-xl border border-border/40 bg-muted/10 p-3">
+              <div key={idx} className="rounded-xl border-2 border-primary/50 bg-secondary/45 p-3">
                 {parsed.league && (
                   <p className="text-[9px] text-muted-foreground truncate text-center mb-1.5 uppercase tracking-wider">
                     {parsed.league}
                   </p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 text-right text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.homeTeam}
                   </span>
                   <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 text-left text-[15px] sm:text-base font-semibold text-foreground leading-tight truncate px-2 py-1 rounded-md border border-border/50 bg-muted/20">
+                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.awayTeam}
                   </span>
                 </div>
-                <div className="mt-2 rounded-lg border border-success/30 bg-success/5 py-2 px-3 text-center">
-                  <span className="text-[13px] font-bold text-foreground tracking-wide">{match.prediction}</span>
+                <div className="mt-2 rounded-lg border border-success/45 bg-success/10 py-2 px-3 text-center">
+                  <span className="text-[13px] font-extrabold tracking-wide text-success">{match.prediction}</span>
                 </div>
               </div>
             );
@@ -137,7 +137,7 @@ export function SureOddsPromoCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-primary/15 bg-card shadow-md shadow-primary/10">
+    <div className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15">
       <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
@@ -153,7 +153,7 @@ export function SureOddsPromoCard({
           {matches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+              <div key={idx} className="rounded-lg border-2 border-primary/50 bg-card p-3 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
                   <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending</span>

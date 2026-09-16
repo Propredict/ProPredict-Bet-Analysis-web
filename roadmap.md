@@ -12,3 +12,6 @@
 - [x] Verify the app/web choice page on desktop and mobile.
 - [x] Audit popup text contrast and fix unreadable combinations without changing behavior.
 - [x] Verify the dashboard rewards popup visually on desktop and mobile.
+- [x] Route the Dashboard Sure Odds ticket card to the Sure Odds page.
+- [x] Strengthen blue borders and use green prediction fields across tip and ticket cards.
+- [x] Verify the Dashboard click, desktop/mobile card styling, and overflow.
