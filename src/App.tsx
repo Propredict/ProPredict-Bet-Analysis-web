@@ -50,11 +50,9 @@ const AboutUs = lazy(() => import("./pages/AboutUs"));
 const HowAIWorks = lazy(() => import("./pages/HowAIWorks"));
 
 // Tier pages - lazy loaded
-const DailyTips = lazy(() => import("./pages/DailyTips"));
 const Tickets = lazy(() => import("./pages/Tickets"));
 const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
-const PremiumTips = lazy(() => import("./pages/PremiumTips"));
 const SingleTips = lazy(() => import("./pages/SingleTips"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
 const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
@@ -63,8 +61,6 @@ const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 
-const RiskOfTheDay = lazy(() => import("./pages/RiskOfTheDay"));
-const DiamondPick = lazy(() => import("./pages/DiamondPick"));
 const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
 
 // Admin - lazy loaded
