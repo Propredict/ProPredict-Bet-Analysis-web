@@ -144,11 +144,11 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider defaultOpen={true} open={true}>
-      <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw]">
+      <div className="min-h-screen flex w-full overflow-x-hidden max-w-[100vw] bg-background">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
-          <header className="fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top,0px)] h-[calc(3rem+env(safe-area-inset-top,0px))] sm:h-[calc(3.5rem+env(safe-area-inset-top,0px))] flex items-center justify-between px-2 sm:px-4 bg-primary md:left-[var(--sidebar-width,0)]">
+          <header className="fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top,0px)] h-[calc(3rem+env(safe-area-inset-top,0px))] sm:h-[calc(3.5rem+env(safe-area-inset-top,0px))] flex items-center justify-between px-2 sm:px-4 bg-gradient-to-r from-primary via-primary to-sidebar border-b border-primary/30 shadow-md md:left-[var(--sidebar-width,0)]">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="md:hidden text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-10 w-10 [&>svg]:h-6 [&>svg]:w-6" />
               
@@ -270,7 +270,7 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-20 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full">
+          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-20 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full bg-background">
             <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>

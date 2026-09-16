@@ -17,7 +17,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
   ];
 
   return (
-    <footer ref={ref} className="border-t border-border bg-gradient-to-b from-card/50 to-background mt-auto">
+    <footer ref={ref} className="border-t border-sidebar-border bg-sidebar text-sidebar-foreground mt-auto">
       <div className="max-w-[1200px] mx-auto px-4 py-4 sm:py-5">
         {/* Social Links */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-3">

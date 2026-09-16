@@ -94,8 +94,8 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 bg-primary">
+    <Sidebar className="border-r border-sidebar-border shadow-xl">
+      <SidebarHeader className="h-12 sm:h-14 pt-[env(safe-area-inset-top,0px)] px-3 bg-sidebar border-b border-sidebar-border">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <img 
@@ -105,15 +105,15 @@ export function AppSidebar() {
             />
             {!collapsed && (
               <div className="flex flex-col">
-                <span className="text-base font-bold text-primary-foreground">ProPredict</span>
-                <span className="text-xs text-primary-foreground/80">AI Predictions & Analysis</span>
+                <span className="text-base font-bold text-sidebar-foreground">ProPredict</span>
+                <span className="text-xs text-sidebar-foreground/70">AI Predictions & Analysis</span>
               </div>
             )}
           </div>
           {isMobile && (
             <button
               onClick={() => setOpenMobile(false)}
-              className="p-1.5 rounded-md text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+              className="p-1.5 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
@@ -122,7 +122,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-1.5">
+      <SidebarContent className="px-1.5 bg-sidebar text-sidebar-foreground">
         {/* Dashboard */}
         <SidebarGroup>
           <SidebarMenu>
@@ -132,9 +132,9 @@ export function AppSidebar() {
                   to="/" 
                   end 
                   className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
-                  activeClassName="bg-primary text-primary-foreground hover:bg-primary"
+                   activeClassName="bg-primary text-primary-foreground hover:bg-primary shadow-md"
                 >
-                  <Home className="h-4 w-4 text-primary" />
+                   <Home className="h-4 w-4" />
                   {!collapsed && <span>Dashboard</span>}
                 </NavLink>
               </SidebarMenuButton>
@@ -246,7 +246,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-gradient-to-r from-accent to-primary text-white hover:opacity-90"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
                       activeClassName=""
                     >
                       <item.icon className="h-4 w-4" />
@@ -351,7 +351,7 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-2 border-t border-sidebar-border">
+      <SidebarFooter className="p-2 border-t border-sidebar-border bg-sidebar text-sidebar-foreground">
         {!collapsed && (
           <div className="rounded-md bg-accent/10 border border-accent/20 p-2 mb-2">
             <div className="flex items-center gap-1.5 text-[10px] text-accent">

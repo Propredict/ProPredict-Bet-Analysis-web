@@ -66,17 +66,17 @@ export function SureOddsDashboardSection() {
 
   return (
     <section className="space-y-4">
-      {/* Golden ticket frame — clearly separates Sure Odds from the rest of the dashboard */}
-      <div className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-b from-amber-500/25 via-amber-500/15 to-amber-950/30 p-3 sm:p-4 shadow-[0_0_25px_rgba(245,158,11,0.15)]">
+      {/* Blue spotlight frame — clearly separates Sure Odds from the rest of the dashboard */}
+      <div className="rounded-xl border border-primary/25 bg-secondary p-3 sm:p-4 shadow-lg">
         {/* Header */}
-        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-amber-500/30 via-yellow-500/15 to-transparent border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+        <div className="flex items-center justify-between gap-1.5 p-3 rounded-lg bg-gradient-to-r from-primary to-sidebar border border-primary/30 shadow-md">
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="p-1.5 rounded-md bg-amber-500/25">
-              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />
+            <div className="p-1.5 rounded-md bg-primary-foreground/15">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground fill-primary-foreground/20" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold sm:text-lg text-amber-400">Sure Odds 2+</h2>
-              <p className="text-[9px] sm:text-[10px] text-foreground/80">
+              <h2 className="text-sm font-semibold sm:text-lg text-primary-foreground">Sure Odds 2+</h2>
+              <p className="text-[9px] sm:text-[10px] text-primary-foreground/80">
                 Today's high-confidence ticket with 2.00+ total odds / Današnji tiket visoke sigurnosti sa ukupnim kvotama 2.00+
               </p>
             </div>
@@ -84,7 +84,7 @@ export function SureOddsDashboardSection() {
           {hasAccess ? (
             <Button
               size="sm"
-              className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
+              className="bg-primary-foreground hover:bg-primary-foreground/90 text-primary font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
               onClick={() => navigate("/sure-odds")}
             >
               <Ticket className="h-3.5 w-3.5 mr-1" />
@@ -93,7 +93,7 @@ export function SureOddsDashboardSection() {
           ) : (
             <Button
               size="sm"
-              className="bg-amber-500 hover:bg-amber-600 text-black font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
+              className="bg-primary-foreground hover:bg-primary-foreground/90 text-primary font-semibold border-0 h-8 px-3 text-[11px] sm:text-xs"
               onClick={handleBuyDailyTicket}
             >
               One Day Offer / Ponuda za dan – {SURE_ODDS_PRICE_LABEL}
@@ -130,7 +130,7 @@ export function SureOddsDashboardSection() {
             variant="ghost"
             size="sm"
             className={cn(
-              "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 text-xs font-semibold"
+              "text-primary hover:text-primary/80 hover:bg-primary/10 text-xs font-semibold"
             )}
             onClick={() => navigate("/sure-odds")}
           >

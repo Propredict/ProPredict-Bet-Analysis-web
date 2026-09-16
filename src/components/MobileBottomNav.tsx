@@ -59,7 +59,7 @@ export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
   return (
     <nav
       ref={ref}
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-sidebar/95 text-sidebar-foreground backdrop-blur-lg border-t border-sidebar-border shadow-xl"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="flex items-center justify-around h-14 px-2">
@@ -75,7 +75,7 @@ export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-1.5 transition-all",
                 active
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-sidebar-foreground/65 hover:text-sidebar-foreground"
               )}
             >
               <div className={cn(
