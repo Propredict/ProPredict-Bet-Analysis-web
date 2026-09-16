@@ -49,7 +49,7 @@ const mainItems = [
 ];
 
 const packagesItems = [
-  { title: "Get Premium", url: "/get-premium", icon: Sparkles, highlight: true },
+  { title: "Get Premium", url: "/get-premium", icon: Crown, highlight: true },
 ];
 
 const premiumItems = [
@@ -133,7 +133,7 @@ export function AppSidebar() {
                 <NavLink 
                   to="/" 
                   end 
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                    activeClassName="bg-primary text-primary-foreground hover:bg-primary shadow-md"
                 >
                    <Home className="h-[18px] w-[18px]" />
