@@ -343,7 +343,7 @@ export function DashboardAIPredictions() {
         : null
       : baseTier;
     return (
-      <PredictionCard
+      <PredictionListRow
         key={prediction.id}
         prediction={prediction}
         onClick={() => navigate("/ai-predictions")}
