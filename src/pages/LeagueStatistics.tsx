@@ -117,7 +117,7 @@ export default function LeagueStatistics() {
         {/* Header - COMPACT */}
         <PageHero
           title="All Leagues Standings"
-          subtitle="Stats & rankings"
+          subtitle="Stats, rankings and team performance from around the world"
           icon={BarChart3}
           actions={
             <LeagueSearchSelect
