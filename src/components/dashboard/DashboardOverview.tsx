@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Crown, Flame, Loader2, Lock, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTips } from "@/hooks/useTips";
 import { useLiveScores } from "@/hooks/useLiveScores";
@@ -19,6 +19,7 @@ interface Row {
   confidence: number;
   tier: ContentTier;
   kickoff: string;
+  category: string;
 }
 
 function mapTip(t: any): Row {
@@ -31,6 +32,7 @@ function mapTip(t: any): Row {
     confidence: t.confidence ?? 0,
     tier: (t.tier ?? "free") as ContentTier,
     kickoff: t.kickoff_time ? String(t.kickoff_time).slice(0, 5) : "",
+    category: t.category ?? "",
   };
 }
 
@@ -78,7 +80,8 @@ export function DashboardOverview() {
   const todays = (dbTips as any[]).filter((t) => t.tip_date === today).map(mapTip);
   const sorted = [...todays].sort((a, b) => b.confidence - a.confidence);
   const topRows = sorted.slice(0, 5);
-  const tipRows = sorted.slice(0, 4);
+  const tipRows = sorted.filter((r) => r.category !== "risk_of_day").slice(0, 4);
+  const riskRows = sorted.filter((r) => r.category === "risk_of_day").slice(0, 4);
 
   const liveMatches = matches
     .filter((m) => m.status === "live" || m.status === "halftime")
@@ -111,7 +114,7 @@ export function DashboardOverview() {
           )}
         </section>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {/* Live matches */}
           <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md">
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
@@ -157,6 +160,41 @@ export function DashboardOverview() {
               <p className="px-4 py-6 text-center text-sm text-muted-foreground">Tips are being prepared.</p>
             ) : (
               tipRows.map((row) => {
+                const locked = !canAccess(row.tier, "tip", row.id);
+                return (
+                  <div key={row.id} className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-extrabold uppercase text-sidebar">{row.home} vs {row.away}</p>
+                      {locked ? (
+                        <p className="inline-flex items-center gap-1 text-xs font-bold text-primary"><Lock className="h-3 w-3" /> Premium pick</p>
+                      ) : (
+                        <p className="text-xs font-bold text-success">{row.prediction}</p>
+                      )}
+                    </div>
+                    {row.confidence > 0 && (
+                      <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-[11px] font-bold text-primary">{row.confidence}%</span>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </section>
+
+          {/* Risk of the Day */}
+          <section className="overflow-hidden rounded-2xl border-2 border-primary/30 bg-card shadow-md md:col-span-2 xl:col-span-1">
+            <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <h2 className="text-base font-black text-sidebar">Risk of the Day</h2>
+              </div>
+              <Link to="/single-tips?view=risk" className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                View All <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            {riskRows.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">Risk pick is being prepared.</p>
+            ) : (
+              riskRows.map((row) => {
                 const locked = !canAccess(row.tier, "tip", row.id);
                 return (
                   <div key={row.id} className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 last:border-b-0">

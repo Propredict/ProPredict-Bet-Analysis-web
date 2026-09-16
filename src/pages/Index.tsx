@@ -18,7 +18,6 @@ import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBa
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
-import { DashboardStatsStrip } from "@/components/dashboard/DashboardStatsStrip";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -320,7 +319,6 @@ const Index = () => {
           <TodaysMatches />
         </Suspense>
 
-        <DashboardStatsStrip />
 
         <Suspense fallback={<LazyFallback />}>
           <BottomCTA />
