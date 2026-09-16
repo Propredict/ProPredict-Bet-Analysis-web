@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Bell, BellRing, Star, User, LogOut, Crown, Sparkles, Search } from "lucide-react";
-import { ArenaNotificationsDropdown } from "@/components/ArenaNotificationsDropdown";
 import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Footer } from "@/components/Footer";
@@ -210,8 +209,6 @@ export default function AppLayout() {
                 <span className="font-medium">{planBadge.label}</span>
               </Badge>
 
-              {/* Arena Notifications Bell */}
-              <ArenaNotificationsDropdown />
 
               {/* Match Alert Notifications Button */}
               <Button 

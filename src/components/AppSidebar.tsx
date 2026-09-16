@@ -60,7 +60,6 @@ const premiumItems = [
 ];
 
 const tools = [
-  { title: "AI vs Members", url: "/ai-vs-community", icon: Swords },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },

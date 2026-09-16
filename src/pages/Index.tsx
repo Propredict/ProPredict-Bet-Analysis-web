@@ -14,9 +14,6 @@ import { GuestBanner } from "@/components/GuestBanner";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { TelegramPromoPopup } from "@/components/TelegramPromoPopup";
-import { DailyRewardWidget } from "@/components/dashboard/DailyRewardWidget";
-import { DailyRewardPopup } from "@/components/dashboard/DailyRewardPopup";
-import { DailyRewardStickyBar } from "@/components/dashboard/DailyRewardStickyBar";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
@@ -263,7 +260,6 @@ const Index = () => {
         <RateAppCard onRate={() => window.dispatchEvent(new Event("propredict:open-rate-popup"))} />
 
         {/* Daily Reward Widget */}
-        <DailyRewardWidget />
 
         {/* Android: new focused sections */}
         {isAndroid ? (
@@ -374,8 +370,6 @@ const Index = () => {
       </div>
       <GuestSignInModal />
       <AppDownloadPopup />
-      <DailyRewardPopup />
-      <DailyRewardStickyBar />
       <TelegramPromoPopup />
       {isAndroid && <PicksCategoryModal open={showCategoryModal} onOpenChange={setShowCategoryModal} />}
     </>

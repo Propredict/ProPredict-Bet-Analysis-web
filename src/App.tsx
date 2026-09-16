@@ -56,8 +56,6 @@ const ExclusiveTips = lazy(() => import("./pages/ExclusiveTips"));
 const ExclusiveTickets = lazy(() => import("./pages/ExclusiveTickets"));
 const SingleTips = lazy(() => import("./pages/SingleTips"));
 const AIPredictions = lazy(() => import("./pages/AIPredictions"));
-const AIvsCommunity = lazy(() => import("./pages/AIvsCommunity"));
-const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
@@ -229,8 +227,6 @@ const App = () => {
                     <Route path="/premium-predictions" element={<NavigateWithSearch to="/premium-tickets" />} />
                     <Route path="/premium-tickets" element={<PremiumTickets />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
-                    <Route path="/ai-vs-community" element={<AIvsCommunity />} />
-                    <Route path="/how-ai-vs-members-works" element={<HowAIvsMembersWorks />} />
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
