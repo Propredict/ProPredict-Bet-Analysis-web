@@ -361,9 +361,9 @@ export function DashboardAIPredictions() {
   return (
     <section className="space-y-5">
         {/* Section Header — centered bold title */}
-        <div className="text-center space-y-1 pt-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
-            <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+        <div className="space-y-1 pt-2 text-center">
+          <h2 className="flex items-center justify-center gap-2 text-xl font-black tracking-tight text-sidebar sm:text-2xl">
+            <Brain className="h-6 w-6 text-primary sm:h-7 sm:w-7" />
             Daily Predictions made by AI / AI Dnevne predikcije
           </h2>
           <p className="text-[11px] text-muted-foreground">
