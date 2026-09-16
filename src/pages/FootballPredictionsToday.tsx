@@ -206,87 +206,87 @@ export default function FootballPredictionsToday() {
         </section>
 
         {/* ═══ TODAY'S TOP 3 ═══ */}
-        <section className="px-4 py-12 border-t border-gray-800/50">
+        <section className="border-t border-primary/10 bg-background px-4 py-12">
           <div className="max-w-xl mx-auto space-y-5">
             <div className="text-center space-y-1">
-              <h2 className="text-lg sm:text-xl font-bold flex items-center justify-center gap-2"><Trophy className="h-5 w-5 text-emerald-400" />High Confidence Picks Today</h2>
-              <p className="text-xs text-gray-500">Preview of today's matches. Full insights available in app.</p>
+              <h2 className="flex items-center justify-center gap-2 text-lg font-bold sm:text-xl"><Trophy className="h-5 w-5 text-primary" />High Confidence Picks Today</h2>
+              <p className="text-xs text-muted-foreground">Preview of today's matches. Full insights available in app.</p>
             </div>
             {matches.length > 0 ? (
               <div className="space-y-3">
                 {matches.map(m => <MatchCard key={m.id} match={m} onClick={() => setPopup(true)} />)}
               </div>
             ) : (
-              <div className="text-center py-8 text-sm text-gray-500">Predictions update daily — check back soon.</div>
+              <div className="py-8 text-center text-sm text-muted-foreground">Predictions update daily — check back soon.</div>
             )}
-            <p className="text-[10px] text-gray-600 text-center">Some matches may be removed after kick-off</p>
+            <p className="text-center text-[10px] text-muted-foreground">Some matches may be removed after kick-off</p>
           </div>
         </section>
 
         {/* ═══ WHY USERS USE THIS ═══ */}
-        <section className="px-4 py-12 border-t border-gray-800/50">
+        <section className="border-t border-primary/10 bg-card px-4 py-12">
           <div className="max-w-xl mx-auto space-y-6">
             <h2 className="text-lg sm:text-xl font-bold text-center">Why Users Use ProPredict</h2>
             <div className="grid grid-cols-2 gap-3">
               {["Smart match insights", "Over/Under & BTTS analysis", "Daily updated predictions", "Multiple options per match"].map(t => (
-                <div key={t} className="flex items-start gap-2 p-3 rounded-xl bg-[#111] border border-gray-800">
-                  <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-xs text-gray-300">{t}</span>
+                <div key={t} className="flex items-start gap-2 rounded-xl border border-primary/10 bg-secondary/60 p-3">
+                  <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                  <span className="text-xs text-foreground">{t}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-emerald-400 font-semibold text-center">🔥 {joinedThisWeek}+ users joined this week</p>
+            <p className="text-center text-xs font-semibold text-primary">🔥 {joinedThisWeek}+ users joined this week</p>
           </div>
         </section>
 
         {/* ═══ URGENCY ═══ */}
-        <section className="px-4 py-12 border-t border-gray-800/50 bg-gradient-to-b from-[#0a0a0a] to-[#0f1a14]">
+        <section className="border-t border-primary/10 bg-gradient-to-b from-background to-secondary px-4 py-12">
           <div className="max-w-xl mx-auto text-center space-y-5">
             <h2 className="text-lg sm:text-xl font-bold">Don't Miss Today's Matches</h2>
-            <p className="text-sm text-gray-400">Predictions update daily. Matches start soon.</p>
-            <div className="flex items-center justify-center gap-4 text-[11px] text-gray-500">
+            <p className="text-sm text-muted-foreground">Predictions update daily. Matches start soon.</p>
+            <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1">⚡ Matches starting soon</span>
               <span className="flex items-center gap-1">⏳ 5 games in next hours</span>
             </div>
-            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20">
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90">
               <Download className="h-4 w-4" />Download App Now
             </a>
           </div>
         </section>
 
         {/* ═══ WORLD CUP ═══ */}
-        <section className="px-4 py-12 border-t border-gray-800/50">
+        <section className="border-t border-primary/10 bg-card px-4 py-12">
           <div className="max-w-xl mx-auto text-center space-y-4">
-            <Globe className="h-8 w-8 text-emerald-400 mx-auto" />
+            <Globe className="mx-auto h-8 w-8 text-primary" />
             <h2 className="text-lg sm:text-xl font-bold">World Cup 2026 is coming</h2>
-            <p className="text-sm text-gray-400">Track teams, stats and predictions in one place.</p>
-            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 text-sm font-medium transition-colors">
+            <p className="text-sm text-muted-foreground">Track teams, stats and predictions in one place.</p>
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-primary/30 px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10">
               View in App <ChevronRight className="h-4 w-4" />
             </a>
           </div>
         </section>
 
         {/* ═══ FINAL CTA ═══ */}
-        <section className="px-4 py-16 border-t border-gray-800/50 bg-gradient-to-b from-[#0a0a0a] to-[#060d09]">
+        <section className="border-t border-primary/10 bg-sidebar px-4 py-16 text-sidebar-foreground">
           <div className="max-w-xl mx-auto text-center space-y-4">
             <h2 className="text-2xl sm:text-3xl font-extrabold">Get Today's Predictions Now</h2>
-            <p className="text-sm text-gray-400">Fast. Simple. Updated daily.</p>
-            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-xl shadow-emerald-500/25 hover:scale-[1.02] active:scale-95">
+            <p className="text-sm text-sidebar-foreground/70">Fast. Simple. Updated daily.</p>
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-bold text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95">
               <Download className="h-5 w-5" />Download App
             </a>
           </div>
         </section>
 
         {/* ═══ DISCLAIMER ═══ */}
-        <div className="px-4 py-6 border-t border-gray-800/50">
-          <p className="text-[9px] text-gray-600 text-center max-w-md mx-auto">
+        <div className="border-t border-primary/10 bg-sidebar px-4 py-6">
+          <p className="mx-auto max-w-md text-center text-[9px] text-sidebar-foreground/45">
             Disclaimer: ProPredict does not provide gambling services. All AI-generated predictions are for informational and entertainment purposes only.
           </p>
         </div>
 
         {/* ═══ STICKY BOTTOM CTA ═══ */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#0a0a0a]/95 backdrop-blur-md border-t border-gray-800">
-          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full max-w-md mx-auto py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20">
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-primary/15 bg-card/95 p-3 backdrop-blur-md">
+          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="mx-auto flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90">
             <Download className="h-4 w-4" />Download App
           </a>
         </div>
