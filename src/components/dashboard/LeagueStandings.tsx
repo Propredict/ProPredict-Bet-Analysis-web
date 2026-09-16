@@ -31,7 +31,7 @@ export function LeagueStandings() {
   return (
     <section className="space-y-4">
       {/* Section Header */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(15,155,142,0.15)]">
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-[0_0_15px_rgba(0,148,230,0.15)]">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-primary/20">
             <Trophy className="h-4 w-4 text-primary" />
@@ -134,12 +134,12 @@ export function LeagueStandings() {
           <div className="p-3 border-t border-border/30 bg-background/50">
             <Button
               variant="ghost"
-              className="w-full bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+              className="w-full bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/30 group transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,148,230,0.4)]"
               onClick={() => navigate("/league-statistics")}
             >
-              <Trophy className="h-4 w-4 mr-1.5 text-violet-400" />
-              <span className="text-xs text-violet-400">View full standings & more leagues</span>
-              <ChevronRight className="h-4 w-4 ml-1 text-violet-400 transition-transform group-hover:translate-x-0.5" />
+              <Trophy className="h-4 w-4 mr-1.5 text-primary" />
+              <span className="text-xs text-primary">View full standings & more leagues</span>
+              <ChevronRight className="h-4 w-4 ml-1 text-primary transition-transform group-hover:translate-x-0.5" />
             </Button>
           </div>
         )}

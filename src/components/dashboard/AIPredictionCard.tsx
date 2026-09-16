@@ -103,13 +103,13 @@ export function AIPredictionCard({
       return "";
     }
     if (unlockMethod.type === "watch_ad") {
-      return "bg-primary hover:bg-primary/90 text-white border-0";
+      return "bg-primary hover:bg-primary/90 text-primary-foreground border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
-      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0";
     }
     if (unlockMethod.type === "upgrade_premium") {
-      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-warning via-accent to-primary hover:opacity-90 text-primary-foreground border-0";
     }
     return "";
   };
@@ -341,12 +341,12 @@ export function AIPredictionCard({
               {(() => {
                 const p = (prediction.prediction || "").toLowerCase();
                 if (p.includes("over")) return <><TrendingUp className="h-4 w-4 text-green-400" />Over 2.5</>;
-                if (p.includes("under")) return <><TrendingUp className="h-4 w-4 text-orange-400" />Under 2.5</>;
-                if (p.includes("btts")) return <><Zap className="h-4 w-4 text-yellow-400" />BTTS Yes</>;
-                if (p === "1" || p === "home") return <><Trophy className="h-4 w-4 text-amber-400" />Home Win</>;
-                if (p === "2" || p === "away") return <><Trophy className="h-4 w-4 text-amber-400" />Away Win</>;
+                if (p.includes("under")) return <><TrendingUp className="h-4 w-4 text-primary" />Under 2.5</>;
+                if (p.includes("btts")) return <><Zap className="h-4 w-4 text-blue-500" />BTTS Yes</>;
+                if (p === "1" || p === "home") return <><Trophy className="h-4 w-4 text-primary" />Home Win</>;
+                if (p === "2" || p === "away") return <><Trophy className="h-4 w-4 text-primary" />Away Win</>;
                 if (p === "x" || p === "draw") return <><Target className="h-4 w-4 text-blue-400" />Draw</>;
-                return <><Trophy className="h-4 w-4 text-amber-400" />{prediction.prediction || "—"}</>;
+                return <><Trophy className="h-4 w-4 text-primary" />{prediction.prediction || "—"}</>;
               })()}
             </p>
           </div>

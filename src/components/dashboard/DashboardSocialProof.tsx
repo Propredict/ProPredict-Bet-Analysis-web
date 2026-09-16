@@ -40,9 +40,9 @@ export function DashboardSocialProof() {
 
   const t = testimonials[current];
   const badgeColor = t.badge === "Premium"
-    ? "bg-fuchsia-500/15 text-fuchsia-400 border-fuchsia-500/30"
+    ? "bg-primary/15 text-primary border-primary/30"
     : t.badge === "Expert"
-    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+    ? "bg-primary/15 text-primary border-primary/30"
     : "bg-primary/15 text-primary border-primary/30";
 
 
@@ -72,7 +72,7 @@ export function DashboardSocialProof() {
                     <span className="text-lg sm:text-2xl font-bold text-primary">
                       {stat.value}
                     </span>
-                    {stat.isStar && <Star className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 fill-amber-400" />}
+                    {stat.isStar && <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary fill-primary" />}
                   </div>
                   <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{stat.label}</p>
                 </div>
@@ -113,7 +113,7 @@ export function DashboardSocialProof() {
                   <Star
                     key={i}
                     className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${
-                      i < t.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"
+                      i < t.rating ? "text-primary fill-primary" : "text-muted-foreground/30"
                     }`}
                   />
                 ))}

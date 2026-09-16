@@ -250,7 +250,7 @@ export function MatchPredictions() {
 
             {/* SECTION 2b: RISK OF THE DAY — standalone */}
             {riskTips.length > 0 && (
-              <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-red-500/5 to-transparent p-3 sm:p-4 space-y-3">
+              <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 sm:p-4 space-y-3">
                 <div className="text-center space-y-1">
                   <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-2">
                     <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -268,7 +268,7 @@ export function MatchPredictions() {
                 <div className="flex justify-center pt-1">
                   <Button
                     size="sm"
-                    className="px-5 group bg-gradient-to-r from-primary to-red-500 hover:from-blue-700 hover:to-red-600 text-primary-foreground text-xs border-0 rounded-full"
+                    className="px-5 group bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-blue-700 text-primary-foreground text-xs border-0 rounded-full"
                     onClick={() => navigate("/risk-of-the-day")}
                   >
                     <span>See Risk of the Day / Pogledaj Risk dana</span>

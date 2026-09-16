@@ -60,13 +60,13 @@ export function LockedContentOverlay({
 
   const getButtonClassName = () => {
     if (unlockMethod.type === "watch_ad" || unlockMethod.type === "android_watch_ad_or_pro") {
-      return "bg-primary hover:bg-primary/90 text-white border-0";
+      return "bg-primary hover:bg-primary/90 text-primary-foreground border-0";
     }
     if (unlockMethod.type === "upgrade_basic") {
-      return "bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-primary to-primary hover:opacity-90 text-primary-foreground border-0";
     }
     if (unlockMethod.type === "upgrade_premium" || unlockMethod.type === "android_premium_only") {
-      return "bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0";
+      return "bg-gradient-to-r from-primary to-primary hover:opacity-90 text-primary-foreground border-0";
     }
     return "";
   };
@@ -106,7 +106,7 @@ export function LockedContentOverlay({
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 bg-primary hover:bg-primary/90 text-white border-0"
+            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground border-0"
             onClick={onUnlockClick}
           >
             <Play className="h-4 w-4" />
@@ -131,13 +131,13 @@ export function LockedContentOverlay({
         className
       )}>
         <div className="flex items-center gap-2 text-foreground/90">
-          <Lock className="h-4 w-4 text-fuchsia-400" />
+          <Lock className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">🔒 {getHeadline()}</span>
         </div>
         <div className="flex flex-col items-center gap-2">
           <Button
             variant="outline"
-            className="gap-2 bg-primary hover:bg-primary/90 text-white border-0"
+            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground border-0"
             onClick={onUnlockClick}
           >
             <Play className="h-4 w-4" />
@@ -177,7 +177,7 @@ export function LockedContentOverlay({
       className
     )}>
       <div className="flex items-center gap-2 text-foreground/90 px-3 text-center">
-        <Lock className="h-4 w-4 text-fuchsia-400 shrink-0" />
+        <Lock className="h-4 w-4 text-primary shrink-0" />
         <span className="text-sm font-semibold">🔒 {getHeadline()}</span>
       </div>
       <Button
