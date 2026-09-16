@@ -134,7 +134,7 @@ export function TodaysTopPicks() {
               <h3 className="text-base font-extrabold text-primary-foreground text-center tracking-tight">
                 {sectionTitle}
               </h3>
-              <Card className={cn("relative p-4 border-2 rounded-xl", border, glow, bg)}>
+              <Card className={cn("relative rounded-xl border-2 border-primary/65 p-4", glow, bg)}>
               <Badge className={cn("absolute top-3 right-3 text-[10px] font-bold border-0", badgeBg)}>
                 {label}
               </Badge>
@@ -209,8 +209,8 @@ export function TodaysTopPicks() {
                   </div>
                 ) : (
                   <div className="space-y-2 pt-1">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-sm font-bold text-primary-foreground text-center">{pick.prediction}</span>
+                    <div className="flex flex-col items-center gap-1 rounded-lg border border-success/45 bg-success/10 px-3 py-2">
+                      <span className="text-center text-sm font-extrabold text-success">{pick.prediction}</span>
                     </div>
                     <Button
                       size="sm"

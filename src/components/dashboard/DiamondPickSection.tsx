@@ -36,7 +36,7 @@ export function DiamondPickSection() {
         <p className="text-xs text-muted-foreground">Hand-picked best of the day • Highest conviction</p>
       </div>
 
-      <Card className="relative p-4 border-2 border-cyan-400/40 rounded-xl bg-gradient-to-br from-cyan-500/10 via-sky-500/5 to-transparent shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+      <Card className="relative rounded-xl border-2 border-primary/65 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-lg shadow-primary/15">
         <Badge className="absolute top-3 right-3 text-[10px] font-bold border-0 bg-cyan-500/20 text-cyan-300">
           DIAMOND
         </Badge>
@@ -76,8 +76,8 @@ export function DiamondPickSection() {
             </div>
           ) : (
             <div className="space-y-2 pt-1">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-sm font-bold text-primary-foreground text-center">{diamondPick.prediction}</p>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-success/45 bg-success/10 px-3 py-2">
+                <p className="text-center text-sm font-extrabold text-success">{diamondPick.prediction}</p>
               </div>
               <Button
                 size="sm"
