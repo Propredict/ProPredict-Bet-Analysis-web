@@ -375,7 +375,7 @@ export function AllTicketsCard({
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px] px-1.5">
+                  <Badge variant="secondary" className="border border-success/40 bg-success/10 px-2 text-sm font-bold text-success">
                     {match.prediction}
                   </Badge>
                 </div>

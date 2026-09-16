@@ -58,7 +58,7 @@ function TicketGroup({
               {isPremium ? <Crown className="h-5 w-5 shrink-0 text-primary" /> : <TicketIcon className="h-5 w-5 shrink-0 text-primary" />}
               <h2 className="truncate text-xl font-bold text-sidebar-foreground">{title}</h2>
             </div>
-            <p className="mt-1 text-xs font-semibold uppercase text-primary">{subtitle}</p>
+            <p className="mt-1 text-sm font-semibold uppercase text-primary">{subtitle}</p>
           </div>
           <span className="shrink-0 rounded-full border border-primary/35 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase text-primary">
             {badge}
@@ -70,7 +70,7 @@ function TicketGroup({
             <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-accent/25 px-5 text-center">
               <TicketIcon className="mb-3 h-10 w-10 text-sidebar-foreground/35" />
               <p className="font-semibold text-sidebar-foreground">No {title} available today</p>
-              <p className="mt-1 text-xs text-sidebar-foreground/60">Check back later for today's ticket.</p>
+              <p className="mt-1 text-sm text-sidebar-foreground/60">Check back later for today's ticket.</p>
               <Button variant="outline" size="sm" className="mt-4 border-primary/40 bg-transparent text-sidebar-foreground hover:bg-primary/15" onClick={onRefresh}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
               </Button>
@@ -92,29 +92,29 @@ function TicketGroup({
                     <div className="min-w-0">
                       <div className="mb-1 flex items-center gap-2">
                         {isPremium ? <Crown className="h-4 w-4 text-primary" /> : <TicketIcon className="h-4 w-4 text-primary" />}
-                        <span className="text-[10px] font-bold uppercase text-primary">{isPremium ? "Premium Ticket" : "Daily Ticket"}</span>
+                        <span className="text-xs font-bold uppercase text-primary">{isPremium ? "Premium Ticket" : "Daily Ticket"}</span>
                       </div>
                       <p className="truncate text-base font-extrabold uppercase text-sidebar-foreground sm:text-lg">{ticket.title}</p>
-                      <p className="mt-1 text-[10px] font-semibold uppercase text-sidebar-foreground/65">Carefully selected picks</p>
+                      <p className="mt-1 text-xs font-semibold uppercase text-sidebar-foreground/65">Carefully selected picks</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-[9px] font-bold uppercase text-sidebar-foreground/55">Total odds</p>
-                      <p className="text-lg font-extrabold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
+                      <p className="text-xs font-bold uppercase text-sidebar-foreground/55">Total odds</p>
+                      <p className="text-xl font-extrabold text-primary">{isLocked ? "Locked" : formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
                   </Button>
 
                   <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-secondary/55 px-2 py-3 text-center">
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Matches</p>
-                      <p className="mt-0.5 text-sm font-extrabold text-foreground">{ticket.matches.length}</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Matches</p>
+                      <p className="mt-0.5 text-base font-extrabold text-foreground">{ticket.matches.length}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Confidence</p>
-                      <p className="mt-0.5 text-sm font-extrabold text-primary">High</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Confidence</p>
+                      <p className="mt-0.5 text-base font-extrabold text-primary">High</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Status</p>
-                      <p className="mt-0.5 text-sm font-extrabold text-success">Ready</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
+                      <p className="mt-0.5 text-base font-extrabold text-success">Ready</p>
                     </div>
                   </div>
 
@@ -127,18 +127,18 @@ function TicketGroup({
                             {matchIndex + 1}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
-                            <p className="mt-1 truncate text-sm font-extrabold text-foreground">{parsed.homeTeam} <span className="px-1 text-xs font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
+                            <p className="truncate text-xs font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
+                            <p className="mt-1 truncate text-base font-extrabold text-foreground">{parsed.homeTeam} <span className="px-1 text-sm font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
                           </div>
                           {isLocked ? (
                             <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
                               <Lock className="h-3.5 w-3.5" /> Locked
                             </div>
                           ) : (
-                            <div className="max-w-[9rem] shrink-0 rounded-lg border border-primary/25 bg-secondary px-3 py-2 text-left sm:min-w-32">
-                              <p className="text-[9px] font-bold uppercase text-primary">Pick</p>
-                              <p className="truncate text-xs font-extrabold text-foreground">{match.prediction}</p>
-                              <p className="text-[10px] font-semibold text-primary">{match.odds.toFixed(2)}</p>
+                            <div className="max-w-[10rem] shrink-0 rounded-lg border border-success/50 bg-success/10 px-3 py-2 text-left sm:min-w-36">
+                              <p className="text-xs font-bold uppercase text-success">Pick</p>
+                              <p className="truncate text-base font-extrabold text-success">{match.prediction}</p>
+                              <p className="text-sm font-semibold text-success/80">{match.odds.toFixed(2)}</p>
                             </div>
                           )}
                           <CheckCircle2 className="hidden h-5 w-5 text-success sm:block" />
@@ -152,15 +152,15 @@ function TicketGroup({
 
                   <div className="grid grid-cols-3 divide-x divide-border border-t border-border bg-secondary/35 text-center">
                     <div className="px-2 py-3">
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Total matches</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Total matches</p>
                       <p className="text-lg font-extrabold text-foreground">{ticket.matches.length}</p>
                     </div>
                     <div className="px-2 py-3">
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Total odds</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Total odds</p>
                       <p className="text-lg font-extrabold text-primary">{isLocked ? "—" : formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
                     <div className="px-2 py-3">
-                      <p className="text-[9px] font-bold uppercase text-muted-foreground">Status</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
                       <p className="flex items-center justify-center gap-1 text-xs font-extrabold text-success"><Target className="h-4 w-4" /> Ready</p>
                     </div>
                   </div>
@@ -247,13 +247,11 @@ export default function Tickets() {
       </Helmet>
 
       <div className="space-y-5">
-        <AffiliateBannerMelbet />
-
         <div className="overflow-hidden rounded-2xl bg-sidebar px-4 py-7 text-sidebar-foreground shadow-xl sm:px-7 sm:py-9">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
               <p className="mb-2 text-[10px] font-bold uppercase text-primary">Today's football analysis</p>
-              <h1 className="text-3xl font-extrabold sm:text-4xl">Ticket Hub</h1>
+              <h1 className="text-3xl font-extrabold sm:text-4xl">Tiket / Bet Slip</h1>
               <p className="mt-2 max-w-xl text-sm text-sidebar-foreground/65">Daily and Premium tickets, clearly organized in one place.</p>
             </div>
             <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-4 py-3 sm:text-right">
@@ -268,8 +266,11 @@ export default function Tickets() {
           </div>
         </div>
 
-        <p className="text-center text-[10px] text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
-        <AffiliateBanner1xBet />
+        <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
+        <section aria-label="Sponsored partners" className="mx-auto grid w-full max-w-2xl grid-cols-2 gap-3 sm:gap-5">
+          <AffiliateBanner1xBet compact />
+          <AffiliateBannerMelbet compact />
+        </section>
       </div>
     </>
   );

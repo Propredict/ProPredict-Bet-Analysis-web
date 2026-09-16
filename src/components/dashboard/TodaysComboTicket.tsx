@@ -68,7 +68,7 @@ export function TodaysComboTicket() {
               {!isUnlocked ? (
                 <span className="text-muted-foreground blur-sm select-none ml-2">Over 2.5</span>
               ) : (
-                <span className="text-primary font-semibold ml-2">{m.prediction}</span>
+                <span className="ml-2 rounded-md border border-success/40 bg-success/10 px-2 py-1 text-sm font-bold text-success">{m.prediction}</span>
               )}
             </div>
           ))}
@@ -115,7 +115,7 @@ export function TodaysComboTicket() {
 
       <button
         onClick={() => navigate("/premium-tickets")}
-        className="block w-full text-center text-sm font-semibold text-[#a855f7] hover:text-blue-400 hover:drop-shadow-[0_0_8px_rgba(0,148,230,0.5)] transition-all"
+        className="block w-full text-center text-sm font-semibold text-primary transition-all hover:text-primary/80"
       >
         Check All Today's Premium →
       </button>
