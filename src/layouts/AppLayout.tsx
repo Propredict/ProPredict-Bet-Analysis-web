@@ -37,6 +37,7 @@ import { useRealtimeScoreSync } from "@/hooks/useRealtimeScoreSync";
 import { RateAppPopup } from "@/components/RateAppPopup";
 import { useAppRating } from "@/hooks/useAppRating";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
+import { LiveChatDock } from "@/components/chat/LiveChatDock";
 import { AdminSupportFloating } from "@/components/AdminSupportFloating";
 
 
@@ -327,6 +328,9 @@ export default function AppLayout() {
 
       {/* Floating support chat — logged-in non-admin users */}
       <SupportChatWidget />
+
+      {/* Always-on community live chat */}
+      <LiveChatDock />
 
       {/* Floating support shortcut — admins only */}
       <AdminSupportFloating />
