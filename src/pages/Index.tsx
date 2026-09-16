@@ -76,28 +76,31 @@ const Index = () => {
         <DashboardTipsPopup />
 
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-xl border border-primary/20 shadow-lg">
-          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-[22rem] sm:h-80 md:h-96 object-cover" width={1920} height={864} />
-          <div className="absolute inset-0 bg-sidebar/85 sm:bg-gradient-to-r sm:from-sidebar/95 sm:via-sidebar/80 sm:to-primary/45" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 py-4 space-y-2 sm:space-y-3">
-            <h1 className="text-xl sm:text-2xl md:text-4xl font-extrabold text-primary-foreground drop-shadow-md">Welcome to ProPredict 👋</h1>
-            <p className="text-base sm:text-lg md:text-2xl font-extrabold text-secondary drop-shadow leading-tight">Today's Best Football Predictions Are Ready ⚽</p>
-            <p className="text-xs sm:text-sm md:text-base text-primary-foreground/80 max-w-lg leading-relaxed">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/25 shadow-lg">
+          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-[26rem] sm:h-80 md:h-[22rem] object-cover" width={1920} height={864} />
+          <div className="absolute inset-0 bg-sidebar/90 sm:bg-gradient-to-r sm:from-sidebar sm:via-sidebar/90 sm:to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-center gap-2 px-5 py-5 text-center sm:max-w-xl sm:px-8 sm:text-left md:max-w-2xl">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary sm:text-xs">More than predictions</span>
+            <h1 className="text-2xl font-black leading-tight tracking-tight text-primary-foreground sm:text-3xl md:text-[2.6rem]">
+              Welcome to <span className="text-primary">Pro</span><span className="text-blue-300">Predict</span>
+            </h1>
+            <p className="text-base font-bold leading-tight text-primary-foreground sm:text-lg md:text-xl">Today's Best Football Predictions Are Ready ⚽</p>
+            <p className="text-xs leading-relaxed text-primary-foreground/75 sm:text-sm">
               AI-powered picks, probabilities and match insights updated daily.
             </p>
             {!isAndroid && (
-              <p className="text-xs sm:text-sm text-primary-foreground/80 max-w-xl leading-relaxed">
-                Get access to <span className="text-secondary font-bold">PRO tips</span>, <span className="text-secondary font-bold">combo tickets</span>, <span className="text-secondary font-bold">Diamond Picks</span> and full match analysis.
+              <p className="text-xs leading-relaxed text-primary-foreground/75 sm:text-sm">
+                Get access to PRO tips, combo tickets, Diamond Picks and full match analysis.
               </p>
             )}
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2 sm:justify-start">
               {isAndroid ? (
-                <button onClick={() => setShowCategoryModal(true)} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
-                  Check Today's Matches
+                <button onClick={() => setShowCategoryModal(true)} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition-colors hover:bg-primary/90">
+                  Check Today's Matches →
                 </button>
               ) : (
-                <Link to="/daily-tips" className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-md">
-                  Check Today's Matches
+                <Link to="/daily-tips" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition-colors hover:bg-primary/90">
+                  Check Today's Matches →
                 </Link>
               )}
               {!isAndroid && (
@@ -105,23 +108,25 @@ const Index = () => {
                   href="https://play.google.com/store/apps/details?id=com.propredict.app"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary to-blue-700 text-primary-foreground text-sm font-extrabold hover:opacity-90 transition-all shadow-lg shadow-primary/30 animate-pulse ring-2 ring-primary/25"
+                  className="rounded-lg border border-primary-foreground/25 bg-primary-foreground/10 px-5 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-foreground/20"
                 >
-                  ⬇️ Download App 🔓
+                  📱 Download App
                 </a>
               )}
             </div>
-            <p className="text-xs text-secondary font-semibold">🔥 {(23000 + Math.floor(Math.random() * 4000)).toLocaleString()}+ users checked today • free picks available</p>
-            <p className="text-xs text-primary-foreground/70 flex items-center gap-1">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
+            <p className="pt-1 text-xs font-semibold text-primary-foreground/85">
+              {(23000 + Math.floor(Math.random() * 4000)).toLocaleString()}+ users checked today • free picks available
+            </p>
+            <p className="text-xs text-primary-foreground/65">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
             <Link
               to="/get-premium"
-              className="inline-flex items-center gap-2 px-4 py-2.5 mt-2 rounded-full bg-gradient-to-r from-blue-700 via-primary to-blue-600 text-primary-foreground text-xs sm:text-sm font-extrabold uppercase tracking-wide shadow-lg shadow-primary/30 ring-2 ring-primary/25 hover:opacity-95 hover:scale-[1.03] transition-all animate-blink"
+              className="mt-1 inline-flex w-fit items-center gap-2 self-center rounded-full bg-gradient-to-r from-primary to-blue-600 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-primary-foreground shadow-md transition-all hover:opacity-95 sm:self-start"
               aria-label="Become Premium and unlock all tips and predictions for one month / Postani Premium korisnik i otključaj sve predikcije na mesec dana"
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-yellow-300" fill="currentColor" aria-hidden="true">
                 <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
               </svg>
-              Be Premium — Unlock All Tips & Predictions for 1 Month / Postani Premium i otključaj sve predikcije na mesec dana
+              Be Premium — Unlock All Tips for 1 Month
             </Link>
         </div>
         </div>

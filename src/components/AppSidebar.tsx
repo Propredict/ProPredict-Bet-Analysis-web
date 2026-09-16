@@ -49,7 +49,7 @@ const mainItems = [
 ];
 
 const packagesItems = [
-  { title: "Get Premium", url: "/get-premium", icon: Sparkles, highlight: true },
+  { title: "Get Premium", url: "/get-premium", icon: Crown, highlight: true },
 ];
 
 const premiumItems = [
@@ -133,7 +133,7 @@ export function AppSidebar() {
                 <NavLink 
                   to="/" 
                   end 
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-sidebar-accent"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
                    activeClassName="bg-primary text-primary-foreground hover:bg-primary shadow-md"
                 >
                    <Home className="h-[18px] w-[18px]" />
@@ -209,8 +209,8 @@ export function AppSidebar() {
 
         {/* Packages */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase text-muted-foreground px-3 py-1.5">
-            {!collapsed && "Packages"}
+          <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/80 px-3 py-1.5">
+            {!collapsed && "Premium"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -222,7 +222,7 @@ export function AppSidebar() {
                       className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-base font-bold transition-colors bg-gradient-to-r from-primary to-primary/75 text-primary-foreground hover:opacity-90 shadow-md"
                       activeClassName=""
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-5 w-5 text-yellow-400" fill="currentColor" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -233,10 +233,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors hover:bg-sidebar-accent"
+                      className="flex items-center gap-2.5 px-3 py-1.5 pl-4 rounded-md text-[13px] font-medium text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-primary/20 text-primary"
                     >
-                      <item.icon className="h-[18px] w-[18px]" />
+                      <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
