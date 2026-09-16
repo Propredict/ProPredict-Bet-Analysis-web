@@ -78,6 +78,9 @@ export default function AppLayout() {
     initOneSignalWeb();
   }, []);
 
+  // Header search (navigates to Live Scores)
+  const [headerSearch, setHeaderSearch] = useState("");
+
   // Fetch user profile for welcome message
   const { data: profile } = useQuery({
     queryKey: ["user-profile", user?.id],
