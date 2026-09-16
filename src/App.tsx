@@ -58,7 +58,7 @@ const HowAIvsMembersWorks = lazy(() => import("./pages/HowAIvsMembersWorks"));
 const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
-const Players = lazy(() => import("./pages/Players"));
+
 const RiskOfTheDay = lazy(() => import("./pages/RiskOfTheDay"));
 const DiamondPick = lazy(() => import("./pages/DiamondPick"));
 const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
@@ -231,7 +231,6 @@ const App = () => {
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
-                    <Route path="/players" element={<Players />} />
                     <Route path="/risk-of-the-day" element={<RiskOfTheDay />} />
                     <Route path="/diamond-pick" element={<DiamondPick />} />
                     
