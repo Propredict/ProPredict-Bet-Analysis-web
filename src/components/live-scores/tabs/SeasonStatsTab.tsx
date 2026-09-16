@@ -102,13 +102,13 @@ export function SeasonStatsTab({ homeStats, awayStats, loading, homeTeam, awayTe
       <div className="px-3 py-2 grid grid-cols-3 text-xs">
         <span className="text-center tracking-widest font-mono">
           {h.form.slice(-6).split("").map((c, i) => (
-            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-red-400" : "text-primary"}>{c}</span>
+            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-destructive" : "text-primary"}>{c}</span>
           ))}
         </span>
         <span className="text-center text-muted-foreground">Form</span>
         <span className="text-center tracking-widest font-mono">
           {a.form.slice(-6).split("").map((c, i) => (
-            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-red-400" : "text-primary"}>{c}</span>
+            <span key={i} className={c === "W" ? "text-success" : c === "L" ? "text-destructive" : "text-primary"}>{c}</span>
           ))}
         </span>
       </div>

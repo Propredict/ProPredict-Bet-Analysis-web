@@ -95,7 +95,7 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
                       </span>
                       <span className="text-sm font-medium">{round}</span>
                       {stats.live > 0 && (
-                        <Badge className="bg-red-500/20 text-red-400 border-0 text-xs animate-pulse">
+                        <Badge className="bg-destructive/20 text-destructive border-0 text-xs animate-pulse">
                           <Play className="h-3 w-3 mr-1" />
                           {stats.live} Live
                         </Badge>
@@ -104,7 +104,7 @@ export function LeagueStatsRoundsTab({ leagueId, leagueName }: LeagueStatsRounds
                     <div className="flex items-center gap-3">
                       <span className={cn(
                         "text-xs",
-                        stats.played === stats.total && stats.total > 0 ? "text-green-400" : "text-muted-foreground"
+                        stats.played === stats.total && stats.total > 0 ? "text-success" : "text-muted-foreground"
                       )}>
                         {stats.played} / {stats.total} played
                       </span>
@@ -147,7 +147,7 @@ function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
   return (
     <div className={cn(
       "px-2 sm:px-4 py-2 sm:py-3 border-b border-white/5 last:border-0",
-      isLive && "bg-red-500/5"
+      isLive && "bg-destructive/5"
     )}>
       {/* Responsive Flex Layout */}
       <div className="flex items-center gap-1 sm:gap-2">
@@ -163,7 +163,7 @@ function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
             <span className={cn(
               "text-[10px] sm:text-xs truncate text-right",
               isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
-              fixture.home.goals > fixture.away.goals && "text-green-400 font-medium"
+              fixture.home.goals > fixture.away.goals && "text-success font-medium"
             )} title={fixture.home.name}>
               {fixture.home.name}
             </span>
@@ -193,7 +193,7 @@ function RoundFixtureRow({ fixture }: { fixture: FixtureData }) {
             <span className={cn(
               "text-[10px] sm:text-xs truncate",
               isFinished && fixture.home.goals !== null && fixture.away.goals !== null && 
-              fixture.away.goals > fixture.home.goals && "text-green-400 font-medium"
+              fixture.away.goals > fixture.home.goals && "text-success font-medium"
             )} title={fixture.away.name}>
               {fixture.away.name}
             </span>

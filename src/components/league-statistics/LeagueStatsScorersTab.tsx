@@ -52,7 +52,7 @@ export function LeagueStatsScorersTab({ leagueId, leagueName }: LeagueStatsScore
                   <th className="px-2 sm:px-3 py-2 sm:py-3 text-left">Player</th>
                   <th className="px-2 sm:px-3 py-2 sm:py-3 text-left hidden sm:table-cell">Team</th>
                   <th className="px-1 sm:px-3 py-2 sm:py-3 text-center">GP</th>
-                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-green-400">G</th>
+                  <th className="px-1 sm:px-3 py-2 sm:py-3 text-center text-success">G</th>
                   <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden sm:table-cell">A</th>
                   <th className="px-1 sm:px-3 py-2 sm:py-3 text-center hidden md:table-cell">P</th>
                 </tr>
@@ -83,7 +83,7 @@ export function LeagueStatsScorersTab({ leagueId, leagueName }: LeagueStatsScore
                       </div>
                     </td>
                     <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground">{item.games.appearances}</td>
-                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center font-bold text-green-400">{item.goals}</td>
+                    <td className="px-1 sm:px-3 py-2 sm:py-3 text-center font-bold text-success">{item.goals}</td>
                     <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden sm:table-cell">{item.assists || 0}</td>
                     <td className="px-1 sm:px-3 py-2 sm:py-3 text-center text-muted-foreground hidden md:table-cell">{item.penalties || 0}</td>
                   </tr>

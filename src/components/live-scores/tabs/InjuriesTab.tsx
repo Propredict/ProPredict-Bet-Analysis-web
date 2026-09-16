@@ -46,7 +46,7 @@ export function InjuriesTab({ injuries, loading }: InjuriesTabProps) {
       return <Badge className="bg-destructive/15 text-destructive border-0 text-[10px]">Out</Badge>;
     }
     if (lower.includes("doubtful")) {
-      return <Badge className="bg-yellow-500/15 text-yellow-500 border-0 text-[10px]">Doubtful</Badge>;
+      return <Badge className="bg-primary/15 text-muted-foreground border-0 text-[10px]">Doubtful</Badge>;
     }
     return <Badge variant="outline" className="text-[10px]">{type}</Badge>;
   };

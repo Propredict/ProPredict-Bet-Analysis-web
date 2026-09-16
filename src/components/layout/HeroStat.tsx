@@ -20,13 +20,13 @@ const TONES: Record<Tone, { card: string; tile: string; label: string }> = {
     label: "text-muted-foreground",
   },
   live: {
-    card: "border-destructive/30 bg-destructive/[0.04]",
-    tile: "bg-destructive/10 text-destructive",
-    label: "text-destructive",
+    card: "border-primary/40 bg-primary/[0.04]",
+    tile: "bg-primary text-primary-foreground",
+    label: "text-primary",
   },
   success: {
-    card: "border-success/30 bg-success/[0.04]",
-    tile: "bg-success/10 text-success",
+    card: "border-primary/25",
+    tile: "bg-primary/10 text-primary",
     label: "text-muted-foreground",
   },
   sky: {
