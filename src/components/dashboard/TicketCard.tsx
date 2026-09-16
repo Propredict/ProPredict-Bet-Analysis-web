@@ -167,11 +167,17 @@ function TicketCard({
   const isPro = ticket.tier === "exclusive";
   const isPremium = ticket.tier === "premium";
 
-  const handleCardClick = () => { navigate(`/tickets/${ticket.id}`); };
+  const handleCardClick = () => {
+    if (onViewTicket) {
+      onViewTicket();
+      return;
+    }
+    navigate(`/tickets/${ticket.id}`);
+  };
 
   if (light && !isLocked) {
     return (
-      <div className="overflow-hidden rounded-xl border border-primary/15 bg-card shadow-md shadow-primary/10" onClick={handleCardClick}>
+      <div className="cursor-pointer overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15 transition-colors hover:border-primary" onClick={handleCardClick}>
         <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -189,7 +195,7 @@ function TicketCard({
           {displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+              <div key={idx} className="rounded-lg border-2 border-primary/55 bg-card p-3 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
                   <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Active</span>
@@ -201,7 +207,7 @@ function TicketCard({
                   </div>
                   <div className="max-w-[48%] text-right">
                     <p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p>
-                    <div className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground">{match.prediction}<span className="ml-2 text-blue-300">{match.odds?.toFixed(2)}</span></div>
+                    <div className="rounded-lg border border-success/45 bg-success/10 px-3 py-1.5 text-xs font-extrabold text-success">{match.prediction}<span className="ml-2 text-success/80">{match.odds?.toFixed(2)}</span></div>
                   </div>
                 </div>
               </div>
@@ -216,11 +222,11 @@ function TicketCard({
 
   const cardShell = light
     ? cn(
-        "relative rounded-xl border border-primary/20 bg-card overflow-hidden transition-all duration-300 hover:border-primary/40 cursor-pointer group",
+        "relative rounded-xl border-2 border-primary/70 bg-card overflow-hidden transition-all duration-300 hover:border-primary cursor-pointer group",
         "shadow-lg"
       )
     : cn(
-        "relative rounded-xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-border cursor-pointer group",
+        "relative rounded-xl border-2 border-primary/65 bg-card overflow-hidden transition-all duration-300 hover:border-primary cursor-pointer group",
         accent.glow
       );
 
@@ -285,7 +291,7 @@ function TicketCard({
             {displayedMatches.map((match, idx) => {
               const parsed = parseMatchName(match.name);
               return (
-                <div key={idx} className={cn("rounded-lg border p-2.5", light ? "border-border bg-secondary/45" : "border-border/40 bg-muted/10")}>
+               <div key={idx} className="rounded-lg border-2 border-primary/50 bg-secondary/45 p-2.5">
                   {parsed.league && (
                     <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                   )}
@@ -389,19 +395,19 @@ function TicketCard({
                   <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
+                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.homeTeam}
                   </span>
                   <span className={cn("shrink-0 text-[10px]", "text-muted-foreground")}>vs</span>
-                  <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
+                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.awayTeam}
                   </span>
                 </div>
                 <div className={cn(
                   "mt-2 rounded-lg border py-2 px-3 text-center",
-                  light ? "border-success/25 bg-success/10" : "border-success/30 bg-success/5"
+                  "border-success/45 bg-success/10"
                 )}>
-                  <span className={cn("text-[13px] font-bold tracking-wide", light ? "text-success" : "text-foreground")}>
+                  <span className="text-[13px] font-extrabold tracking-wide text-success">
                     {match.prediction}
                   </span>
                 </div>
