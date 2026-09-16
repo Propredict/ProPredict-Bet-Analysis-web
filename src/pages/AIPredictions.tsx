@@ -874,7 +874,7 @@ export default function AIPredictions() {
                   <Flame className="w-3.5 h-3.5 md:w-8 md:h-8 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent leading-tight">
+                  <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar leading-tight">
                     🔥 AI Elite Picks
                   </h2>
                   <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
@@ -913,7 +913,7 @@ export default function AIPredictions() {
                     </div>
                     <div className="h-px w-10 md:w-14 bg-gradient-to-l from-transparent to-blue-500/70" />
                   </div>
-                  <h2 className="text-base md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-300 bg-clip-text text-transparent">
+                  <h2 className="text-base md:text-xl font-extrabold tracking-tight text-sidebar">
                     💎 Diamond AI Pick
                   </h2>
                   <p className="text-[11px] md:text-sm text-foreground/90 mt-1 max-w-md font-medium">
@@ -1147,7 +1147,7 @@ export default function AIPredictions() {
                     </div>
                     <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-green-500/60" />
                   </div>
-                  <h2 className="text-sm md:text-base font-extrabold tracking-tight bg-gradient-to-r from-green-300 to-green-300 bg-clip-text text-transparent">
+                  <h2 className="text-sm md:text-base font-extrabold tracking-tight text-sidebar">
                     🛡️ Safe Pick of the Day
                   </h2>
                   <p className="text-[10px] md:text-[11px] text-foreground/80 mt-0.5 max-w-md font-medium">
@@ -1200,7 +1200,7 @@ export default function AIPredictions() {
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
                         <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400 fill-blue-400" />
-                        <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-300 to-blue-300 bg-clip-text text-transparent whitespace-nowrap">
+                        <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar whitespace-nowrap">
                           Top Picks
                         </h2>
                       </div>
@@ -1338,7 +1338,7 @@ export default function AIPredictions() {
                       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
                         <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400" />
-                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-blue-300 to-blue-300 bg-clip-text text-transparent whitespace-nowrap">
+                        <h2 className="text-xs md:text-sm font-extrabold tracking-tight text-sidebar whitespace-nowrap">
                           Premium Picks
                         </h2>
                       </div>
@@ -1453,7 +1453,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
                           <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400" />
-                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-blue-300 to-blue-300 bg-clip-text text-transparent whitespace-nowrap">
+                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight text-sidebar whitespace-nowrap">
                             Premium Picks ({tierCounts.premium})
                           </h2>
                         </div>
@@ -1474,7 +1474,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
                           <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400 fill-blue-400" />
-                          <h2 className="text-xs md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-300 to-blue-300 bg-clip-text text-transparent whitespace-nowrap">
+                          <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar whitespace-nowrap">
                             Top Picks ({tierCounts.pro})
                           </h2>
                         </div>
@@ -1499,7 +1499,7 @@ export default function AIPredictions() {
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-green-500/40 to-green-500/60" />
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-green-500/15 to-green-500/15 border border-green-500/30 shadow-sm shadow-green-500/10">
                   <Brain className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" />
-                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight bg-gradient-to-r from-green-300 to-green-300 bg-clip-text text-transparent whitespace-nowrap">
+                  <h2 className="text-xs md:text-sm font-extrabold tracking-tight text-sidebar whitespace-nowrap">
                     {day === "today" ? "Free Daily" : "Tomorrow"} ({regularPredictions.filter((p) => !allExcludedIds.has(p.id!)).length})
                   </h2>
                 </div>
