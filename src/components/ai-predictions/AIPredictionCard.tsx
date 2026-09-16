@@ -305,22 +305,22 @@ const AIPredictionCardInner = ({
             <TabsList className={cn(
               "w-full bg-secondary h-6 md:h-7 rounded grid grid-cols-6"
             )}>
-              <TabsTrigger value="main" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="main" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 BTTS
               </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 DC
               </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Combo
               </TabsTrigger>
-              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
                 Correct
               </TabsTrigger>
             </TabsList>
