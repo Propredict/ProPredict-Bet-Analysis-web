@@ -146,33 +146,18 @@ export function BettingTickets() {
     );
   };
 
-  // --- WEB: vertical sections ---
+  // --- WEB: two entry cards (Free / Premium) ---
   if (!isAndroidApp) {
-    const dailyTickets = todayDbTickets
-      .filter((t: any) => t.tier === "daily")
-      .map(mapDbTicket)
-      .slice(0, 2);
-    const proTickets = todayDbTickets
-      .filter((t: any) => t.tier === "exclusive")
-      .map(mapDbTicket)
-      .slice(0, 2);
-    const premiumTickets = todayDbTickets
-      .filter((t: any) => t.tier === "premium")
-      .map(mapDbTicket)
-      .slice(0, 2);
+    const freeCount = todayDbTickets.filter((t: any) => t.tier === "daily").length;
+    const premiumCount = todayDbTickets.filter((t: any) => t.tier === "premium").length;
 
-    const hasAnyWebTickets =
-      dailyTickets.length > 0 ||
-      proTickets.length > 0 ||
-      premiumTickets.length > 0;
-
-    if (!isLoading && !hasAnyWebTickets) return null;
+    if (!isLoading && freeCount === 0 && premiumCount === 0) return null;
 
     return (
       <section className="space-y-5">
         {/* Section Header — centered bold title */}
         <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground text-center tracking-tight pt-2">
-          Daily Combo Tickets
+          Today's Ticket / Današnji Tiketi
         </h2>
 
         {isLoading ? (
@@ -180,50 +165,61 @@ export function BettingTickets() {
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
           </div>
         ) : (
-          <>
-            {dailyTickets.length > 0 && (
-            <TicketTierSection
-              title="Free Daily Picks"
-              subtitle="Open access · everyday combos"
-              badgeIcon={Sparkles}
-              badgeLabel="Free"
-              tone="free"
-              ctaLabel="See all Free Picks / Pogledaj sve Free AI Predikcije"
-              onCta={() => navigate("/daily-predictions")}
-              empty="No Daily AI Combos available"
-              tickets={dailyTickets}
-              renderTicket={renderTicket}
-            />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Free Ticket card */}
+            <button
+              type="button"
+              onClick={() => navigate("/tickets")}
+              className="group rounded-2xl border-2 border-primary/50 bg-gradient-to-br from-primary/15 via-primary/8 to-transparent p-5 text-left shadow-md shadow-primary/10 transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <Badge className="border border-primary/40 bg-primary/10 text-[11px] font-bold text-primary">
+                  Free
+                </Badge>
+              </div>
+              <h3 className="mt-3 text-xl font-extrabold text-sidebar">Free Ticket</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">Besplatni tiket · otvoren pristup</p>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {freeCount} {freeCount === 1 ? "ticket" : "tickets"} today / danas
+                </span>
+                <span className="flex items-center gap-1 text-sm font-bold text-primary">
+                  Open / Otvori
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </div>
+            </button>
 
-            {proTickets.length > 0 && (
-            <TicketTierSection
-              title="Sure Odds 2+ Ticket"
-              subtitle="Higher confidence · curated edge"
-              badgeIcon={Star}
-              badgeLabel="⭐ Sure Odds 2+"
-              tone="pro"
-              ctaLabel="See all Sure Odds 2+ / Pogledaj sve Sure Odds 2+"
-              onCta={() => navigate("/exclusive-tickets")}
-              empty="No Sure Odds 2+ Tickets available"
-              tickets={proTickets}
-              renderTicket={renderTicket}
-            />)}
-
-
-            {premiumTickets.length > 0 && (
-            <TicketTierSection
-              title="Premium Picks"
-              subtitle="Best AI predictions · maximum edge"
-              badgeIcon={Crown}
-              badgeLabel="👑 Premium"
-              tone="premium"
-              ctaLabel="See all Premium Picks / Pogledaj sve Premium Picks"
-              onCta={() => navigate("/premium-predictions")}
-              empty="No Premium AI Combos available"
-              tickets={premiumTickets}
-              renderTicket={renderTicket}
-            />)}
-          </>
+            {/* Premium Ticket card */}
+            <button
+              type="button"
+              onClick={() => navigate("/premium-tickets")}
+              className="group rounded-2xl border-2 border-primary/60 bg-gradient-to-br from-sidebar via-sidebar-accent to-primary/70 p-5 text-left shadow-lg shadow-primary/20 transition-all hover:border-primary hover:shadow-xl hover:shadow-primary/30"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-foreground/15 text-primary-foreground ring-1 ring-primary-foreground/30">
+                  <Crown className="h-5 w-5" />
+                </div>
+                <Badge className="border border-primary-foreground/40 bg-primary-foreground/10 text-[11px] font-bold text-primary-foreground">
+                  Premium
+                </Badge>
+              </div>
+              <h3 className="mt-3 text-xl font-extrabold text-primary-foreground">Premium Ticket</h3>
+              <p className="mt-0.5 text-xs text-primary-foreground/70">Premium tiket · samo za članove</p>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-xs font-semibold text-primary-foreground/70">
+                  {premiumCount} {premiumCount === 1 ? "ticket" : "tickets"} today / danas
+                </span>
+                <span className="flex items-center gap-1 text-sm font-bold text-primary-foreground">
+                  Open / Otvori
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </div>
+            </button>
+          </div>
         )}
 
         <PricingModal
