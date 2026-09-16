@@ -218,7 +218,7 @@ const AIPredictionCardInner = ({
             )}
             {isStrongSignal && (
               <Badge
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(16,185,129,0.55)]"
+                className="bg-gradient-to-r from-green-500 to-green-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34,197,94,0.55)]"
                 title="Confidence ≥ 80% with strong xG dominance (Δ ≥ 0.8) — model's highest-conviction signal"
               >
                 <Zap className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
@@ -227,7 +227,7 @@ const AIPredictionCardInner = ({
             )}
             {prediction.is_value_bet && !isStrongSignal && (
               <Badge
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                className="bg-gradient-to-r from-green-500 to-green-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(34,197,94,0.5)]"
                 title="AI estimates higher win probability than the bookmaker market — value detected"
               >
                 <DollarSign className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
@@ -235,20 +235,20 @@ const AIPredictionCardInner = ({
               </Badge>
             )}
             {isPremiumTier && (
-              <Badge className="bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+              <Badge className="bg-gradient-to-r from-blue-500 to-blue-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Crown className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 PREMIUM
               </Badge>
             )}
             {isProTier && !isPremiumTier && (
-              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
+              <Badge className="bg-gradient-to-r from-blue-500 to-blue-500 text-white border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-semibold rounded">
                 <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
                 TOP PICK
               </Badge>
             )}
             {isDailyTier && isBigMatch(prediction.league, prediction.home_team, prediction.away_team) && (
               <Badge
-                className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                className="bg-gradient-to-r from-blue-400 via-blue-400 to-blue-500 text-black border-0 text-[8px] md:text-[9px] px-1 md:px-2 py-0.5 font-bold rounded shadow-[0_0_10px_rgba(251,191,36,0.5)]"
                 title="Top league fixture — high-profile matchup"
               >
                 <Flame className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5 fill-current" />
@@ -355,19 +355,19 @@ const AIPredictionCardInner = ({
           <div className="px-2 md:px-3 pb-2 md:pb-3 space-y-2">
             <div
               onClick={() => navigate("/get-premium")}
-              className="relative overflow-hidden rounded-lg border border-amber-500/20 bg-gradient-to-r from-amber-500/5 via-fuchsia-500/5 to-amber-500/5 p-2.5 cursor-pointer hover:border-amber-500/40 transition-colors group"
+              className="relative overflow-hidden rounded-lg border border-blue-500/20 bg-gradient-to-r from-blue-500/5 via-blue-500/5 to-blue-500/5 p-2.5 cursor-pointer hover:border-blue-500/40 transition-colors group"
             >
               <div className="flex items-start gap-2">
-                <Crown className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <Crown className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                  <div className="flex-1 min-w-0 space-y-1.5">
                    <p className="text-[10px] md:text-[11px] font-semibold text-foreground">
                      Upgrade for more predictions
                    </p>
                    <div className="flex flex-wrap gap-1">
-                      <Badge className="bg-amber-500/10 text-amber-400/90 border-amber-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
+                      <Badge className="bg-blue-500/10 text-blue-400/90 border-blue-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                         👑 Premium Pick
                       </Badge>
-                     <Badge className="bg-fuchsia-500/10 text-fuchsia-400/90 border-fuchsia-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
+                     <Badge className="bg-blue-500/10 text-blue-400/90 border-blue-500/20 text-[7px] md:text-[8px] px-1.5 py-0 rounded">
                        👑 Premium Analysis
                      </Badge>
                     </div>
@@ -454,7 +454,7 @@ const AIPredictionCardInner = ({
                 </Button>
                 <Button
                   size="sm"
-                  className="w-full h-7 text-[9px] md:text-[10px] bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-white border-0 font-medium rounded"
+                  className="w-full h-7 text-[9px] md:text-[10px] bg-gradient-to-r from-blue-500 to-blue-500 hover:opacity-90 text-white border-0 font-medium rounded"
                   onClick={() => navigate("/get-premium")}
                 >
                   <Star className="w-2 md:w-2.5 h-2 md:h-2.5 mr-1 fill-current" />
@@ -463,7 +463,7 @@ const AIPredictionCardInner = ({
               </div>
             ) : unlockMethod.type === "android_premium_only" ? (
               <Button
-                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white border-0 font-medium rounded"
+                className="w-full h-7 md:h-8 text-[10px] md:text-xs bg-gradient-to-r from-blue-500 to-blue-500 hover:opacity-90 text-white border-0 font-medium rounded"
                 onClick={() => navigate("/get-premium")}
               >
                 <Crown className="w-2.5 md:w-3 h-2.5 md:h-3 mr-1 md:mr-1.5 fill-current" />
@@ -487,8 +487,8 @@ const AIPredictionCardInner = ({
                 className={cn(
                   "w-full h-7 md:h-8 text-[10px] md:text-xs hover:opacity-90 text-white border-0 font-medium rounded",
                   unlockMethod.type === "upgrade_basic" 
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-500" 
-                    : "bg-gradient-to-r from-fuchsia-500 to-pink-500"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-500" 
+                    : "bg-gradient-to-r from-blue-500 to-blue-500"
                 )}
                 onClick={() => navigate("/get-premium")}
               >

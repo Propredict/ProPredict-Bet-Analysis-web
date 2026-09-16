@@ -72,9 +72,9 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
 
   const toneClasses =
     tone === "emerald"
-      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20"
+      ? "bg-green-500/15 text-green-300 border-green-500/30 hover:bg-green-500/20"
       : tone === "amber"
-      ? "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+      ? "bg-blue-500/15 text-blue-300 border-blue-500/30 hover:bg-blue-500/20"
       : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/40";
 
   return (
@@ -106,13 +106,13 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
         >
           <div className="space-y-1.5">
             <div className="text-[10px] font-bold text-foreground border-b border-[#1e3a5f] pb-1.5 mb-1.5 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <ShieldCheck className="w-3 h-3 text-green-400" />
               Data Quality · {presentCount}/{total}
             </div>
             {signals.map((s) => (
               <div key={s.key} className="flex items-start gap-2">
                 {s.present ? (
-                  <Check className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <Check className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
                 ) : (
                   <X className="w-3 h-3 text-muted-foreground/60 flex-shrink-0 mt-0.5" />
                 )}

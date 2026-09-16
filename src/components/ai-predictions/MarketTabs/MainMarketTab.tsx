@@ -62,18 +62,18 @@ function parseStructuredTags(keyFactors: string[] | null): {
 type PickCandidate = { label: string; conf: number; icon: React.ReactNode; type: MarketType };
 
 const MARKET_META: Record<MarketType, { getLabel: (p: AIPrediction) => string; icon: React.ReactNode }> = {
-  home_win: { getLabel: (p) => `${p.home_team} Win`, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
-  away_win: { getLabel: (p) => `${p.away_team} Win`, icon: <Trophy className="w-4 h-4 text-amber-400" /> },
+  home_win: { getLabel: (p) => `${p.home_team} Win`, icon: <Trophy className="w-4 h-4 text-blue-400" /> },
+  away_win: { getLabel: (p) => `${p.away_team} Win`, icon: <Trophy className="w-4 h-4 text-blue-400" /> },
   draw: { getLabel: () => "Draw", icon: <Target className="w-4 h-4 text-blue-400" /> },
   dc_1x: { getLabel: (p) => `${p.home_team} or Draw (1X)`, icon: <ShieldCheck className="w-4 h-4 text-cyan-400" /> },
   dc_x2: { getLabel: (p) => `Draw or ${p.away_team} (X2)`, icon: <ShieldCheck className="w-4 h-4 text-cyan-400" /> },
   dc_12: { getLabel: (p) => `${p.home_team} or ${p.away_team} (12)`, icon: <ShieldCheck className="w-4 h-4 text-cyan-400" /> },
   over15: { getLabel: () => "Over 1.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
   over25: { getLabel: () => "Over 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
-  over35: { getLabel: () => "Over 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-emerald-400" /> },
-  under25: { getLabel: () => "Under 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
-  under35: { getLabel: () => "Under 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-orange-400" /> },
-  btts_yes: { getLabel: () => "BTTS Yes", icon: <Zap className="w-4 h-4 text-yellow-400" /> },
+  over35: { getLabel: () => "Over 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-green-400" /> },
+  under25: { getLabel: () => "Under 2.5 Goals", icon: <TrendingUp className="w-4 h-4 text-blue-400" /> },
+  under35: { getLabel: () => "Under 3.5 Goals", icon: <TrendingUp className="w-4 h-4 text-blue-400" /> },
+  btts_yes: { getLabel: () => "BTTS Yes", icon: <Zap className="w-4 h-4 text-blue-400" /> },
   btts_no: { getLabel: () => "BTTS No", icon: <Zap className="w-4 h-4 text-red-400" /> },
 };
 
@@ -167,8 +167,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4 md:w-5 md:h-5 text-fuchsia-400" />
-                <span className="text-sm md:text-base font-bold text-fuchsia-400 uppercase tracking-wider">
+                <Lock className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+                <span className="text-sm md:text-base font-bold text-blue-400 uppercase tracking-wider">
                   AI High Confidence Pick
                 </span>
               </>
@@ -176,10 +176,10 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <Badge className={cn(
               "absolute right-0 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-lg",
               displayTier === "premium" 
-                ? "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30" 
+                ? "bg-blue-500/20 text-blue-400 border-blue-500/30" 
                 : displayTier === "pro" 
-                ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                : "bg-green-500/20 text-green-400 border-green-500/30"
             )}>
               {displayTier === "premium" ? "PREMIUM" : displayTier === "pro" ? "PRO" : "FREE"}
             </Badge>
@@ -216,12 +216,12 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                 HIGH CONFIDENCE
               </Badge>
             ) : pick.conf >= 65 ? (
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
                 <Target className="w-2.5 h-2.5" />
                 MEDIUM
               </Badge>
             ) : (
-              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded gap-0.5">
                 <TrendingDown className="w-2.5 h-2.5" />
                 RISKY
               </Badge>
@@ -231,8 +231,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           {/* Premium Edge Indicators */}
           {displayTier === "premium" && pick.conf >= 75 && (
             <div className="flex items-center gap-1.5 mb-0.5">
-              <Sparkles className="w-3 h-3 text-fuchsia-400" />
-              <span className="text-[9px] md:text-[10px] font-bold text-fuchsia-400">
+              <Sparkles className="w-3 h-3 text-blue-400" />
+              <span className="text-[9px] md:text-[10px] font-bold text-blue-400">
                 {pick.conf >= 85 ? "💎 AI EDGE DETECTED" : pick.conf >= 80 ? "🔥 Top Value Pick" : "📊 Market Mismatch Found"}
               </span>
             </div>
@@ -244,7 +244,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
             <span className={cn(
               "text-2xl md:text-3xl font-extrabold tabular-nums",
               !hasAccess && "blur-[5px] select-none",
-              pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-emerald-400" : pick.conf >= 60 ? "text-amber-400" : "text-orange-400"
+              pick.conf >= 80 ? "text-green-400" : pick.conf >= 70 ? "text-green-400" : pick.conf >= 60 ? "text-blue-400" : "text-blue-400"
             )}>
               {pick.conf}%
             </span>
@@ -286,7 +286,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
                 </Badge>
               )}
               {parsedTags.isSafe && !parsedTags.isUltra && (
-                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5">
                   <Shield className="w-2.5 h-2.5" />
                   SAFE
                 </Badge>
@@ -294,9 +294,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
               {parsedTags.tempo && (
                 <Badge className={cn(
                   "text-[7px] md:text-[8px] px-1.5 py-0.5 rounded gap-0.5",
-                  parsedTags.tempo === "HIGH" ? "bg-orange-500/20 text-orange-400 border-orange-500/30" :
+                  parsedTags.tempo === "HIGH" ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
                   parsedTags.tempo === "LOW" ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
-                  "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                  "bg-blue-500/20 text-blue-400 border-blue-500/30"
                 )}>
                   <Activity className="w-2.5 h-2.5" />
                   {parsedTags.tempo}
