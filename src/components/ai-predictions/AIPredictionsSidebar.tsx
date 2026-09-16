@@ -15,8 +15,6 @@ interface AIPredictionsSidebarProps {
 export function AIPredictionsSidebar({
   selectedDay,
   onDayChange,
-  selectedLeague,
-  onLeagueChange,
 }: AIPredictionsSidebarProps) {
   const [todayOpen, setTodayOpen] = useState(true);
   const [tomorrowOpen, setTomorrowOpen] = useState(true);
