@@ -102,30 +102,26 @@ const Index = () => {
 
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-2xl border border-primary/25 shadow-lg">
-          <img src={heroStadium} alt="AI Football Stadium" className="w-full h-[26rem] sm:h-80 md:h-[22rem] object-cover" width={1920} height={864} />
-          <div className="absolute inset-0 bg-sidebar/90 sm:bg-gradient-to-r sm:from-sidebar sm:via-sidebar/90 sm:to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-center gap-2 px-5 py-5 text-center sm:max-w-xl sm:px-8 sm:text-left md:max-w-2xl">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary sm:text-xs">More than predictions</span>
-            <h1 className="text-2xl font-black leading-tight tracking-tight text-primary-foreground sm:text-3xl md:text-[2.6rem]">
-              Welcome to <span className="text-primary">Pro</span><span className="text-blue-300">Predict</span>
-            </h1>
-            <p className="text-base font-bold leading-tight text-primary-foreground sm:text-lg md:text-xl">Today's Best Football Predictions Are Ready ⚽</p>
-            <p className="text-xs leading-relaxed text-primary-foreground/75 sm:text-sm">
-              AI-powered picks, probabilities and match insights updated daily.
+          <img src={heroStadiumPlayer} alt="Football player celebrating in a stadium at night" className="absolute inset-0 h-full w-full object-cover" width={1920} height={864} />
+          <div className="absolute inset-0 bg-gradient-to-r from-sidebar/95 via-sidebar/75 to-sidebar/25" />
+          <div className="relative flex flex-col justify-center gap-2 px-5 py-6 text-center sm:px-8 sm:py-8 sm:text-left md:py-10">
+            <p className="text-xs font-semibold text-primary-foreground/85 sm:text-sm">
+              {firstName ? `Welcome back, ${firstName}!` : "Welcome to ProPredict!"}
             </p>
-            {!isAndroid && (
-              <p className="text-xs leading-relaxed text-primary-foreground/75 sm:text-sm">
-                Get access to PRO tips, combo tickets, Diamond Picks and full match analysis.
-              </p>
-            )}
+            <h1 className="text-3xl font-black leading-tight tracking-tight text-primary-foreground sm:text-4xl md:text-5xl">
+              Play Smart. <span className="text-primary">Bet Better.</span>
+            </h1>
+            <p className="text-sm leading-relaxed text-primary-foreground/75 sm:text-base">
+              AI-powered predictions. Real data. Real results.
+            </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2 sm:justify-start">
               {isAndroid ? (
-                <button onClick={() => setShowCategoryModal(true)} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition-colors hover:bg-primary/90">
-                  Check Today's Matches →
+                <button onClick={() => setShowCategoryModal(true)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/30 transition-colors hover:bg-primary/90">
+                  Check Today's Matches <span aria-hidden="true">→</span>
                 </button>
               ) : (
-                <Link to="/daily-tips" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition-colors hover:bg-primary/90">
-                  Check Today's Matches →
+                <Link to="/daily-tips" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/30 transition-colors hover:bg-primary/90">
+                  Check Today's Matches <span aria-hidden="true">→</span>
                 </Link>
               )}
               {!isAndroid && (
@@ -133,16 +129,13 @@ const Index = () => {
                   href="https://play.google.com/store/apps/details?id=com.propredict.app"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-primary-foreground/25 bg-primary-foreground/10 px-5 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+                  className="inline-flex items-center gap-2 rounded-xl border border-primary-foreground/30 bg-sidebar/40 px-5 py-3 text-sm font-bold text-primary-foreground backdrop-blur-sm transition-colors hover:bg-sidebar/60"
                 >
-                  📱 Download App
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+                  Download App
                 </a>
               )}
             </div>
-            <p className="pt-1 text-xs font-semibold text-primary-foreground/85">
-              {(23000 + Math.floor(Math.random() * 4000)).toLocaleString()}+ users checked today • free picks available
-            </p>
-            <p className="text-xs text-primary-foreground/65">⭐⭐⭐⭐⭐ Trusted by 10,000+ football fans</p>
             <Link
               to="/get-premium"
               className="mt-1 inline-flex w-fit items-center gap-2 self-center rounded-full bg-gradient-to-r from-primary to-blue-600 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-primary-foreground shadow-md transition-all hover:opacity-95 sm:self-start"
@@ -153,18 +146,27 @@ const Index = () => {
               </svg>
               Be Premium — Unlock All Tips for 1 Month
             </Link>
-        </div>
+          </div>
+          {/* Script accent text (desktop) */}
+          <p className="pointer-events-none absolute right-52 top-6 hidden -rotate-3 select-none text-2xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
+            More<br />Than Just<br />Predictions
+          </p>
           {/* Right-side stats column (desktop), like reference design */}
-          <div className="absolute inset-y-0 right-6 hidden flex-col justify-center gap-3 md:flex">
+          <div className="absolute inset-y-0 right-5 hidden w-40 flex-col justify-center gap-2.5 md:flex">
             {[
-              { value: "1000+", label: "Daily Matches Analyzed" },
-              { value: "85%", label: "Average Accuracy" },
-              { value: "50K+", label: "Active Users" },
-              { value: "24/7", label: "Live Updates" },
+              { value: "92%", label: "Prediction Accuracy" },
+              { value: "10K+", label: "Active Users" },
+              { value: "500+", label: "Daily Analyses" },
+              { value: "4.9", label: "User Rating" },
             ].map((s) => (
-              <div key={s.label} className="w-44 rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-4 py-2.5 backdrop-blur-sm">
-                <p className="text-xl font-black text-primary">{s.value}</p>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-sidebar-foreground/60">{s.label}</p>
+              <div key={s.label} className="flex items-center gap-2.5 rounded-xl border border-primary-foreground/15 bg-sidebar/55 px-3 py-2 backdrop-blur-sm">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/25 text-primary">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-base font-black leading-tight text-primary-foreground">{s.value}</p>
+                  <p className="truncate text-[9px] font-semibold uppercase tracking-wide text-primary-foreground/60">{s.label}</p>
+                </div>
               </div>
             ))}
           </div>
