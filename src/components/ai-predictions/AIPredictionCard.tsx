@@ -514,7 +514,7 @@ const AIPredictionCardInner = ({
         )}
 
         {/* Disclaimer */}
-        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-[#1e3a5f]/30">
+        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-primary/25">
           <p className="text-[8px] md:text-[9px] text-muted-foreground/60 text-center leading-tight">
             AI-generated prediction. No guarantee of accuracy. For informational purposes only.
           </p>

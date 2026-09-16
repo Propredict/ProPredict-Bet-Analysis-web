@@ -1050,7 +1050,7 @@ export default function AIPredictions() {
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-2">
                             {["bg-cyan-500", "bg-blue-500", "bg-blue-500", "bg-blue-500"].map((bg, i) => (
-                              <div key={i} className={`w-6 h-6 md:w-7 md:h-7 rounded-full ${bg} border-2 border-slate-900 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white`}>
+                              <div key={i} className={`w-6 h-6 md:w-7 md:h-7 rounded-full ${bg} border-2 border-card flex items-center justify-center text-[8px] md:text-[10px] font-bold text-white`}>
                                 {String.fromCharCode(65 + i)}
                               </div>
                             ))}
@@ -1122,7 +1122,7 @@ export default function AIPredictions() {
             <Card
               className={cn(
                 "relative overflow-hidden border mb-3 md:mb-4",
-                "bg-gradient-to-br from-green-950/40 via-slate-900/60 to-green-950/40",
+                "bg-gradient-to-br from-success/10 via-card to-success/10",
                 "border-green-500/40",
                 "shadow-[0_0_30px_rgba(34,197,94,0.18)]",
               )}

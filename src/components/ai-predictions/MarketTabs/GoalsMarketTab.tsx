@@ -36,7 +36,7 @@ export function GoalsMarketTab({ prediction, hasAccess }: Props) {
               // Hide the recommendation hint (green container) for locked users
               hasAccess && goal.recommended
                 ? "bg-green-500/10 border-green-500/30"
-                : "bg-secondary border-[#1e3a5f]/30"
+                : "bg-secondary border-primary/25"
             )}
           >
             <div className="flex items-center gap-1.5 md:gap-2">

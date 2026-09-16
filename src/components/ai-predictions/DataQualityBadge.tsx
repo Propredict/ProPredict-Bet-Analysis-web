@@ -102,10 +102,10 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
         <TooltipContent
           side="bottom"
           align="end"
-          className="max-w-[220px] p-2.5 bg-card border-[#1e3a5f] text-foreground"
+          className="max-w-[220px] p-2.5 bg-card border-primary/25 text-foreground"
         >
           <div className="space-y-1.5">
-            <div className="text-[10px] font-bold text-foreground border-b border-[#1e3a5f] pb-1.5 mb-1.5 flex items-center gap-1">
+            <div className="text-[10px] font-bold text-foreground border-b border-primary/25 pb-1.5 mb-1.5 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-green-400" />
               Data Quality · {presentCount}/{total}
             </div>
@@ -129,7 +129,7 @@ export const DataQualityBadge = ({ prediction, compact = false }: Props) => {
                 </div>
               </div>
             ))}
-            <div className="pt-1.5 mt-1.5 border-t border-[#1e3a5f] text-[9px] text-muted-foreground/80 leading-tight">
+            <div className="pt-1.5 mt-1.5 border-t border-primary/25 text-[9px] text-muted-foreground/80 leading-tight">
               {presentCount >= 4
                 ? "Backed by full analytical pipeline."
                 : presentCount >= 3
