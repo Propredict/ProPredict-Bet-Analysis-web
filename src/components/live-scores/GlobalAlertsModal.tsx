@@ -155,7 +155,7 @@ export function GlobalAlertsModal({ isOpen, onClose, settings, onToggle }: Globa
 
             {/* Preferences Section */}
             <div className="space-y-2 pt-1">
-              <p className="px-1 text-xs font-bold uppercase tracking-wider text-primary">Preferences</p>
+              <p className="px-1 text-xs font-extrabold uppercase tracking-widest text-sidebar">Preferences</p>
               <div className="space-y-2.5">
                 <SettingRow
                   icon={settings.soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
