@@ -47,14 +47,18 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
   const markets = deriveMarkets(prediction);
   const goalProbs = calculateGoalMarketProbs(prediction);
 
+  // Raw DB 1X2 values do not always sum to 100, so always use the normalized
+  // set (the same numbers shown on the card) or combos read far too low.
+  const norm = getNormalized1x2(prediction);
+
   const resultProb = (leg: string) => {
     switch (leg.toLowerCase()) {
       case "1":
-        return prediction.home_win ?? 0;
+        return norm.hw;
       case "2":
-        return prediction.away_win ?? 0;
+        return norm.aw;
       default:
-        return prediction.draw ?? 0;
+        return norm.d;
     }
   };
 
