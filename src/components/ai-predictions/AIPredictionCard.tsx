@@ -180,8 +180,18 @@ const AIPredictionCardInner = ({
   };
 
   const bestPick = getAIBestPick(prediction);
-  const homeLogo = teamMatches ? findTicketTeamLogo(prediction.home_team, teamMatches) : null;
-  const awayLogo = teamMatches ? findTicketTeamLogo(prediction.away_team, teamMatches) : null;
+  // Prefer an exact fixture match by match_id (most reliable), fall back to name matching.
+  const fixtureById = useMemo(() => {
+    if (!teamMatches || !prediction.match_id) return null;
+    return (
+      (teamMatches as any[]).find((m) => String(m.id ?? "") === String(prediction.match_id)) ?? null
+    );
+  }, [teamMatches, prediction.match_id]);
+
+  const homeLogo =
+    fixtureById?.homeLogo ?? (teamMatches ? findTicketTeamLogo(prediction.home_team, teamMatches) : null);
+  const awayLogo =
+    fixtureById?.awayLogo ?? (teamMatches ? findTicketTeamLogo(prediction.away_team, teamMatches) : null);
 
   return (
     <Card className={cn(
