@@ -193,7 +193,7 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
         </div>
 
         {/* Title + description */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-[55%]">
           <p
             className={cn(
               "truncate text-sm font-black leading-tight md:text-base",
@@ -207,45 +207,45 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
           </p>
         </div>
 
-        {/* Probability + bar */}
-        <div className={cn("shrink-0 sm:w-24 md:w-28", !hasAccess && "select-none blur-md")}>
-          <span
+        {/* Probability + odds + strength */}
+        <div className="flex min-w-0 flex-1 basis-full items-center gap-2 sm:basis-auto">
+          <div className={cn("min-w-0 flex-1 sm:w-24 sm:flex-none md:w-28", !hasAccess && "select-none blur-md")}>
+            <span
+              className={cn(
+                "block text-base font-black tabular-nums leading-none md:text-xl",
+                hasAccess ? styles.text : "text-muted-foreground",
+              )}
+            >
+              {hasAccess ? `${view.prob}%` : "••%"}
+            </span>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-primary/10 md:h-2">
+              <div
+                className={cn("h-full rounded-full", styles.bar)}
+                style={{ width: hasAccess ? `${Math.min(view.prob, 100)}%` : "50%" }}
+              />
+            </div>
+          </div>
+
+          <div
             className={cn(
-              "block text-base font-black tabular-nums leading-none md:text-xl",
-              hasAccess ? styles.text : "text-muted-foreground",
+              "shrink-0 rounded-lg border border-primary/25 bg-card px-2 py-1.5 text-center",
+              !hasAccess && "select-none blur-md",
             )}
           >
-            {hasAccess ? `${view.prob}%` : "••%"}
-          </span>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-primary/10 md:h-2">
-            <div
-              className={cn("h-full rounded-full", styles.bar)}
-              style={{ width: hasAccess ? `${Math.min(view.prob, 100)}%` : "50%" }}
-            />
+            <span className="block text-xs font-black tabular-nums text-foreground md:text-sm">
+              {hasAccess ? view.odds : "•.••"}
+            </span>
           </div>
-        </div>
 
-        {/* Fair odds */}
-        <div
-          className={cn(
-            "shrink-0 rounded-lg border border-primary/25 bg-card px-2 py-1.5 text-center sm:w-14 md:w-16",
-            !hasAccess && "select-none blur-md",
-          )}
-        >
-          <span className="block text-xs font-black tabular-nums text-foreground md:text-sm">
-            {hasAccess ? view.odds : "•.••"}
+          <span
+            className={cn(
+              "shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold md:text-[11px]",
+              hasAccess ? styles.chip : "select-none bg-muted-foreground/10 text-muted-foreground/50 blur-sm",
+            )}
+          >
+            {hasAccess ? view.strength : "•••••"}
           </span>
         </div>
-
-        {/* Strength chip */}
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold md:text-[11px]",
-            hasAccess ? styles.chip : "select-none bg-muted-foreground/10 text-muted-foreground/50 blur-sm",
-          )}
-        >
-          {hasAccess ? view.strength : "•••••"}
-        </span>
       </div>
     );
   };
