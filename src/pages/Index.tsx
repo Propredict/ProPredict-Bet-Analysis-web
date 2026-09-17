@@ -3,7 +3,7 @@ import googlePlayBanner from "@/assets/google-play-banner.jfif";
 import heroStadiumPlayer from "@/assets/hero-stadium-player.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
@@ -29,28 +29,13 @@ const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/Dashboa
 
 
 
-// Android-only dashboard sections
-const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
-const RiskOfTheDaySection = lazy(() => import("@/components/dashboard/RiskOfTheDaySection").then(m => ({ default: m.RiskOfTheDaySection })));
-const DashboardDailyTips = lazy(() => import("@/components/dashboard/DashboardDailyTips").then(m => ({ default: m.DashboardDailyTips })));
-const TodaysComboTicket = lazy(() => import("@/components/dashboard/TodaysComboTicket").then(m => ({ default: m.TodaysComboTicket })));
-const DiamondPickSection = lazy(() => import("@/components/dashboard/DiamondPickSection").then(m => ({ default: m.DiamondPickSection })));
-const TodaysTopTickets = lazy(() => import("@/components/dashboard/TodaysTopTickets").then(m => ({ default: m.TodaysTopTickets })));
-
-
-import { PicksCategoryModal } from "@/components/dashboard/PicksCategoryModal";
-
-
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
 
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const isAndroid = getIsAndroidApp();
-  const navigate = useNavigate();
   const firedRef = useRef(false);
-  
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { user } = useAuth();
   const [firstName, setFirstName] = useState<string | null>(null);
 
@@ -111,15 +96,9 @@ const Index = () => {
               AI-powered predictions. Real data. Real results.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2 sm:justify-start">
-              {isAndroid ? (
-                <button onClick={() => setShowCategoryModal(true)} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/30 transition-colors hover:bg-primary/90">
-                  Check Today's Matches <span aria-hidden="true">→</span>
-                </button>
-              ) : (
-                <Link to="/daily-tips" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/30 transition-colors hover:bg-primary/90">
-                  Check Today's Matches <span aria-hidden="true">→</span>
-                </Link>
-              )}
+              <Link to="/daily-tips" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/30 transition-colors hover:bg-primary/90">
+                Check Today's Matches <span aria-hidden="true">→</span>
+              </Link>
               {!isAndroid && (
                 <a
                   href="https://play.google.com/store/apps/details?id=com.propredict.app"
@@ -169,23 +148,19 @@ const Index = () => {
         </div>
 
         {/* Dashboard kockice — Daily/Premium Ticket + Sure Odds 2+ / Daily Tips / Premium Tips */}
-        {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <BettingTickets />
-          </Suspense>
-        )}
+        <Suspense fallback={<LazyFallback />}>
+          <BettingTickets />
+        </Suspense>
 
         {/* Live Scores + League Standings side by side */}
-        {!isAndroid && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
-            <Suspense fallback={<LazyFallback />}>
-              <TodaysMatches />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <LeagueStandings />
-            </Suspense>
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+          <Suspense fallback={<LazyFallback />}>
+            <TodaysMatches />
+          </Suspense>
+          <Suspense fallback={<LazyFallback />}>
+            <LeagueStandings />
+          </Suspense>
+        </div>
 
 
 
@@ -207,82 +182,13 @@ const Index = () => {
 
         {/* Daily Reward Widget */}
 
-        {/* Android: new focused sections */}
-        {isAndroid ? (
-          <>
-            <Suspense fallback={<LazyFallback />}>
-              <TodaysTopPicks />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <DashboardDailyTips />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <RiskOfTheDaySection />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <DiamondPickSection />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <TodaysTopTickets />
-            </Suspense>
-          </>
-        ) : null}
-        
-        {/* AI Predictions Section – web only */}
-        {!isAndroid && (
-          <>
-            
-            <Suspense fallback={<LazyFallback />}>
-              <DashboardAIPredictions />
-            </Suspense>
-          </>
-        )}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardAIPredictions />
+        </Suspense>
 
-        {/* Match Previews Section – web only */}
-        {!isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <DashboardMatchPreviews />
-          </Suspense>
-        )}
-
-        {/* Live Scores — placed below Top 30 AI Picks */}
-        {isAndroid && (
-          <>
-            {/* Daily Predictions made by AI (header rendered inside component) */}
-            <Suspense fallback={<LazyFallback />}>
-              <DashboardAIPredictions />
-            </Suspense>
-
-            {/* Top 30 AI Picks */}
-            <div className="space-y-3">
-              <h3 className="text-2xl font-extrabold text-white text-center tracking-tight">
-                Top 30 AI Picks
-              </h3>
-              <button
-                onClick={() => navigate("/match-previews")}
-                className="w-full rounded-2xl border-2 border-primary/50 bg-gradient-to-br from-primary/20 via-card to-card p-5 text-center shadow-[0_0_30px_rgba(15,155,142,0.35)] active:scale-[0.99] transition-transform"
-              >
-                <div className="flex flex-col items-center gap-3">
-                  <p className="text-lg font-extrabold text-foreground">
-                    🏆 Top 30 AI Picks of the Day
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Highest-confidence picks ranked by our AI.
-                  </p>
-                  <span className="mt-1 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-base font-extrabold whitespace-nowrap shadow-lg">
-                    See all →
-                  </span>
-                </div>
-              </button>
-            </div>
-          </>
-        )}
-
-        {isAndroid && (
-          <Suspense fallback={<LazyFallback />}>
-            <TodaysMatches />
-          </Suspense>
-        )}
+        <Suspense fallback={<LazyFallback />}>
+          <DashboardMatchPreviews />
+        </Suspense>
 
         {/* Compliance Disclaimer */}
         <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
@@ -292,7 +198,6 @@ const Index = () => {
       <GuestSignInModal />
       <AppDownloadPopup />
       <TelegramPromoPopup />
-      {isAndroid && <PicksCategoryModal open={showCategoryModal} onOpenChange={setShowCategoryModal} />}
     </>
   );
 };
