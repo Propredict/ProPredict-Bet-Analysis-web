@@ -166,14 +166,14 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <div className="px-3 py-3 border-b border-border">
                 <TabsList
-                  className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
+                  className="w-full gap-1.5 rounded-lg border border-primary/25 bg-primary/10 p-1.5"
                   style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
                 >
                   {visibleTabs.map(({ value, label, icon: Icon }) => (
                     <TabsTrigger
                       key={value}
                       value={value}
-                      className="text-[9px] sm:text-xs rounded-md py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                      className="rounded-md bg-primary/15 py-2 text-[9px] font-bold text-primary hover:bg-primary/25 sm:text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                     >
                       <Icon className="h-3 w-3 mr-0.5 hidden sm:inline" /> {label}
                     </TabsTrigger>
