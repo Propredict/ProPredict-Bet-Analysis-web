@@ -1130,8 +1130,7 @@ export default function AIPredictions() {
                       {isAndroidApp ? `${tierCounts.pro} picks available` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
                     </Badge>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                    {isAndroidApp ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                       /* Android: show ALL pro predictions with ad-unlock */
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
@@ -1403,7 +1402,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                       {visiblePro.map(renderCard)}
                     </div>
                   </div>
