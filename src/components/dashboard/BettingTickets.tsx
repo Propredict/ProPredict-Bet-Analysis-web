@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight, Crosshair, Lightbulb, ArrowRight } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
