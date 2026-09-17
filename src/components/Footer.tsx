@@ -12,13 +12,13 @@ import {
   Brain,
   Gift,
   Zap,
-  ShieldCheck,
   Users,
   Star,
   ChevronRight,
-  Crown,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
+import melbetCard from "@/assets/footer-melbet.jpg";
+import oneXbetCard from "@/assets/footer-1xbet.jpg";
 
 const MELBET_URL =
   "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
