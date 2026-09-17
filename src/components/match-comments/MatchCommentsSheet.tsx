@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Send, MoreVertical, Pencil, Trash2, Flag, MessageSquare, Loader2 } from "lucide-react";
+import { Send, MoreVertical, Pencil, Trash2, Flag, MessageSquare, Loader2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useMatchComments } from "@/hooks/useMatchComments";
@@ -238,6 +238,18 @@ export function MatchCommentsSheet({
                         <p className="whitespace-pre-wrap break-words">{c.content}</p>
                       )}
                     </div>
+
+                    {editingId !== c.id && mine && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Delete my comment"
+                        onClick={() => handleDelete(c.id)}
+                        className="h-6 w-6 flex-shrink-0 self-start mt-1 opacity-70 hover:opacity-100 text-destructive hover:text-destructive"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
 
                     {editingId !== c.id && (mine || isAdmin || user) && (
                       <DropdownMenu>
