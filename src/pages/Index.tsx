@@ -126,7 +126,7 @@ const Index = () => {
           <Link
             to="/get-premium"
             aria-label="Premium Access all month — Postani Premium korisnik"
-            className="pointer-events-auto absolute left-[38%] top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 select-none flex-col items-center gap-1 text-center lg:flex"
+            className="pointer-events-auto absolute left-[40%] top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 select-none flex-col items-center gap-1 text-center xl:flex"
           >
             <svg viewBox="0 0 24 24" className="mb-1 h-9 w-9 text-yellow-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" fill="currentColor" aria-hidden="true">
               <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
