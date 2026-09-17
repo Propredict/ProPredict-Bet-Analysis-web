@@ -18,7 +18,7 @@ export function TodaysMatches() {
     const statusOrder = { live: 0, halftime: 1, upcoming: 2, finished: 3 };
     return statusOrder[a.status] - statusOrder[b.status];
   });
-  const displayedMatches = sortedMatches.slice(0, 3);
+  const displayedMatches = sortedMatches.slice(0, 5);
   const liveCount = matches.filter(m => m.status === "live" || m.status === "halftime").length;
 
   return (

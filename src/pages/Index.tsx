@@ -16,7 +16,6 @@ import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { TelegramPromoPopup } from "@/components/TelegramPromoPopup";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
-import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -28,7 +27,6 @@ const DashboardAIPredictions = lazy(() => import("@/components/dashboard/Dashboa
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
-const DashboardOverview = lazy(() => import("@/components/dashboard/DashboardOverview").then(m => ({ default: m.DashboardOverview })));
 
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
@@ -169,13 +167,24 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Quick links strip */}
-        <QuickFeatureStrip />
+        {/* Dashboard kockice — Daily/Premium Ticket + Sure Odds 2+ / Daily Tips / Premium Tips */}
+        {!isAndroid && (
+          <Suspense fallback={<LazyFallback />}>
+            <BettingTickets />
+          </Suspense>
+        )}
 
-        {/* Top predictions + live + tips + Go Premium */}
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardOverview />
-        </Suspense>
+        {/* Live Scores + League Standings side by side */}
+        {!isAndroid && (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+            <Suspense fallback={<LazyFallback />}>
+              <TodaysMatches />
+            </Suspense>
+            <Suspense fallback={<LazyFallback />}>
+              <LeagueStandings />
+            </Suspense>
+          </div>
+        )}
 
         {/* Telegram banner */}
         <div className="grid grid-cols-1 gap-4 items-stretch w-full">
@@ -287,9 +296,6 @@ const Index = () => {
           <>
             <Suspense fallback={<LazyFallback />}>
               <SureOddsDashboardSection />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
-              <BettingTickets />
             </Suspense>
           </>
         )}
