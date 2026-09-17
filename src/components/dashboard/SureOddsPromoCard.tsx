@@ -74,11 +74,11 @@ export function SureOddsPromoCard({
                 <Star className="h-3 w-3 fill-current" />PRO
               </Badge>
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
-                {ticket.matchCount} Matches
+                {ticket.matchCount} Matches / Utakmica
               </span>
             </div>
             <Badge variant="outline" className="text-success border-success/30 bg-success/10 text-[10px] px-2">
-              <CheckCircle2 className="h-3 w-3 mr-1" />Unlocked
+              <CheckCircle2 className="h-3 w-3 mr-1" />Unlocked / Otključano
             </Badge>
           </div>
           <h3 className="font-bold text-base sm:text-lg text-foreground text-center leading-tight">
@@ -91,7 +91,7 @@ export function SureOddsPromoCard({
             </span>
             {ticket.totalOdds > 0 && (
               <span className="flex items-center gap-1">
-                <span className="opacity-60">Total odds</span>
+                <span className="opacity-60">Total odds / Ukupna kvota</span>
                 <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
               </span>
             )}
@@ -101,7 +101,7 @@ export function SureOddsPromoCard({
         <div className="px-4 sm:px-5 pb-5 pt-3 space-y-2">
           <div className="flex items-center justify-center gap-2 pb-1">
             <Star className="h-3.5 w-3.5 text-success fill-success" />
-            <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks / Naši tipovi</span>
             <Star className="h-3.5 w-3.5 text-success fill-success" />
           </div>
           {matches.map((match, idx) => {
@@ -143,12 +143,12 @@ export function SureOddsPromoCard({
     <div className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15 md:rounded-2xl md:border-primary md:shadow-[0_20px_60px_-10px_rgba(0,148,230,0.45)] md:ring-1 md:ring-primary/40">
       <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
         <div className="flex items-start justify-between gap-3">
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca / Dnevni tiket</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
           <Badge className="border border-primary-foreground/20 bg-primary-foreground/15 text-[10px] text-primary-foreground"><Star className="mr-1 h-3 w-3 fill-current" />PRO</Badge>
         </div>
         <div className="mt-5 flex items-end justify-between">
-          <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds</p><p className="text-3xl font-extrabold leading-none">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : "2.00+"}</p></div>
-          <div className="text-right"><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date</p><p className="text-xs font-semibold">{ticketDate}</p></div>
+          <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds / Ukupna kvota</p><p className="text-3xl font-extrabold leading-none">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : "2.00+"}</p></div>
+          <div className="text-right"><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date / Datum tiketa</p><p className="text-xs font-semibold">{ticketDate}</p></div>
         </div>
       </div>
 
@@ -159,24 +159,24 @@ export function SureOddsPromoCard({
               <div key={idx} className="rounded-lg border-2 border-primary/50 bg-card p-3 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
-                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending</span>
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending / U toku</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-1.5"><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.homeTeam}</p></div><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.awayTeam}</p></div></div>
-                  <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked</div></div>
+                  <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick / Tip</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked / Zaključano</div></div>
                   </div>
               </div>
             );
           })}
           {remainingCount > 0 && (
             <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5">
-              +{remainingCount} more matches
+              +{remainingCount} more matches / još utakmica
               <ChevronRight className="h-3 w-3" />
             </p>
           )}
       </div>
       <div className="border-t border-border bg-card p-4">
-          <p className="mb-3 text-center text-[10px] text-muted-foreground"><span className="font-bold text-primary">{socialPct}% of users</span> unlocked this ticket</p>
+          <p className="mb-3 text-center text-[10px] text-muted-foreground"><span className="font-bold text-primary">{socialPct}% of users / korisnika</span> unlocked this ticket / otključalo ovaj tiket</p>
           <Button
             size="lg"
             disabled={isUnlocking}
@@ -190,12 +190,12 @@ export function SureOddsPromoCard({
             {isUnlocking ? (
               <>
                 <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Unlocking...
+                Unlocking... / Otključavanje...
               </>
             ) : (
               <>
                 <Ticket className="h-5 w-5" />
-                <span className="flex-1 text-left">Unlock Today's Ticket</span>
+                <span className="flex-1 text-left">Unlock Today's Ticket / Otključaj današnji tiket</span>
                 <span className="rounded-lg bg-primary-foreground/15 px-2 py-1 text-sm">{priceLabel}</span>
                 <ChevronRight className="h-5 w-5" />
               </>
