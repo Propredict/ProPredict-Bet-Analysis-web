@@ -1031,6 +1031,7 @@ export default function AIPredictions() {
             onUnlock={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
             unlockingId={unlockingId}
             getPredictionTier={getPredictionTier}
+            teamMatches={fixturesForLogos}
           />
 
 
