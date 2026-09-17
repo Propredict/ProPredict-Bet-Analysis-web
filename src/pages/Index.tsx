@@ -26,7 +26,8 @@ const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 
-const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
+
+
 
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
@@ -282,19 +283,6 @@ const Index = () => {
             <TodaysMatches />
           </Suspense>
         )}
-
-
-        <Suspense fallback={<LazyFallback />}>
-          <BottomCTA />
-        </Suspense>
-
-        {/* SEO internal link */}
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          👉 Learn more about how our AI prediction model works →{" "}
-          <Link to="/how-ai-works" className="text-primary hover:underline font-medium">
-            How AI Works
-          </Link>
-        </p>
 
         {/* Compliance Disclaimer */}
         <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
