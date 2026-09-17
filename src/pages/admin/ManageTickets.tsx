@@ -133,7 +133,11 @@ export default function ManageTickets() {
 
   const totalOdds =
     matches.length > 0
-      ? matches.reduce((acc, m) => acc * m.odds, 1)
+      ? Number(
+          matches
+            .reduce((acc, m) => acc * (Number(m.odds) > 0 ? Number(m.odds) : 1), 1)
+            .toFixed(2)
+        )
       : 0;
 
   const filteredFixtures = fixtures.filter((f) => {
@@ -212,10 +216,22 @@ export default function ManageTickets() {
   };
 
   const handleSubmit = async () => {
+    if (!title.trim()) {
+      toast.error("Please enter a ticket title");
+      return;
+    }
     if (matches.length === 0) {
       toast.error("Please add at least one match");
       return;
     }
+    const invalidMatch = matches.find(
+      (m) => !m.prediction?.trim() || !Number.isFinite(Number(m.odds)) || Number(m.odds) <= 0
+    );
+    if (invalidMatch) {
+      toast.error("Every match needs a prediction and odds greater than 0");
+      return;
+    }
+
 
     const dbMatches = matches.map((m) => ({
       match_name: createMatchName(
@@ -223,8 +239,8 @@ export default function ManageTickets() {
         m.awayTeam,
         m.league || undefined
       ),
-      prediction: m.prediction,
-      odds: m.odds,
+      prediction: m.prediction.trim(),
+      odds: Number(m.odds),
     }));
 
     try {
@@ -265,7 +281,11 @@ export default function ManageTickets() {
 
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Save failed");
+      console.error("[ManageTickets] save failed", error);
+      const err = error as any;
+      const detail =
+        err?.message || err?.error_description || err?.details || err?.hint || err?.code;
+      toast.error(detail ? `Save failed: ${detail}` : "Save failed");
     }
   };
 
