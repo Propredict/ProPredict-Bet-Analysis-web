@@ -19,7 +19,11 @@ export function AppDownloadPopup() {
     // Don't show on Android app or if already dismissed today
     if (isAndroid || wasDismissedToday()) return;
 
-    const timer = setTimeout(() => setShow(true), 60 * 1000); // 60 seconds
+    const timer = setTimeout(() => {
+      // Re-check at fire time: Android flag can arrive after mount
+      if (getIsAndroidApp() || wasDismissedToday()) return;
+      setShow(true);
+    }, 60 * 1000); // 60 seconds
     return () => clearTimeout(timer);
   }, [isAndroid]);
 
