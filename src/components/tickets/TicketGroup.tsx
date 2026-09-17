@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Crown, Loader2, Lock, RefreshCw, Sparkles, Target, Ticket as TicketIcon } from "lucide-react";
+import { ArrowRight, Crown, Loader2, Lock, RefreshCw, Sparkles, Ticket as TicketIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import type { TicketWithMatches } from "@/hooks/useTickets";
@@ -110,16 +110,20 @@ export function TicketGroup({
                       <p className="mt-0.5 text-base font-extrabold text-primary">High</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
-                      <p className="mt-0.5 text-base font-extrabold text-success">Ready</p>
+                      <p className="text-xs font-bold uppercase text-muted-foreground">Total odds</p>
+                      <p className="mt-0.5 text-base font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p>
                     </div>
+                  </div>
+
+                  <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_minmax(9rem,auto)_5rem] gap-3 border-b border-border bg-secondary/30 px-4 py-2 text-[10px] font-bold uppercase text-muted-foreground sm:grid">
+                    <span>#</span><span>Match</span><span>Pick</span><span className="text-center">Odds</span>
                   </div>
 
                   <div className="divide-y divide-border bg-card px-3 sm:px-4">
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(9rem,auto)_1.5rem] sm:items-center sm:gap-3">
+                        <div key={match.id} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(9rem,auto)_5rem] sm:items-center sm:gap-3">
                           <div className="flex min-w-0 items-center gap-2 sm:contents">
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
                               {matchIndex + 1}
@@ -143,10 +147,12 @@ export function TicketGroup({
                             <div className="w-full rounded-lg border border-success/50 bg-success/10 px-3 py-2 text-left sm:w-auto sm:min-w-36 sm:max-w-[12rem] sm:shrink-0">
                               <p className="text-xs font-bold uppercase text-success">Pick</p>
                               <p className="whitespace-normal break-words text-base font-extrabold leading-snug text-success">{match.prediction}</p>
-                              <p className="text-sm font-semibold text-success/80">{match.odds.toFixed(2)}</p>
                             </div>
                           )}
-                          <CheckCircle2 className="hidden h-5 w-5 text-success sm:block" />
+                          <div className={isLocked ? "hidden sm:block" : "flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2 sm:block sm:bg-transparent sm:px-0 sm:py-0 sm:text-center"}>
+                            {!isLocked && <span className="text-xs font-bold uppercase text-muted-foreground sm:hidden">Odds</span>}
+                            <span className={isLocked ? "blur-sm text-primary" : "text-base font-extrabold text-primary"}>{match.odds.toFixed(2)}</span>
+                          </div>
                         </div>
                       );
                     })}
@@ -155,7 +161,7 @@ export function TicketGroup({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 divide-x divide-border border-t border-border bg-secondary/35 text-center">
+                  <div className="grid grid-cols-2 divide-x divide-border border-t border-border bg-secondary/35 text-center">
                     <div className="px-2 py-3">
                       <p className="text-xs font-bold uppercase text-muted-foreground">Total matches</p>
                       <p className="text-lg font-extrabold text-foreground">{ticket.matches.length}</p>
@@ -163,10 +169,6 @@ export function TicketGroup({
                     <div className="px-2 py-3">
                       <p className="text-xs font-bold uppercase text-muted-foreground">Total odds</p>
                       <p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p>
-                    </div>
-                    <div className="px-2 py-3">
-                      <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
-                      <p className="flex items-center justify-center gap-1 text-xs font-extrabold text-success"><Target className="h-4 w-4" /> Ready</p>
                     </div>
                   </div>
 

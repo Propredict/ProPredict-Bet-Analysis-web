@@ -396,7 +396,11 @@ export default function TicketDetails() {
           <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-secondary/70 py-3 text-center">
             <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Matches</p><p className="text-lg font-extrabold">{matchCount}</p></div>
             <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Confidence</p><p className="text-lg font-extrabold text-primary">High</p></div>
-            <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Status</p><p className="text-lg font-extrabold text-success">Ready</p></div>
+            <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Total odds</p><p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p></div>
+          </div>
+
+          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] gap-3 border-b border-border bg-secondary/30 px-5 py-2 text-[10px] font-bold uppercase text-muted-foreground sm:grid">
+            <span>#</span><span>Match</span><span>Pick</span><span className="text-center">Odds</span>
           </div>
 
           {/* Matches */}
@@ -408,7 +412,7 @@ export default function TicketDetails() {
                   const parsed = parseMatchName(match.match_name);
                   return (
                     <div key={idx} className="py-4">
-                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem] sm:items-center">
+                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] sm:items-center">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                         {/* Match name — always visible, even when ticket is locked */}
                         <div className="min-w-0">
@@ -428,6 +432,7 @@ export default function TicketDetails() {
                             {match.prediction}
                           </Badge>
                         </div>
+                        <span className="hidden text-center font-extrabold text-primary blur-sm sm:block">{match.odds.toFixed(2)}</span>
                       </div>
                     </div>
                   );
@@ -439,7 +444,7 @@ export default function TicketDetails() {
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
-                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_1.5rem] sm:items-center">
+                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] sm:items-center">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                       <div className="min-w-0">
                         {parsed.league && (
@@ -456,7 +461,10 @@ export default function TicketDetails() {
                           {match.prediction}
                         </Badge>
                       </div>
-                      <CheckCircle2 className="hidden h-5 w-5 text-success sm:block" />
+                      <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2 sm:block sm:bg-transparent sm:px-0 sm:py-0 sm:text-center">
+                        <span className="text-xs font-bold uppercase text-muted-foreground sm:hidden">Odds</span>
+                        <span className="text-base font-extrabold text-primary">{match.odds.toFixed(2)}</span>
+                      </div>
                     </div>
                   );
                 })}
