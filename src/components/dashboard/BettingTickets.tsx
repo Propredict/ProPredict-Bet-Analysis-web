@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight, Crosshair, Lightbulb, ArrowRight } from "lucide-react";
+import { Ticket, Sparkles, Star, Crown, Loader2, ChevronRight, Crosshair, Lightbulb, ArrowRight, ShoppingBag } from "lucide-react";
+import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
+import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import premiumTicketCard from "@/assets/premium-ticket-card.jpg";
 import sureOddsCard from "@/assets/sure-odds-card.jpg";
 import dailyTipsCard from "@/assets/daily-tips-card.jpg";
 import premiumTipsCard from "@/assets/premium-tips-card.jpg";
+import sureOddsBall from "@/assets/sure-odds-ball.png.asset.json";
 
 type TabType = "daily" | "exclusive" | "premium";
 
