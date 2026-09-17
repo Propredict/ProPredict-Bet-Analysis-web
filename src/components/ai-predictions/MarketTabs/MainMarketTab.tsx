@@ -328,8 +328,8 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
         </div>
       )}
 
-      {/* ===== 1X2 Probabilities — reference-style cells: 1 / X / 2 with big % ===== */}
-      <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
+      {/* ===== 1X2 Probabilities — selected outcome zoomed, others quieter ===== */}
+      <div className="flex gap-1.5 md:gap-2 pt-1 items-stretch">
           {[
             { label: prediction.home_team, short: "1", pct: prediction.home_win, outcome: "home" as const },
             { label: "Draw", short: "X", pct: prediction.draw, outcome: "draw" as const },
@@ -349,17 +349,29 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
             const isSelected = predictedOutcome === item.outcome;
 
             return (
-              <div key={item.outcome} className={cn(
-                "text-center py-2 md:py-2.5 rounded-xl border",
-                isSelected ? "border-success/60 bg-success/10" : "border-border/40 bg-secondary/60"
-              )}>
-                <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-muted-foreground" title={item.label}>
-                  {item.short} · <span className="normal-case">{item.label.length > 12 ? item.label.slice(0, 12) + "…" : item.label}</span>
+              <div
+                key={item.outcome}
+                className={cn(
+                  "text-center rounded-xl transition-all",
+                  isSelected
+                    ? "flex-[1.4] border-2 border-success bg-success/10 py-3 md:py-4 shadow-sm shadow-success/20"
+                    : "flex-1 border border-border/40 bg-secondary/50 py-1.5 md:py-2 opacity-75"
+                )}
+              >
+                <div
+                  className={cn(
+                    "font-bold uppercase tracking-wide text-muted-foreground truncate px-1",
+                    isSelected ? "text-[10px] md:text-xs" : "text-[8px] md:text-[9px]",
+                  )}
+                  title={item.label}
+                >
+                  {item.short} · <span className="normal-case">{item.label.length > (isSelected ? 14 : 10) ? item.label.slice(0, isSelected ? 14 : 10) + "…" : item.label}</span>
                 </div>
                 <div className={cn(
-                  "text-lg md:text-xl font-extrabold tabular-nums",
+                  "tabular-nums leading-none",
+                  isSelected ? "mt-1 text-2xl md:text-3xl font-black" : "mt-0.5 text-sm md:text-base font-bold",
                   !hasAccess && "blur-[5px] select-none",
-                  isSelected ? "text-success" : "text-sidebar"
+                  isSelected ? "text-success" : "text-muted-foreground"
                 )}>
                   {item.pct}%
                 </div>
