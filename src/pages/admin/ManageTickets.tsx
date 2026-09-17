@@ -140,6 +140,10 @@ export default function ManageTickets() {
         )
       : 0;
 
+  // DB column has limited precision — store a safe value, real total is recalculated from matches
+  const storedTotalOdds = Math.min(totalOdds, 99.99);
+
+
   const filteredFixtures = fixtures.filter((f) => {
     const s = matchSearch.toLowerCase();
     return (
@@ -255,7 +259,7 @@ export default function ManageTickets() {
             tier,
             status,
             result,
-            total_odds: totalOdds,
+            total_odds: storedTotalOdds,
             ticket_date: ticketDate,
             category: normalizedCategory,
           } as any,
@@ -270,7 +274,7 @@ export default function ManageTickets() {
             tier,
             status,
             result,
-            total_odds: totalOdds,
+            total_odds: storedTotalOdds,
             ticket_date: ticketDate,
             category: normalizedCategory,
           } as any,
