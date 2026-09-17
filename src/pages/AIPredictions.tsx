@@ -611,7 +611,7 @@ export default function AIPredictions() {
                   <Brain className="h-4 w-4 text-primary md:h-5 md:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Active Matches</p>
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs"><span className="md:hidden">Active</span><span className="hidden md:inline">Active Matches</span></p>
                   <p className="text-lg font-black leading-tight text-primary md:text-2xl">
                     {loading ? "..." : activeCount}
                   </p>
@@ -625,7 +625,7 @@ export default function AIPredictions() {
                   <BarChart3 className="h-4 w-4 text-primary md:h-5 md:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Analyzed Today</p>
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs"><span className="md:hidden">Analyzed</span><span className="hidden md:inline">Analyzed Today</span></p>
                   <p className="text-lg font-black leading-tight text-primary md:text-2xl">
                     {loading ? "..." : totalAnalyzed.toLocaleString()}
                   </p>
@@ -639,7 +639,7 @@ export default function AIPredictions() {
                   <Target className="h-4 w-4 text-success md:h-5 md:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Accuracy Rate</p>
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs"><span className="md:hidden">Accuracy</span><span className="hidden md:inline">Accuracy Rate</span></p>
                   <p className="text-lg font-black leading-tight text-success md:text-2xl">
                     {loading ? "..." : `${dayStats.accuracy}%`}
                   </p>
