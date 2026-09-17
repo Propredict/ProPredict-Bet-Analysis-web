@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { CalendarDays, Crown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TicketGroup } from "@/components/tickets/TicketGroup";
@@ -60,20 +61,23 @@ export default function PremiumTickets() {
       </Helmet>
 
       <div className="space-y-5">
-        <div className="overflow-hidden rounded-2xl bg-sidebar px-4 py-7 text-sidebar-foreground shadow-xl sm:px-7 sm:py-9">
+        <div className="overflow-hidden rounded-2xl border border-primary/40 bg-secondary px-3 py-4 shadow-xl sm:px-5 sm:py-5">
+          <div className="relative overflow-hidden rounded-xl border border-primary/50 bg-[url('/src/assets/hero-stadium.jpg')] bg-cover bg-center px-4 py-6 text-sidebar-foreground sm:px-7 sm:py-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-sidebar via-sidebar/95 to-sidebar/55" />
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="mb-2 text-[10px] font-bold uppercase text-primary">Premium selection</p>
+            <div className="relative">
+              <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary"><Crown className="h-4 w-4" /> Premium selection</p>
               <h1 className="text-3xl font-extrabold sm:text-4xl">Premium Ticket</h1>
-              <p className="mt-2 max-w-xl text-sm text-sidebar-foreground/65">Today's exclusive Premium ticket for members.</p>
+              <p className="mt-2 max-w-xl text-sm font-medium text-sidebar-foreground/80">Today's exclusive Premium ticket for members.</p>
             </div>
-            <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/55 px-4 py-3 sm:text-right">
+            <div className="relative rounded-xl border border-primary/50 bg-sidebar/70 px-4 py-3 sm:text-right">
               <p className="text-[9px] font-bold uppercase text-sidebar-foreground/45">Ticket date</p>
-              <p className="mt-1 text-sm font-semibold text-sidebar-foreground">{new Date().toLocaleDateString("en-GB", { timeZone: "Europe/Belgrade", day: "numeric", month: "long", year: "numeric" })}</p>
+              <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-sidebar-foreground"><CalendarDays className="h-4 w-4 text-primary" />{new Date().toLocaleDateString("en-GB", { timeZone: "Europe/Belgrade", day: "numeric", month: "long", year: "numeric" })}</p>
             </div>
           </div>
+          </div>
 
-          <div className="mt-7">
+          <div className="mt-4">
             <TicketGroup title="Premium Ticket" subtitle="Premium members" badge="Exclusive" tickets={premiumTickets} tier="premium" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>
         </div>
