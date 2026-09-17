@@ -1383,6 +1383,7 @@ export default function AIPredictions() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
+                      {visiblePremium.map(renderCard)}
                     </div>
                   </div>
                 )}
