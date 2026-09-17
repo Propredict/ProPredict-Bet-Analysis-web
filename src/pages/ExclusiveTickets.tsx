@@ -289,33 +289,36 @@ export default function ExclusiveTickets() {
       )}
       </div>
 
-      <aside className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-        <div className="rounded-xl border border-primary/15 bg-card p-4 shadow-sm">
-          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10"><ShieldCheck className="h-4 w-4 text-primary" /></div>
-          <h2 className="text-sm font-extrabold text-foreground">Today's Access</h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+      <aside className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="rounded-2xl border-2 border-primary/40 bg-card p-5 shadow-md shadow-primary/10">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15"><ShieldCheck className="h-6 w-6 text-primary" /></div>
+          <h2 className="text-lg font-extrabold text-foreground">Today's Access</h2>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             {hasTicketAccess ? "Your ticket is unlocked until midnight. / Vaš tiket je otključan do ponoći." : "Free access is locked. Buy today's ticket or choose Premium. / Free pristup je zaključan. Kupite današnji tiket ili izaberite Premium."}
           </p>
           {!hasTicketAccess && (
-            <Button className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleBuyDailyTicket}>
+            <Button className="mt-5 h-11 w-full text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleBuyDailyTicket}>
               <Ticket className="mr-2 h-4 w-4" />Unlock – {SURE_ODDS_PRICE_LABEL}
             </Button>
           )}
         </div>
-        <div className="relative overflow-hidden rounded-xl bg-sidebar p-4 text-sidebar-foreground shadow-md">
-          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full border-[18px] border-primary/20" />
-          <Crown className="mb-3 h-7 w-7 text-blue-300" />
-          <h2 className="text-base font-extrabold">Premium Access</h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-sidebar-foreground/70">Sure Odds 2+ is included every day at no extra cost. / Sure Odds 2+ je uključen svakog dana bez doplate.</p>
-          {plan !== "premium" && !isAdmin && (
-            <Button
-              size="sm"
-              className="relative mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => { setUpgradeHighlight("premium"); setUpgradeModalOpen(true); }}
-            >
-              Get Premium <Crown className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          )}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[hsl(211_100%_42%)] p-5 text-primary-foreground shadow-lg shadow-primary/30">
+          <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full border-[20px] border-white/15" />
+          <div className="absolute -top-6 -left-6 h-20 w-20 rounded-full bg-white/10" />
+          <div className="relative">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/15"><Crown className="h-6 w-6 text-warning" /></div>
+            <h2 className="text-lg font-extrabold">Premium Access</h2>
+            <p className="mt-2 text-xs leading-relaxed text-primary-foreground/85">Sure Odds 2+ is included every day at no extra cost. / Sure Odds 2+ je uključen svakog dana bez doplate.</p>
+            {plan !== "premium" && !isAdmin && (
+              <Button
+                size="sm"
+                className="relative mt-5 h-11 w-full bg-white text-[hsl(211_100%_30%)] font-bold hover:bg-white/90"
+                onClick={() => { setUpgradeHighlight("premium"); setUpgradeModalOpen(true); }}
+              >
+                Get Premium <Crown className="ml-1 h-4 w-4 text-warning" />
+              </Button>
+            )}
+          </div>
         </div>
       </aside>
       </div>
