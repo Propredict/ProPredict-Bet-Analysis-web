@@ -16,7 +16,6 @@ import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { TelegramPromoPopup } from "@/components/TelegramPromoPopup";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
 import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
-import { QuickFeatureStrip } from "@/components/dashboard/QuickFeatureStrip";
 
 
 // Heavy components – lazy loaded for faster initial paint
@@ -28,7 +27,6 @@ const DashboardAIPredictions = lazy(() => import("@/components/dashboard/Dashboa
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 
 const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
-const DashboardOverview = lazy(() => import("@/components/dashboard/DashboardOverview").then(m => ({ default: m.DashboardOverview })));
 
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
