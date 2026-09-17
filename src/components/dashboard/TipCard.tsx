@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLiveScores } from "@/hooks/useLiveScores";
 
 export type TipResult = "pending" | "won" | "lost";
 
@@ -85,6 +86,7 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const queryClient = useQueryClient();
   const [adminBusy, setAdminBusy] = useState<null | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
@@ -97,6 +99,23 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     .join("")
     .slice(0, 3)
     .toUpperCase();
+
+  const findTeamLogo = (name: string, suppliedLogo?: string | null) => {
+    if (suppliedLogo) return suppliedLogo;
+    const normalize = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
+    const wanted = normalize(name);
+    const candidate = todayMatches.find((match) => {
+      const home = normalize(match.homeTeam);
+      const away = normalize(match.awayTeam);
+      return home === wanted || away === wanted || (wanted.length >= 3 && (home.includes(wanted) || wanted.includes(home) || away.includes(wanted) || wanted.includes(away)));
+    });
+    if (!candidate) return null;
+    const home = normalize(candidate.homeTeam);
+    return home === wanted || home.includes(wanted) || wanted.includes(home) ? candidate.homeLogo : candidate.awayLogo;
+  };
+
+  const homeLogo = findTeamLogo(tip.homeTeam, tip.homeLogo);
+  const awayLogo = findTeamLogo(tip.awayTeam, tip.awayLogo);
 
   const TeamCrest = ({ logo, name }: { logo?: string | null; name: string }) => (
     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-primary/25 bg-card shadow-sm sm:h-16 sm:w-16">
@@ -220,12 +239,12 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-card px-3 py-4 sm:gap-4 sm:px-5 sm:py-5">
         <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-          <TeamCrest logo={tip.homeLogo} name={tip.homeTeam} />
+          <TeamCrest logo={homeLogo} name={tip.homeTeam} />
           <span className="w-full text-balance text-base font-black leading-tight text-foreground sm:text-lg">{tip.homeTeam}</span>
         </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">VS</div>
         <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-          <TeamCrest logo={tip.awayLogo} name={tip.awayTeam} />
+          <TeamCrest logo={awayLogo} name={tip.awayTeam} />
           <span className="w-full text-balance text-base font-black leading-tight text-foreground sm:text-lg">{tip.awayTeam}</span>
         </div>
       </div>
