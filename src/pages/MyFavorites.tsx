@@ -24,6 +24,11 @@ export default function MyFavorites() {
 
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading, refetch } = useFavorites();
   const [refreshing, setRefreshing] = useState(false);
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+
+  useEffect(() => {
+    maybeShowInterstitial("my_favorites");
+  }, [maybeShowInterstitial]);
 
   // Enable goal/red card alerts on Favorites page
   const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Trophy, Play, Users, Target, Calendar, RotateCcw, Swords, BarChart3, UserCheck, AlertTriangle, Square, ShieldAlert, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
