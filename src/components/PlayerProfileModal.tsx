@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { forwardRef, useCallback, useEffect } from "react";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,14 +6,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePlayerProfile } from "@/hooks/usePlayerProfile";
 import { usePlayerProfileModal } from "@/contexts/PlayerProfileContext";
 
-function StatRow({ label, value, highlight }: { label: string; value: string | number; highlight?: boolean }) {
+const StatRow = forwardRef<HTMLDivElement, { label: string; value: string | number; highlight?: boolean }>(function StatRow(
+  { label, value, highlight },
+  ref,
+) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+    <div ref={ref} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={`text-xs font-semibold ${highlight ? "text-primary" : ""}`}>{value}</span>
     </div>
   );
-}
+});
 
 function RatingBadge({ rating }: { rating: string | null }) {
   const val = parseFloat(rating || "0");

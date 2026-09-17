@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { X, BarChart3, Users, TrendingUp, History, Activity, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,13 +108,16 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
   const colCount = visibleTabs.length;
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 z-50 bg-black/60" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-sidebar/65" onClick={onClose} />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="fixed inset-x-0 bottom-0 top-0 z-[71] flex min-h-0 items-center justify-center p-2 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-[calc(0.5rem+env(safe-area-inset-top,0px))] sm:p-4 md:pb-4"
+        onClick={onClose}
+      >
         <div
-          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card text-foreground border-2 border-primary/40 shadow-2xl shadow-primary/20"
+          className="h-full min-h-0 w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border-2 border-primary/40 bg-card text-foreground shadow-2xl shadow-primary/20"
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
@@ -235,6 +239,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
