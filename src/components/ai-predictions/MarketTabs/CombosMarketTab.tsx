@@ -277,19 +277,6 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
         {riskView && renderCombo(riskView, views.length)}
       </div>
 
-      {/* AI Insight */}
-      {hasAccess && insight && (
-        <div className="rounded-lg border border-primary/20 bg-secondary/50 p-2.5 md:p-3">
-          <div className="flex items-center gap-1.5">
-            <Lightbulb className="h-4 w-4 shrink-0 text-primary" />
-            <span className="text-xs font-extrabold text-primary md:text-sm">AI Insight</span>
-            <BarChart3 className="ml-auto hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
-          </div>
-          <p className="mt-1.5 text-[10px] font-medium leading-snug text-foreground/90 md:text-xs md:leading-relaxed">
-            {insight}
-          </p>
-        </div>
-      )}
 
       {hasAccess && (
         <p className="text-[10px] font-medium text-muted-foreground md:text-xs">
