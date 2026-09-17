@@ -78,7 +78,11 @@ serve(async (req) => {
 
     for (const tip of tips ?? []) {
       const kickoff = tipKickoff(tip);
-      if (!kickoff) continue;
+      if (!kickoff) {
+        // No kickoff time known → send on its day from 08:00 Belgrade
+        if (tip.tip_date === today && hour >= 8) await push("tip", tip);
+        continue;
+      }
       if (kickoff.getTime() <= now.getTime()) continue; // already started
       const dueAt = kickoff.getTime() - 7 * 60 * 60 * 1000;
       if (now.getTime() >= dueAt) await push("tip", tip);
