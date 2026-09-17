@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseMatchName } from "@/types/admin";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
+import { useLiveScores } from "@/hooks/useLiveScores";
+import { findTicketTeamLogo, TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 
 interface AllTicketsCardProps {
   ticket: TicketWithMatches;
@@ -74,6 +76,7 @@ export function AllTicketsCard({
   isUnlocking,
 }: AllTicketsCardProps) {
   const navigate = useNavigate();
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const isUnlocked = !isLocked;
   const ticketDate = ticket.created_at_ts ? format(new Date(ticket.created_at_ts), "EEE, MMM d") : "";
   const matchCount = ticket.matches?.length || 0;
@@ -198,9 +201,7 @@ export function AllTicketsCard({
               <div key={match.id || idx} className="p-2 bg-muted/20 rounded border border-border/50">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs sm:text-sm text-foreground truncate block">
-                      {parsed.homeTeam} vs {parsed.awayTeam}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-1.5 text-xs text-foreground sm:text-sm"><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.homeTeam}</span><span className="shrink-0 text-muted-foreground">vs</span><TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.awayTeam}</span></div>
                     {parsed.league && (
                       <span className="text-[10px] text-muted-foreground">{parsed.league}</span>
                     )}
@@ -367,9 +368,7 @@ export function AllTicketsCard({
             return (
               <div key={match.id || idx} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0 gap-2">
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs sm:text-sm text-foreground truncate block">
-                    {parsed.homeTeam} vs {parsed.awayTeam}
-                  </span>
+                  <div className="flex min-w-0 items-center gap-1.5 text-xs text-foreground sm:text-sm"><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.homeTeam}</span><span className="shrink-0 text-muted-foreground">vs</span><TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.awayTeam}</span></div>
                   {parsed.league && (
                     <span className="text-[10px] text-muted-foreground">{parsed.league}</span>
                   )}

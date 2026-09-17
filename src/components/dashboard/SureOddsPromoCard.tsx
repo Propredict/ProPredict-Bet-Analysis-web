@@ -19,6 +19,8 @@ import { format } from "date-fns";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
 import type { BettingTicket, TicketMatch } from "./TicketCard";
+import { useLiveScores } from "@/hooks/useLiveScores";
+import { findTicketTeamLogo, TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 
 interface SureOddsPromoCardProps {
   ticket: BettingTicket;
@@ -46,6 +48,7 @@ export function SureOddsPromoCard({
   priceLabel,
   unlockedCount,
 }: SureOddsPromoCardProps) {
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const ticketDate = ticket.createdAt && !isNaN(new Date(ticket.createdAt).getTime())
     ? format(new Date(ticket.createdAt), "EEE, MMM d")
     : format(new Date(), "EEE, MMM d");
@@ -111,12 +114,12 @@ export function SureOddsPromoCard({
                   </p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
-                    {parsed.homeTeam}
+                  <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5 rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
+                    <span className="min-w-0 break-words">{parsed.homeTeam}</span><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
                   </span>
                   <span className="shrink-0 text-muted-foreground text-[10px]">vs</span>
-                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
-                    {parsed.awayTeam}
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
+                    <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.awayTeam}</span>
                   </span>
                 </div>
                 <div className="mt-2 rounded-lg border border-success/45 bg-success/10 py-2 px-3 text-center">
@@ -159,7 +162,7 @@ export function SureOddsPromoCard({
                   <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 space-y-1.5"><p className="truncate text-sm font-bold text-foreground">{parsed.homeTeam}</p><p className="truncate text-sm font-bold text-foreground">{parsed.awayTeam}</p></div>
+                  <div className="min-w-0 flex-1 space-y-1.5"><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.homeTeam}</p></div><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.awayTeam}</p></div></div>
                   <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked</div></div>
                   </div>
               </div>
