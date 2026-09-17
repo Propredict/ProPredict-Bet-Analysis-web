@@ -117,12 +117,12 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
-          <div className="flex justify-between items-center p-4 border-b border-border">
-            <div className="flex gap-3 items-center text-sm text-muted-foreground">
+          <div className="flex justify-between items-center gap-2 p-4 border-b border-border bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80">
+            <div className="flex gap-2 items-center text-sm font-semibold text-primary-foreground">
               {match.league} • {match.leagueCountry}
               {getStatusBadge()}
             </div>
-            <Button size="icon" variant="ghost" onClick={onClose}>
+            <Button size="icon" variant="ghost" onClick={onClose} className="text-primary-foreground hover:bg-primary-foreground/15">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -133,16 +133,16 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               {homeLogo && (
                 <img src={homeLogo} alt="" className="w-10 h-10 object-contain" />
               )}
-              <span className="text-sm font-medium">{match.homeTeam}</span>
+              <span className="text-sm font-bold uppercase leading-snug text-sidebar">{match.homeTeam}</span>
             </div>
-            <div className="text-4xl font-bold px-4">
+            <div className="text-4xl font-black px-4 text-primary">
               {isUpcoming ? "VS" : `${match.homeScore ?? 0} : ${match.awayScore ?? 0}`}
             </div>
             <div className="text-center flex-1 flex flex-col items-center gap-2">
               {awayLogo && (
                 <img src={awayLogo} alt="" className="w-10 h-10 object-contain" />
               )}
-              <span className="text-sm font-medium">{match.awayTeam}</span>
+              <span className="text-sm font-bold uppercase leading-snug text-sidebar">{match.awayTeam}</span>
             </div>
           </div>
 
