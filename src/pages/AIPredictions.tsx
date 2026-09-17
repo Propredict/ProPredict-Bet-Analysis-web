@@ -893,6 +893,7 @@ export default function AIPredictions() {
                       onGoPremium={() => navigate("/get-premium")}
                       onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                       isUnlocking={unlockingId === prediction.id}
+                      teamMatches={fixturesForLogos}
                     />
                   </div>
                 ))}
@@ -933,6 +934,7 @@ export default function AIPredictions() {
                       onGoPremium={() => navigate("/get-premium")}
                       onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                       isUnlocking={unlockingId === diamondPick.id}
+                      teamMatches={fixturesForLogos}
                     />
                   </div>
                 ) : (
@@ -1147,6 +1149,7 @@ export default function AIPredictions() {
                               onGoPremium={() => navigate("/get-premium")}
                               onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                               isUnlocking={unlockingId === prediction.id}
+                      teamMatches={fixturesForLogos}
                             />
                           </div>
                         ))
@@ -1357,6 +1360,7 @@ export default function AIPredictions() {
                   onGoPremium={() => navigate("/get-premium")}
                   onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                   isUnlocking={unlockingId === prediction.id}
+                      teamMatches={fixturesForLogos}
                 />
               </div>
             );
@@ -1491,6 +1495,7 @@ export default function AIPredictions() {
                           onGoPremium={() => navigate("/get-premium")}
                           onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
                           isUnlocking={unlockingId === prediction.id}
+                      teamMatches={fixturesForLogos}
                         />
                       </div>
                       {showLockedCard && (
