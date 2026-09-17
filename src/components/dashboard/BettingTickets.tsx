@@ -209,7 +209,7 @@ export function BettingTickets() {
         type="button"
         onClick={() => navigate(item.to)}
         className={cn(
-          "group relative overflow-hidden rounded-2xl border-2 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl",
+          "group relative block w-full overflow-hidden rounded-2xl border-2 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl",
           item.border,
           item.shadow
         )}
@@ -277,13 +277,13 @@ export function BettingTickets() {
         <button
           type="button"
           onClick={() => navigate("/sure-odds")}
-          className="group relative overflow-hidden rounded-2xl border-2 border-emerald-500/50 text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
+          className="group relative block w-full overflow-hidden rounded-2xl border-2 border-emerald-500/50 text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
         >
           <img
             src={sureOddsCard}
             alt="Sure Odds 2+ Ticket — High confidence Ticket. Sigurna kvota >2."
             loading="lazy"
-            className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-36"
+            className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-40"
           />
           <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1 p-3 sm:gap-2 sm:p-8">
             <span className="text-lg font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-3xl">
