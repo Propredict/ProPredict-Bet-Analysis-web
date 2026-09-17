@@ -116,22 +116,24 @@ export function TicketGroup({
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2 py-3.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(8rem,auto)_1.5rem] sm:gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
-                            {matchIndex + 1}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
-                            <p className="mt-1 truncate text-base font-extrabold text-foreground">{parsed.homeTeam} <span className="px-1 text-sm font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
+                        <div key={match.id} className="flex min-w-0 flex-col gap-2 py-3.5 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(8rem,auto)_1.5rem] sm:items-center sm:gap-3">
+                          <div className="flex min-w-0 items-start gap-2 sm:contents">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
+                              {matchIndex + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
+                              <p className="mt-1 whitespace-normal break-words text-base font-extrabold leading-snug text-foreground">{parsed.homeTeam} <span className="px-1 text-sm font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
+                            </div>
                           </div>
                           {isLocked ? (
-                            <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
+                            <div className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground sm:w-auto sm:shrink-0 sm:justify-start">
                               <Lock className="h-3.5 w-3.5" /> Locked
                             </div>
                           ) : (
-                            <div className="max-w-[10rem] shrink-0 rounded-lg border border-success/50 bg-success/10 px-3 py-2 text-left sm:min-w-36">
+                            <div className="w-full rounded-lg border border-success/50 bg-success/10 px-3 py-2 text-left sm:w-auto sm:min-w-36 sm:max-w-[12rem] sm:shrink-0">
                               <p className="text-xs font-bold uppercase text-success">Pick</p>
-                              <p className="truncate text-base font-extrabold text-success">{match.prediction}</p>
+                              <p className="whitespace-normal break-words text-base font-extrabold leading-snug text-success">{match.prediction}</p>
                               <p className="text-sm font-semibold text-success/80">{match.odds.toFixed(2)}</p>
                             </div>
                           )}
