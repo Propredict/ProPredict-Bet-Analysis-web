@@ -8,7 +8,6 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { GlobalAlertsModal } from "@/components/live-scores/GlobalAlertsModal";
 import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import logoImage from "@/assets/logo.png";
-import footballAsset from "@/assets/sure-odds-ball.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -161,13 +160,14 @@ export default function AppLayout() {
                 className="flex min-w-0 sm:hidden items-center gap-1.5 cursor-pointer" 
                 onClick={() => navigate("/")}
               >
-                <img
-                  src={footballAsset.url}
-                  alt="Football"
-                  className="h-8 w-8 flex-shrink-0 object-contain drop-shadow-md"
-                />
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-[30px] leading-none drop-shadow-md"
+                >
+                  ⚽
+                </span>
                 <span className="flex min-w-0 flex-col">
-                  <span className="whitespace-nowrap text-base font-black leading-none text-primary-foreground">
+                  <span className="whitespace-nowrap text-[17px] font-black leading-none text-primary-foreground">
                     Pro<span className="text-secondary">Predict</span>
                   </span>
                   <span className="mt-1 whitespace-nowrap text-[8px] font-semibold leading-none text-primary-foreground/85">AI Predictions &amp; Analysis</span>
