@@ -239,8 +239,8 @@ export default function ManageTickets() {
         m.awayTeam,
         m.league || undefined
       ),
-      prediction: m.prediction,
-      odds: m.odds,
+      prediction: m.prediction.trim(),
+      odds: Number(m.odds),
     }));
 
     try {
