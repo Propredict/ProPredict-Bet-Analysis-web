@@ -144,9 +144,12 @@ interface Props {
   displayTier?: "free" | "pro" | "premium";
   /** When true, the big "Best Pick" box is skipped — the card header strip already shows it. */
   hidePickBox?: boolean;
+  /** Team crests resolved by the card header — shown inside the 1X2 cells. */
+  homeLogo?: string | null;
+  awayLogo?: string | null;
 }
 
-export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false, homeLogo = null, awayLogo = null }: Props) {
   const pick = getStrongestConfidencePick(prediction);
 
 
