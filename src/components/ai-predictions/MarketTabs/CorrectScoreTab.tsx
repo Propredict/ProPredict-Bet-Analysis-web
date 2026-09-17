@@ -8,7 +8,7 @@ import {
   getBestEligibleProbability,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Crosshair } from "lucide-react";
+import { Crosshair, Lightbulb, Sparkles, BarChart3 } from "lucide-react";
 
 interface Props {
   prediction: AIPrediction;
@@ -28,6 +28,12 @@ function getBestPick(prediction: AIPrediction) {
   return { type: bestType, conf };
 }
 
+const RANK_STYLES = [
+  "bg-warning text-warning-foreground",
+  "bg-muted text-muted-foreground",
+  "bg-primary/20 text-primary",
+];
+
 export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = getBestPick(prediction);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
@@ -46,49 +52,110 @@ export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }:
     );
   }
 
+  const maxProb = Math.max(...topScores.map((s) => Number(s.probability) || 0), 1);
+
   return (
-    <div className="space-y-2 md:space-y-3">
-      <div className="flex items-center gap-1.5 md:gap-2 mb-2 md:mb-3">
-        <Crosshair className={cn("w-3.5 md:w-4 h-3.5 md:h-4", displayTier === "premium" ? "text-blue-400" : "text-blue-400")} />
-        <span className="text-xs md:text-sm font-medium text-foreground">Top Correct Scores</span>
-        <span className="text-[10px] md:text-xs text-muted-foreground font-medium">
-          (1 of {Math.max(topScores.length, 1)})
-        </span>
+    <div className="space-y-2.5">
+      {/* Header */}
+      <div className="flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/5 p-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2">
+          <Crosshair className="h-4 w-4 shrink-0 text-primary" />
+          <span className="truncate text-sm font-extrabold text-foreground sm:text-base">
+            Top Correct Scores
+          </span>
+          <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
+            (1 of {Math.max(topScores.length, 1)})
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+            <Sparkles className="h-3 w-3" /> AI
+          </span>
+        </div>
+        <div className="flex items-start gap-1.5 rounded-lg border border-primary/20 bg-card px-2 py-1.5">
+          <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <p className="text-[10px] font-medium leading-snug text-muted-foreground">
+            Correct score predictions are based on team form, attacking strength and defensive records.
+          </p>
+        </div>
       </div>
 
-      <div className={cn(
-        "grid gap-1.5 md:gap-2",
-        topScores.length === 1 ? "grid-cols-1" : topScores.length === 2 ? "grid-cols-2" : "grid-cols-3"
-      )}>
-        {topScores.map((s, i) => (
-          <div
-            key={s.score}
-            className={cn(
-              "text-center py-3 md:py-4 rounded-md border",
-              i === 0
-                ? displayTier === "premium"
-                  ? "border-blue-500/40 bg-blue-500/10"
-                  : "border-blue-500/40 bg-blue-500/10"
-                : "border-border/30 bg-card/20"
-            )}
-          >
-            <div className={cn(
-              "text-base md:text-lg font-bold text-foreground",
-              !hasAccess && "blur-[5px] select-none"
-            )}>
-              {s.score}
+      {/* Score cards */}
+      <div
+        className={cn(
+          "grid gap-2",
+          topScores.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3",
+          topScores.length === 3 && "grid-cols-3"
+        )}
+      >
+        {topScores.map((s, i) => {
+          const prob = Number(s.probability) || 0;
+          const fairOdds = prob > 0 ? (100 / prob).toFixed(2) : "-";
+          const top = i === 0;
+          return (
+            <div
+              key={s.score}
+              className={cn(
+                "relative rounded-xl border p-2.5 pt-4 text-center transition-colors",
+                top
+                  ? "border-success/50 bg-success/10 shadow-sm"
+                  : "border-border bg-card"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute -top-2.5 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-[10px] font-extrabold shadow",
+                  RANK_STYLES[i] ?? RANK_STYLES[2]
+                )}
+              >
+                {i + 1}
+              </span>
+
+              <div
+                className={cn(
+                  "text-xl font-extrabold tracking-tight sm:text-2xl",
+                  top ? "text-success" : "text-foreground",
+                  !hasAccess && "blur-[5px] select-none"
+                )}
+              >
+                {s.score}
+              </div>
+
+              <div className="mt-1 flex items-center justify-center gap-1.5">
+                <span
+                  className={cn(
+                    "text-xs font-bold",
+                    top ? "text-success" : "text-muted-foreground",
+                    !hasAccess && "blur-[5px] select-none"
+                  )}
+                >
+                  {prob}%
+                </span>
+                <span
+                  className={cn(
+                    "rounded-md border px-1.5 py-0.5 text-[10px] font-bold",
+                    top
+                      ? "border-success/40 bg-success/10 text-success"
+                      : "border-border bg-secondary text-foreground",
+                    !hasAccess && "blur-[5px] select-none"
+                  )}
+                >
+                  {fairOdds}
+                </span>
+              </div>
+
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className={cn("h-full rounded-full", top ? "bg-success" : "bg-primary")}
+                  style={{ width: `${Math.max(6, Math.round((prob / maxProb) * 100))}%` }}
+                />
+              </div>
             </div>
-            <div className={cn(
-              "text-[10px] md:text-xs font-medium",
-              !hasAccess && "blur-[5px] select-none",
-              i === 0
-                ? displayTier === "premium" ? "text-blue-400" : "text-blue-400"
-                : "text-muted-foreground"
-            )}>
-              {s.probability}%
-            </div>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-1.5 text-[11px] font-bold text-primary">
+        <BarChart3 className="h-3.5 w-3.5" />
+        More Likely Correct Scores
       </div>
     </div>
   );
