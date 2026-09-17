@@ -202,8 +202,8 @@ function TicketCard({
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="truncate text-sm font-bold text-foreground">{parsed.homeTeam}</p>
-                    <p className="truncate text-sm font-bold text-foreground">{parsed.awayTeam}</p>
+                    <p className="whitespace-normal break-words leading-snug text-sm font-bold text-foreground">{parsed.homeTeam}</p>
+                    <p className="whitespace-normal break-words leading-snug text-sm font-bold text-foreground">{parsed.awayTeam}</p>
                   </div>
                   <div className="max-w-[48%] text-right">
                     <p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p>
@@ -296,11 +296,11 @@ function TicketCard({
                     <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                   )}
                   <div className="flex items-center justify-center gap-2">
-                    <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
+                    <span className={cn("flex-1 text-right text-[15px] sm:text-base font-semibold leading-snug break-words px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
                       {parsed.homeTeam}
                     </span>
                     <span className={cn("shrink-0 text-[10px]", "text-muted-foreground")}>vs</span>
-                    <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-tight truncate px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
+                    <span className={cn("flex-1 text-left text-[15px] sm:text-base font-semibold leading-snug break-words px-2 py-1 rounded-md border", light ? "text-foreground border-border bg-card" : "text-foreground border-border/50 bg-muted/20")}>
                       {parsed.awayTeam}
                     </span>
                   </div>
@@ -395,11 +395,11 @@ function TicketCard({
                   <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
                 <div className="flex items-center justify-center gap-2">
-                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
+                  <span className="flex-1 break-words rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.homeTeam}
                   </span>
                   <span className={cn("shrink-0 text-[10px]", "text-muted-foreground")}>vs</span>
-                  <span className="flex-1 truncate rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
+                  <span className="flex-1 break-words rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
                     {parsed.awayTeam}
                   </span>
                 </div>

@@ -403,7 +403,7 @@ export default function TicketDetails() {
                       <div className="flex items-center justify-between">
                         {/* Match name — always visible, even when ticket is locked */}
                         <div className="flex-1 mr-4 min-w-0">
-                          <span className="text-sm font-bold text-gray-900 truncate block">
+                          <span className="text-sm font-bold text-gray-900 block break-words">
                             {parsed.homeTeam} vs {parsed.awayTeam}
                           </span>
                           {parsed.league && (
@@ -429,7 +429,7 @@ export default function TicketDetails() {
                   return (
                     <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                       <div className="flex-1 mr-4 min-w-0">
-                        <span className="text-sm font-bold text-gray-900 truncate block">
+                        <span className="text-sm font-bold text-gray-900 block break-words">
                           {parsed.homeTeam} vs {parsed.awayTeam}
                         </span>
                         {parsed.league && (
