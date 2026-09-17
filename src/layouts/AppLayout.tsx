@@ -151,17 +151,27 @@ export default function AppLayout() {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           {/* FIXED Header - Always visible */}
-          <header className="fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top,0px)] h-[calc(3rem+env(safe-area-inset-top,0px))] sm:h-[calc(3.5rem+env(safe-area-inset-top,0px))] flex items-center justify-between px-2 sm:px-4 bg-gradient-to-r from-primary via-primary to-sidebar border-b border-primary/30 shadow-md md:left-[var(--sidebar-width,0)]">
-            <div className="flex items-center gap-2">
+          <header className="fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top,0px)] h-[calc(4rem+env(safe-area-inset-top,0px))] sm:h-[calc(4.25rem+env(safe-area-inset-top,0px))] md:h-[calc(3.5rem+env(safe-area-inset-top,0px))] flex items-center justify-between px-2 sm:px-4 bg-gradient-to-r from-primary via-primary to-sidebar border-b border-primary/30 shadow-md md:left-[var(--sidebar-width,0)]">
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
               <SidebarTrigger className="md:hidden text-primary-foreground hover:text-primary-foreground/80 flex-shrink-0 h-10 w-10 [&>svg]:h-6 [&>svg]:w-6" />
               
-              {/* Mobile Branding - Text */}
+              {/* Mobile Branding */}
               <div 
-                className="flex sm:hidden flex-col cursor-pointer" 
+                className="flex min-w-0 sm:hidden items-center gap-1.5 cursor-pointer" 
                 onClick={() => navigate("/")}
               >
-                <span className="text-xs font-bold text-primary-foreground leading-tight">ProPredict</span>
-                <span className="text-[8px] font-semibold text-primary-foreground/80 leading-tight">AI Predictions & Analysis</span>
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-[30px] leading-none drop-shadow-md"
+                >
+                  ⚽
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="whitespace-nowrap text-[17px] font-black leading-none text-primary-foreground">
+                    Pro<span className="text-secondary">Predict</span>
+                  </span>
+                  <span className="mt-1 whitespace-nowrap text-[8px] font-semibold leading-none text-primary-foreground/85">AI Predictions &amp; Analysis</span>
+                </span>
               </div>
               
               {/* Tablet Logo - hidden on mobile and desktop */}
@@ -196,7 +206,7 @@ export default function AppLayout() {
               </div>
             </form>
             
-            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
+            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
               {/* Subscription Badge */}
               <Badge 
                 variant="outline" 
@@ -287,7 +297,7 @@ export default function AppLayout() {
           </header>
 
           {/* Main Content - scrollable area containing page content and footer */}
-          <main className="flex-1 flex flex-col mt-[calc(3rem+env(safe-area-inset-top,0px))] sm:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-20 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full bg-background">
+          <main className="flex-1 flex flex-col mt-[calc(4rem+env(safe-area-inset-top,0px))] sm:mt-[calc(4.25rem+env(safe-area-inset-top,0px))] md:mt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-20 md:pb-0 overflow-y-auto overflow-x-hidden max-w-full bg-background">
             <div className="page-content flex-1 overflow-x-hidden">
               <Outlet />
             </div>
