@@ -58,7 +58,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
 import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
 import { BTTSMarketTab } from "./MarketTabs/BTTSMarketTab";
-import { DoubleChanceTab } from "./MarketTabs/DoubleChanceTab";
+
 import { CombosMarketTab } from "./MarketTabs/CombosMarketTab";
 import { CorrectScoreTab } from "./MarketTabs/CorrectScoreTab";
 import { KeyPlayerMissingBadge } from "./KeyPlayerMissingBadge";
@@ -365,7 +365,7 @@ const AIPredictionCardInner = ({
                 ["main", "Main"],
                 ["goals", "Goals"],
                 ["btts", "BTTS"],
-                ["double", "DC"],
+                
                 ["combos", "Combo"],
                 ["correct", "Correct"],
               ].map(([value, label]) => (
@@ -389,10 +389,6 @@ const AIPredictionCardInner = ({
 
             <TabsContent value="btts" className="mt-2 md:mt-3">
               <BTTSMarketTab prediction={prediction} hasAccess={hasAccess} />
-            </TabsContent>
-
-            <TabsContent value="double" className="mt-2 md:mt-3">
-              <DoubleChanceTab prediction={prediction} hasAccess={hasAccess} />
             </TabsContent>
 
             <TabsContent value="combos" className="mt-2 md:mt-3">
