@@ -782,86 +782,56 @@ export default function AIPredictions() {
             </div>
           </div>
 
-          {/* Tier Filter Tabs - In Gradient Card */}
-          <Card className="p-3 md:p-5 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20 rounded-2xl">
-            <p className="text-xs md:text-lg text-muted-foreground mb-2.5 md:mb-4 text-center">
-              Choose your prediction tier below
-            </p>
-
-            {/* Mobile: 2x2 Grid | Desktop: Row */}
-            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-4 md:justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-9 md:h-14 px-3 md:px-8 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-1.5 justify-center",
-                  tierFilter === "all"
-                    ? "bg-primary/30 text-primary border border-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]"
-                    : "bg-primary/15 text-primary border border-primary/40 hover:bg-primary/25 hover:border-primary"
-                )}
-                onClick={() => setTierFilter("all")}
-              >
-                All ({tierCounts.free + tierCounts.pro + tierCounts.premium})
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "free"
-                    ? "bg-green-500/30 text-green-400 border border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
-                    : "bg-green-500/15 text-green-400 border border-green-500/40 hover:bg-green-500/25 hover:border-green-500"
-                )}
-                onClick={() => setTierFilter("free")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Gift className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Free ({tierCounts.free})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-success/90 leading-none">
-                  {Math.max(tierStats.free.accuracy, 50)}%
-                </span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "pro"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
-                    : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
-                )}
-                onClick={() => setTierFilter("pro")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Pro ({tierCounts.pro})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
-                  {Math.max(tierStats.pro.accuracy, 75)}%
-                </span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "premium"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
-                    : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
-                )}
-                onClick={() => setTierFilter("premium")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Premium ({tierCounts.premium})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
-                  {Math.max(tierStats.premium.accuracy, 87)}%
-                </span>
-              </Button>
-            </div>
-          </Card>
+          {/* Tier Filter Pills — colorful chips like the reference design */}
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5">
+            <button
+              onClick={() => setTierFilter("all")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2",
+                tierFilter === "all"
+                  ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30"
+                  : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+              )}
+            >
+              All ({tierCounts.free + tierCounts.pro + tierCounts.premium})
+            </button>
+            <button
+              onClick={() => setTierFilter("free")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "free"
+                  ? "bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/30"
+                  : "bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/20"
+              )}
+            >
+              <Gift className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Free ({tierCounts.free})
+            </button>
+            <button
+              onClick={() => setTierFilter("pro")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "pro"
+                  ? "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/30"
+                  : "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20"
+              )}
+            >
+              <Star className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Pro ({tierCounts.pro})
+            </button>
+            <button
+              onClick={() => setTierFilter("premium")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "premium"
+                  ? "bg-violet-500 text-white border-violet-500 shadow-lg shadow-violet-500/30"
+                  : "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20"
+              )}
+            >
+              <Crown className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Premium ({tierCounts.premium})
+            </button>
+          </div>
 
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
           {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
@@ -875,7 +845,7 @@ export default function AIPredictions() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar leading-tight">
-                    🔥 AI Elite Picks
+                    AI Elite Picks
                   </h2>
                   <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
                     Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
@@ -889,49 +859,65 @@ export default function AIPredictions() {
             </div>
           )}
 
-          {/* 💎 DIAMOND PICK — single elite pick of the day (backend-flagged) */}
-          {diamondPick && (tierFilter === "all" || tierFilter === "premium") && (
-            <Card
-              className={cn(
-                "relative overflow-hidden border-2 mb-3 md:mb-4",
-                "bg-gradient-to-br from-cyan-500/10 via-sky-500/5 to-blue-600/15",
-                "border-cyan-400/50",
-                "shadow-[0_0_50px_rgba(34,211,238,0.35)]",
-                "animate-pulse-glow",
-              )}
-            >
-              <div className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-cyan-400/30 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-sky-500/30 blur-3xl" />
-              {/* Subtle moving shine overlay for premium feel */}
-              <div className="pointer-events-none absolute inset-0 animate-diamond-shine opacity-70" />
-              <div className="relative p-3 md:p-5">
-                <div className="flex flex-col items-center text-center mb-3 md:mb-4">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="h-px w-10 md:w-14 bg-gradient-to-r from-transparent to-cyan-400/70" />
-                    <div className="p-2 md:p-2.5 rounded-xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 shadow-lg shadow-cyan-500/50 ring-1 ring-cyan-200/40">
-                      <span className="text-lg md:text-xl">💎</span>
-                    </div>
-                    <div className="h-px w-10 md:w-14 bg-gradient-to-l from-transparent to-blue-500/70" />
-                  </div>
-                  <h2 className="text-base md:text-xl font-extrabold tracking-tight text-sidebar">
-                    💎 Diamond AI Pick
-                  </h2>
-                  <p className="text-[11px] md:text-sm text-foreground/90 mt-1 max-w-md font-medium">
-                    Strong xG dominance + consistent recent form — single highest-conviction selection
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
-                    <Badge className="bg-gradient-to-r from-green-500 to-green-500 text-white border-0 shadow-md shadow-green-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
-                      🛡️ Low Risk
-                    </Badge>
-                    <Badge className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-md shadow-cyan-500/40 text-[9px] md:text-[10px] px-2 py-0.5">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      Elite Signal
-                    </Badge>
-                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-500/10 text-primary text-[9px] md:text-[10px] px-2 py-0.5">
-                      Tier 1/2 • Stable Form
-                    </Badge>
-                  </div>
+          {/* ⭐ FEATURED ROW — Safe Pick + Diamond Pick side by side (reference layout) */}
+          <div className="grid gap-3 md:gap-4 lg:grid-cols-2 items-start">
+          {/* 🛡️ SAFE PICK — green panel like the reference design */}
+          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+            <Card className="overflow-hidden rounded-2xl border-2 border-green-500/50 shadow-lg shadow-green-500/15">
+              <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 px-4 py-3 md:px-5 md:py-4 flex items-center gap-3">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base md:text-xl font-black uppercase tracking-tight text-white">Safe Pick</h2>
+                  <p className="text-[10px] md:text-xs text-white/85 leading-snug">
+                    Our most conservative AI selections — highest confidence, lower risk.
+                  </p>
+                </div>
+                <Badge className="hidden sm:inline-flex bg-white/20 text-white border-white/30 text-[9px] md:text-[10px] px-2.5 py-1 rounded-full shrink-0">
+                  Reliable Choices
+                </Badge>
+              </div>
+              <div className="p-2 md:p-3 space-y-2">
+                {safePicksDeduped.map((prediction) => (
+                  <div key={`safe-${prediction.id}`} className="rounded-xl ring-1 ring-green-500/30 overflow-hidden">
+                    <AIPredictionCard
+                      overrideTier={getPredictionTier(prediction) ?? "premium"}
+                      prediction={prediction}
+                      isAdmin={isAdmin}
+                      isPremiumUser={isPremiumUser}
+                      isProUser={isProUser}
+                      isFavorite={isFavorite(prediction.match_id)}
+                      isSavingFavorite={isSaving(prediction.match_id)}
+                      onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
+                      onGoPremium={() => navigate("/get-premium")}
+                      onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
+                      isUnlocking={unlockingId === prediction.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* 💎 DIAMOND PICK — blue/violet panel like the reference design */}
+          {diamondPick && (tierFilter === "all" || tierFilter === "premium") && (
+            <Card className="overflow-hidden rounded-2xl border-2 border-blue-500/50 shadow-lg shadow-blue-500/15">
+              <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-3 md:px-5 md:py-4 flex items-center gap-3">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 text-xl md:text-2xl">
+                  💎
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base md:text-xl font-black uppercase tracking-tight text-white">Diamond Pick</h2>
+                  <p className="text-[10px] md:text-xs text-white/85 leading-snug">
+                    Our strongest AI selection with the best value — high confidence, high potential.
+                  </p>
+                </div>
+                <Badge className="hidden sm:inline-flex bg-white/20 text-white border-white/30 text-[9px] md:text-[10px] px-2.5 py-1 rounded-full shrink-0">
+                  Premium Value
+                </Badge>
+              </div>
+              <div className="relative p-2 md:p-3">
                 {(isAdmin || isPremiumUser) ? (
                   <div className="ring-2 ring-cyan-400/40 rounded-lg shadow-[0_0_30px_rgba(34,211,238,0.25)]">
                     <AIPredictionCard
@@ -1101,6 +1087,8 @@ export default function AIPredictions() {
               </div>
             </Card>
           )}
+          </div>
+
 
           {/* 🏆 TOP 5 ELITE — moved ABOVE Safe Pick per new layout: 💎 → 🏆 → 🛡️ → 📊 */}
           <TopAIPicksSection
@@ -1117,76 +1105,6 @@ export default function AIPredictions() {
             getPredictionTier={getPredictionTier}
           />
 
-          {/* 🛡️ SAFE PICK OF THE DAY — Lowest Risk Pick Today */}
-          {safePicksDeduped.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
-            <Card
-              className={cn(
-                "relative overflow-hidden border mb-3 md:mb-4",
-                "bg-gradient-to-br from-success/10 via-card to-success/10",
-                "border-green-500/40",
-                "shadow-[0_0_30px_rgba(34,197,94,0.18)]",
-              )}
-            >
-              {/* Subtle corner glows — softer than Diamond's pulse */}
-              <div className="pointer-events-none absolute -top-16 -left-16 h-36 w-36 rounded-full bg-green-500/15 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-16 -right-16 h-36 w-36 rounded-full bg-green-500/10 blur-3xl" />
-              {/* Repeating "shield grid" texture for fortress feel */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-[0.06]"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(45deg, hsl(var(--primary)) 0 1px, transparent 1px 14px)",
-                }}
-              />
-              <div className="relative p-3 md:p-4">
-                <div className="flex flex-col items-center text-center mb-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-green-400/60" />
-                    <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-green-500 via-green-600 to-green-700 shadow-md shadow-green-500/30 ring-1 ring-green-300/30">
-                      <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                    </div>
-                    <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-green-500/60" />
-                  </div>
-                  <h2 className="text-sm md:text-base font-extrabold tracking-tight text-sidebar">
-                    🛡️ Safe Pick of the Day
-                  </h2>
-                  <p className="text-[10px] md:text-[11px] text-foreground/80 mt-0.5 max-w-md font-medium">
-                    Lowest variance + stable form — the most defensive selection today
-                  </p>
-                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
-                    <Badge className="bg-green-500/20 text-success border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
-                      ✅ Low Variance
-                    </Badge>
-                    <Badge className="bg-green-500/20 text-success border-green-500/30 text-[9px] md:text-[10px] px-2 py-0.5">
-                      🛡️ Defensive Edge
-                    </Badge>
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                  {safePicksDeduped.map((prediction) => (
-                    <div
-                      key={`safe-${prediction.id}`}
-                      className="rounded-lg ring-1 ring-green-500/30 bg-background/40"
-                    >
-                      <AIPredictionCard
-                        overrideTier={getPredictionTier(prediction) ?? "premium"}
-                        prediction={prediction}
-                        isAdmin={isAdmin}
-                        isPremiumUser={isPremiumUser}
-                        isProUser={isProUser}
-                        isFavorite={isFavorite(prediction.match_id)}
-                        isSavingFavorite={isSaving(prediction.match_id)}
-                        onToggleFavorite={(matchId) => toggleFavorite(matchId, navigate)}
-                        onGoPremium={() => navigate("/get-premium")}
-                        onUnlockClick={(contentType, contentId, tier) => handleUnlock(contentType, contentId, tier)}
-                        isUnlocking={unlockingId === prediction.id}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          )}
 
           {/* 🔒 LOCKED PRO/PREMIUM TEASER — non-paying users see hidden pick cards instead of real content */}
           {!isPremiumUser && !isProUser && !isAdmin && (tierCounts.pro + tierCounts.premium) > 0 && (tierFilter === "all" || tierFilter === "pro" || tierFilter === "premium") && (
