@@ -101,7 +101,7 @@ export function SureOddsPromoCard({
         <div className="px-4 sm:px-5 pb-5 pt-3 space-y-2">
           <div className="flex items-center justify-center gap-2 pb-1">
             <Star className="h-3.5 w-3.5 text-success fill-success" />
-            <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks / Naši tipovi</span>
             <Star className="h-3.5 w-3.5 text-success fill-success" />
           </div>
           {matches.map((match, idx) => {
