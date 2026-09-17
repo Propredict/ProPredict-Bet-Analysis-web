@@ -6,6 +6,7 @@ import { TicketGroup } from "@/components/tickets/TicketGroup";
 import { useTickets } from "@/hooks/useTickets";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 
 export default function Tickets() {
   const navigate = useNavigate();
@@ -14,6 +15,11 @@ export default function Tickets() {
   const { getUnlockMethod, isAuthenticated } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
   const highlightId = searchParams.get("highlight");
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+
+  useEffect(() => {
+    maybeShowInterstitial("tickets");
+  }, [maybeShowInterstitial]);
 
   const todayBelgrade = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily" && ticket.category !== "sure_odds" && ticket.ticket_date === todayBelgrade);

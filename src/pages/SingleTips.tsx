@@ -13,6 +13,7 @@ import { useTips } from "@/hooks/useTips";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 import type { Tip } from "@/types/admin";
 import { toast } from "sonner";

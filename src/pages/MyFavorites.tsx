@@ -9,6 +9,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 
 export default function MyFavorites() {
