@@ -133,7 +133,11 @@ export default function ManageTickets() {
 
   const totalOdds =
     matches.length > 0
-      ? matches.reduce((acc, m) => acc * m.odds, 1)
+      ? Number(
+          matches
+            .reduce((acc, m) => acc * (Number(m.odds) > 0 ? Number(m.odds) : 1), 1)
+            .toFixed(2)
+        )
       : 0;
 
   const filteredFixtures = fixtures.filter((f) => {
