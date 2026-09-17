@@ -360,7 +360,7 @@ const AIPredictionCardInner = ({
         {/* Market Tabs */}
         <div className="px-2.5 md:px-3.5 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full min-w-0">
-            <TabsList className="flex w-full min-w-0 overflow-x-auto no-scrollbar bg-secondary h-8 md:h-9 rounded-full p-0.5 gap-0.5">
+            <TabsList className="flex w-full min-w-0 overflow-x-auto no-scrollbar bg-secondary h-10 md:h-11 rounded-full p-1 gap-1">
               {[
                 ["main", "Main"],
                 ["goals", "Goals"],
@@ -372,7 +372,7 @@ const AIPredictionCardInner = ({
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="shrink-0 flex-1 basis-auto whitespace-nowrap px-2.5 md:px-3 text-[10px] md:text-xs font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full"
+                  className="shrink-0 flex-1 basis-auto whitespace-nowrap px-3.5 md:px-4 text-xs md:text-sm font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full"
                 >
                   {label}
                 </TabsTrigger>
@@ -380,7 +380,7 @@ const AIPredictionCardInner = ({
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
-              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} hidePickBox />
+              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} hidePickBox homeLogo={homeLogo} awayLogo={awayLogo} />
             </TabsContent>
 
             <TabsContent value="goals" className="mt-2 md:mt-3">
