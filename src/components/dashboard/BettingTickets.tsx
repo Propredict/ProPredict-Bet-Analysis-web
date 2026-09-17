@@ -151,117 +151,125 @@ export function BettingTickets() {
     const freeCount = todayDbTickets.filter((t: any) => t.tier === "daily").length;
     const premiumCount = todayDbTickets.filter((t: any) => t.tier === "premium").length;
 
+    const topCards = [
+      {
+        img: dailyFreeTicketCard,
+        alt: "Daily Free Ticket — Today's AI selected matches, free for all users",
+        to: "/tickets",
+        border: "border-primary/50 hover:border-primary",
+        shadow: "shadow-primary/20 hover:shadow-primary/35",
+        count: freeCount,
+        countClass: "bg-card/95 text-primary",
+      },
+      {
+        img: premiumTicketCard,
+        alt: "Premium Ticket — Exclusive picks, higher odds, only for Premium members",
+        to: "/premium-tickets",
+        border: "border-primary/70 hover:border-primary",
+        shadow: "shadow-primary/30 hover:shadow-primary/45",
+        count: premiumCount,
+        countClass: "bg-card/95 text-primary",
+      },
+    ];
+
+    const bottomCards = [
+      {
+        img: sureOddsCard,
+        title: "Sure Odds 2+",
+        desc: "High confidence picks. Odds 2.00+.",
+        cta: "View Sure Odds",
+        to: "/sure-odds",
+        accent: "text-emerald-700",
+        border: "border-emerald-500/40 hover:border-emerald-500",
+      },
+      {
+        img: dailyTipsCard,
+        title: "Daily Tips",
+        desc: "Today's best value picks from our AI.",
+        cta: "View Daily Tips",
+        to: "/single-tips",
+        accent: "text-primary",
+        border: "border-primary/40 hover:border-primary",
+      },
+      {
+        img: premiumTipsCard,
+        title: "Premium Tips",
+        desc: "Top picks for Premium members. Maximum edge.",
+        cta: "View Premium Tips",
+        to: "/single-tips?view=premium",
+        accent: "text-violet-700",
+        border: "border-violet-500/40 hover:border-violet-500",
+      },
+    ];
+
     return (
       <section className="space-y-4">
-        {/* Row 1 — Daily & Premium ticket kockice */}
+        {/* Row 1 — Daily & Premium ticket kockice (full-image cards) */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Daily Free Ticket */}
-          <button
-            type="button"
-            onClick={() => navigate("/tickets")}
-            className="group relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/20 via-primary/5 to-card p-5 text-left shadow-md shadow-primary/10 transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-lg hover:shadow-primary/25 sm:p-6"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <Badge className="border border-primary/40 bg-primary/10 text-[11px] font-extrabold text-primary">
-                Free
-              </Badge>
-            </div>
-            <h3 className="mt-3 text-2xl font-black uppercase leading-tight tracking-tight text-sidebar">
-              Daily <span className="text-primary">Free Ticket</span>
-            </h3>
-            <p className="mt-1 text-sm font-medium text-muted-foreground">
-              Today's AI selected matches. Free for all users.
-            </p>
-            {freeCount > 0 && (
-              <p className="mt-1 text-xs font-extrabold text-primary">
-                {freeCount} {freeCount === 1 ? "ticket" : "tickets"} today / danas
-              </p>
-            )}
-            <span className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground shadow-md shadow-primary/25 transition-transform group-hover:-translate-y-0.5">
-              Klikni i otvori <ArrowRight className="h-4 w-4" />
-            </span>
-          </button>
-
-          {/* Premium Ticket */}
-          <button
-            type="button"
-            onClick={() => navigate("/premium-tickets")}
-            className="group relative overflow-hidden rounded-2xl border-2 border-primary/60 bg-gradient-to-br from-sidebar via-sidebar-accent to-primary/80 p-5 text-left shadow-lg shadow-primary/25 transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-xl hover:shadow-primary/30 sm:p-6"
-          >
-            <div className="pointer-events-none absolute -right-3 -top-3 rotate-12 rounded-xl bg-gradient-to-br from-yellow-300 to-yellow-500 px-4 py-1.5 text-lg font-black tracking-wide text-yellow-900 shadow-lg">
-              VIP
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-yellow-400 text-yellow-900 shadow-md">
-                <Crown className="h-5 w-5" />
-              </div>
-              <Badge className="border border-primary-foreground/40 bg-primary-foreground/10 text-[11px] font-extrabold text-primary-foreground">
-                Premium
-              </Badge>
-            </div>
-            <h3 className="mt-3 text-2xl font-black uppercase leading-tight tracking-tight text-primary-foreground">
-              Premium <span className="text-yellow-300">Ticket</span>
-            </h3>
-            <p className="mt-1 text-sm font-medium text-primary-foreground/75">
-              Exclusive picks. Higher odds. Only for Premium members.
-            </p>
-            {premiumCount > 0 && (
-              <p className="mt-1 text-xs font-extrabold text-yellow-300">
-                {premiumCount} {premiumCount === 1 ? "ticket" : "tickets"} today / danas
-              </p>
-            )}
-            <span className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-card px-4 py-2.5 text-sm font-extrabold text-primary shadow-md transition-transform group-hover:-translate-y-0.5">
-              Klikni i otvori <ArrowRight className="h-4 w-4" />
-            </span>
-          </button>
+          {topCards.map((card) => (
+            <button
+              key={card.to}
+              type="button"
+              onClick={() => navigate(card.to)}
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border-2 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl",
+                card.border,
+                card.shadow
+              )}
+            >
+              <img
+                src={card.img}
+                alt={card.alt}
+                loading="lazy"
+                width={1152}
+                height={576}
+                className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+              {card.count > 0 && (
+                <span
+                  className={cn(
+                    "absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-extrabold shadow-md",
+                    card.countClass
+                  )}
+                >
+                  {card.count} {card.count === 1 ? "ticket" : "tickets"} today / danas
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Row 2 — Sure Odds 2+ / Daily Tips / Premium Tips kockice */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[
-            {
-              title: "Sure Odds 2+",
-              desc: "High confidence picks. Odds 2.00+.",
-              cta: "View Sure Odds",
-              icon: Crosshair,
-              to: "/sure-odds",
-            },
-            {
-              title: "Daily Tips",
-              desc: "Today's best value picks from our AI.",
-              cta: "View Daily Tips",
-              icon: Lightbulb,
-              to: "/single-tips",
-            },
-            {
-              title: "Premium Tips",
-              desc: "Top picks for Premium members. Maximum edge.",
-              cta: "View Premium Tips",
-              icon: Crown,
-              to: "/single-tips?view=premium",
-            },
-          ].map((item) => (
+          {bottomCards.map((item) => (
             <button
               key={item.title}
               type="button"
               onClick={() => navigate(item.to)}
-              className="group flex flex-col rounded-2xl border-2 border-primary/30 bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/70 hover:shadow-md sm:p-5"
+              className={cn(
+                "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg",
+                item.border
+              )}
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <item.icon className="h-5 w-5" />
-              </span>
-              <span className="mt-3 text-base font-extrabold uppercase tracking-tight text-sidebar">
-                {item.title}
-              </span>
-              <span className="mt-1 flex-1 text-xs font-medium leading-relaxed text-muted-foreground">
-                {item.desc}
-              </span>
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-extrabold text-primary">
-                {item.cta}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <img
+                src={item.img}
+                alt=""
+                loading="lazy"
+                width={912}
+                height={736}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <span className="relative flex flex-1 flex-col p-4 sm:p-5">
+                <span className="text-xl font-black uppercase leading-tight tracking-tight text-sidebar drop-shadow-sm sm:text-2xl">
+                  {item.title}
+                </span>
+                <span className="mt-1 max-w-[70%] flex-1 text-xs font-semibold leading-relaxed text-sidebar/80">
+                  {item.desc}
+                </span>
+                <span className={cn("mt-3 inline-flex items-center gap-1.5 rounded-lg bg-card/90 px-3 py-1.5 text-sm font-extrabold shadow-sm backdrop-blur-sm", item.accent)}>
+                  {item.cta}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
               </span>
             </button>
           ))}
