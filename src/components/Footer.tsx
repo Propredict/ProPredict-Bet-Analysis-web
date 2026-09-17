@@ -238,14 +238,14 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
         </div>
 
         {/* Legal Links */}
-        <div className="mb-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           {legalLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className="flex items-center gap-1 text-[9px] text-muted-foreground transition-colors hover:text-foreground sm:text-[10px]"
+              className="flex items-center gap-1.5 text-xs font-semibold text-white/80 transition-colors hover:text-white sm:text-sm"
             >
-              <link.icon className="h-2.5 w-2.5 opacity-70 sm:h-3 sm:w-3" />
+              <link.icon className="h-3.5 w-3.5 opacity-80 sm:h-4 sm:w-4" />
               <span>{link.label}</span>
             </Link>
           ))}
