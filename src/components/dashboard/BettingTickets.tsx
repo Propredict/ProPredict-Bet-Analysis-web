@@ -273,7 +273,7 @@ export function BettingTickets() {
           ))}
         </div>
 
-        {/* Row 2 — Sure Odds 2+ full-width kocka (same size as ticket cards) */}
+        {/* Row 2 — Sure Odds 2+ full-width kocka (reduced height) */}
         <button
           type="button"
           onClick={() => navigate("/sure-odds")}
@@ -281,19 +281,19 @@ export function BettingTickets() {
         >
           <img
             src={sureOddsCard}
-            alt="Sure Odds 2+ — High confidence picks. Odds 2.00+."
+            alt="Sure Odds 2+ Ticket — High confidence Ticket. Sigurna kvota >2."
             loading="lazy"
-            className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-36"
           />
-          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-8">
-            <span className="text-2xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-4xl">
-              Sure <span className="text-success">Odds 2+</span>
+          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1 p-3 sm:gap-2 sm:p-8">
+            <span className="text-lg font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-3xl">
+              Sure <span className="text-success">Odds 2+</span> Ticket
             </span>
-            <span className="max-w-[55%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
-              High confidence picks. Odds 2.00+.
+            <span className="max-w-[70%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
+              High confidence Ticket / Sigurna kvota &gt;2
             </span>
-            <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:px-4 sm:text-sm">
-              Klikni i otvori
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:px-4 sm:py-1.5 sm:text-sm">
+              Open / Otvori
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
             </span>
           </span>
