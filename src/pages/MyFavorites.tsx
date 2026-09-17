@@ -9,6 +9,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useLiveScores, Match } from "@/hooks/useLiveScores";
 import { useLiveAlerts } from "@/hooks/useLiveAlerts";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { MatchDetailModal } from "@/components/live-scores/MatchDetailModal";
 
 export default function MyFavorites() {
@@ -23,6 +24,11 @@ export default function MyFavorites() {
 
   const { favorites, isFavorite, isSaving, toggleFavorite, isLoading: favoritesLoading, refetch } = useFavorites();
   const [refreshing, setRefreshing] = useState(false);
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+
+  useEffect(() => {
+    maybeShowInterstitial("my_favorites");
+  }, [maybeShowInterstitial]);
 
   // Enable goal/red card alerts on Favorites page
   const { hasRecentGoal } = useLiveAlerts(matches, favorites, undefined, "favorites");

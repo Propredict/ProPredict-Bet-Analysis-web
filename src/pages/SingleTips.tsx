@@ -13,6 +13,7 @@ import { useTips } from "@/hooks/useTips";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 import type { Tip } from "@/types/admin";
 import { toast } from "sonner";
@@ -44,6 +45,11 @@ export default function SingleTips() {
   const [freeInAppOpen, setFreeInAppOpen] = useState(false);
   const highlightId = searchParams.get("highlight");
   const planRequired = searchParams.get("plan_required");
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+
+  useEffect(() => {
+    maybeShowInterstitial("free_tips");
+  }, [maybeShowInterstitial]);
 
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const groups = useMemo(() => ({
