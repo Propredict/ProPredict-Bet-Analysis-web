@@ -127,12 +127,12 @@ const Index = () => {
             <Link
               to="/get-premium"
               aria-label="Premium Access all month — Postani Premium korisnik"
-              className="hidden w-[36%] max-w-md shrink-0 select-none flex-col items-center gap-1 text-center xl:flex"
+              className="hidden w-[38%] max-w-md shrink-0 select-none flex-col items-center gap-1 text-center xl:flex"
             >
             <svg viewBox="0 0 24 24" className="mb-1 h-9 w-9 text-yellow-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" fill="currentColor" aria-hidden="true">
               <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
             </svg>
-            <p className="text-2xl font-black uppercase leading-tight tracking-tight text-primary-foreground drop-shadow-md xl:text-3xl">
+            <p className="whitespace-nowrap text-2xl font-black uppercase leading-tight tracking-tight text-primary-foreground drop-shadow-md">
               Premium Access. <span className="text-primary">All Month.</span>
             </p>
             <p className="text-sm font-semibold text-primary-foreground/90 sm:text-base">
@@ -147,7 +147,7 @@ const Index = () => {
             </Link>
           </div>
           {/* Script accent text (desktop) */}
-          <p className="pointer-events-none absolute right-52 top-6 hidden -rotate-3 select-none text-2xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
+          <p className="pointer-events-none absolute right-44 top-3 hidden -rotate-3 select-none text-xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
             More<br />Than Just<br />Predictions
           </p>
           {/* Right-side stats column (desktop), like reference design */}
