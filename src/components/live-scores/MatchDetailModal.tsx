@@ -113,11 +113,11 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="w-full max-w-2xl rounded-xl bg-[#1a1f2e] border border-white/10 overflow-hidden"
+          className="w-full max-w-2xl rounded-xl bg-[#1a1f2e] border border-border overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
-          <div className="flex justify-between items-center p-4 border-b border-white/10">
+          <div className="flex justify-between items-center p-4 border-b border-border">
             <div className="flex gap-3 items-center text-sm text-muted-foreground">
               {match.league} • {match.leagueCountry}
               {getStatusBadge()}
@@ -148,7 +148,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
           {/* TABS */}
           {!details && (loading || error) ? (
-            <div className="border-t border-white/10 p-5">
+            <div className="border-t border-border p-5">
               {loading ? (
                 <div className="space-y-3 animate-pulse">
                   <div className="h-4 w-1/3 rounded bg-muted" />
@@ -164,7 +164,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             </div>
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="px-3 py-3 border-b border-white/10">
+              <div className="px-3 py-3 border-b border-border">
                 <TabsList
                   className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
                   style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}
