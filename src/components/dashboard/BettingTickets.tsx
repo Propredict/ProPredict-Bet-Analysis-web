@@ -20,10 +20,9 @@ import { PricingModal } from "@/components/PricingModal";
 
 import dailyFreeTicketCard from "@/assets/daily-free-ticket-card.jpg";
 import premiumTicketCard from "@/assets/premium-ticket-card.jpg";
-import sureOddsCard from "@/assets/sure-odds-card.jpg";
+import sureOddsStadiumCard from "@/assets/sure-odds-stadium-card.jpg";
 import dailyTipsCard from "@/assets/daily-tips-card.jpg";
 import premiumTipsCard from "@/assets/premium-tips-card.jpg";
-import sureOddsBall from "@/assets/sure-odds-ball.png.asset.json";
 
 type TabType = "daily" | "exclusive" | "premium";
 
@@ -188,6 +187,7 @@ export function BettingTickets() {
         titleA: "Daily",
         titleB: "Tips",
         titleBClass: "text-sky-300",
+        subtitle: "Dnevne predikcije",
         desc: "Today's best value picks from our AI.",
         to: "/single-tips",
         border: "border-primary/50 hover:border-primary",
@@ -199,6 +199,7 @@ export function BettingTickets() {
         titleA: "Premium",
         titleB: "Tips",
         titleBClass: "text-violet-300",
+        subtitle: "Premium predikcije",
         desc: "Top picks for Premium members. Maximum edge.",
         to: "/single-tips?view=premium",
         border: "border-violet-500/50 hover:border-violet-500",
@@ -225,10 +226,13 @@ export function BettingTickets() {
           className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
         <span className="absolute inset-0 bg-gradient-to-r from-sidebar/95 via-sidebar/45 to-transparent" />
-        <span className="absolute inset-y-0 left-0 flex w-[64%] flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-6">
+        <span className="absolute inset-y-0 left-0 flex w-[64%] flex-col justify-center gap-1 p-4 sm:gap-1.5 sm:p-6">
           <span className="text-2xl font-black uppercase leading-none text-sidebar-foreground drop-shadow-md sm:text-4xl">
             {item.titleA}{" "}
             <span className={item.titleBClass}>{item.titleB}</span>
+          </span>
+          <span className="text-sm font-black leading-tight text-sidebar-foreground drop-shadow-sm sm:text-lg">
+            {item.subtitle}
           </span>
           <span className="text-xs font-extrabold leading-snug text-sidebar-foreground/90 drop-shadow-sm sm:text-base">
             {item.desc}
@@ -281,18 +285,14 @@ export function BettingTickets() {
         {/* Row 2 — Sure Odds 2+ full-width kocka (bigger, ball symbol, open + buy) */}
         <div className="group relative block min-h-52 w-full overflow-hidden rounded-2xl border-2 border-success/60 bg-sidebar text-left shadow-lg shadow-success/20 transition-all hover:-translate-y-1 hover:border-success hover:shadow-2xl hover:shadow-success/35 sm:min-h-64">
           <img
-            src={sureOddsCard}
+            src={sureOddsStadiumCard}
             alt="Sure Odds 2+ Ticket — High confidence Ticket. Sigurna kvota >2."
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover opacity-45 transition-transform duration-300 group-hover:scale-[1.02]"
+            width={1536}
+            height={640}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-sidebar via-sidebar/90 to-success/20" />
-          <img
-            src={sureOddsBall.url}
-            alt="Sure Odds 2+ football symbol"
-            loading="lazy"
-            className="pointer-events-none absolute -right-3 top-1/2 h-44 w-44 -translate-y-1/2 object-contain drop-shadow-xl sm:right-4 sm:h-64 sm:w-64"
-          />
+          <div className="absolute inset-0 bg-gradient-to-r from-sidebar/80 via-sidebar/20 to-transparent" />
           <div className="relative flex min-h-52 w-[68%] flex-col justify-center gap-2 p-4 sm:min-h-64 sm:gap-3 sm:p-8">
             <span className="text-3xl font-black uppercase leading-none text-sidebar-foreground drop-shadow-md sm:text-5xl">
               Sure <span className="text-success">Odds 2+</span> Ticket
