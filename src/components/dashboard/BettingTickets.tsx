@@ -276,31 +276,63 @@ export function BettingTickets() {
           ))}
         </div>
 
-        {/* Row 2 — Sure Odds 2+ full-width kocka (reduced height) */}
-        <button
-          type="button"
+        {/* Row 2 — Sure Odds 2+ full-width kocka (bigger, ball symbol, open + buy) */}
+        <div
+          role="link"
+          tabIndex={0}
           onClick={() => navigate("/sure-odds")}
-          className="group relative block w-full overflow-hidden rounded-2xl border-2 border-emerald-500/50 text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
+          onKeyDown={(e) => e.key === "Enter" && navigate("/sure-odds")}
+          className="group relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-emerald-500/50 bg-sidebar text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
         >
           <img
             src={sureOddsCard}
             alt="Sure Odds 2+ Ticket — High confidence Ticket. Sigurna kvota >2."
             loading="lazy"
-            className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-40"
+            className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-64"
           />
-          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1 p-3 sm:gap-2 sm:p-8">
-            <span className="text-lg font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-3xl">
+          {/* Green ball symbol */}
+          <img
+            src={sureOddsBall.url}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="pointer-events-none absolute -right-2 top-1/2 h-32 w-32 -translate-y-1/2 object-contain drop-shadow-[0_0_18px_rgba(34,197,94,0.45)] sm:-right-4 sm:h-56 sm:w-56"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-sidebar via-sidebar/85 to-transparent" />
+          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-2 p-4 sm:gap-3 sm:p-8">
+            <span className="text-2xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-5xl">
               Sure <span className="text-success">Odds 2+</span> Ticket
             </span>
-            <span className="max-w-[70%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
+            <span className="max-w-[65%] text-xs font-bold leading-snug text-sidebar/85 sm:text-lg">
               High confidence Ticket / Sigurna kvota &gt;2
             </span>
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:px-4 sm:py-1.5 sm:text-sm">
-              Open / Otvori
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+            <span className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/sure-odds");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm transition-colors hover:bg-card sm:px-4 sm:py-2 sm:text-sm"
+              >
+                Open / Otvori
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void trackSureOddsEvent("cta_click", "dashboard");
+                  startSureOddsPurchase(undefined, "dashboard");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-[11px] font-extrabold text-white shadow-md transition-transform hover:scale-[1.03] sm:px-4 sm:py-2 sm:text-sm"
+              >
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                Get Ticket / Kupi Tiket
+              </button>
             </span>
           </span>
-        </button>
+        </div>
 
         {/* Row 3 — Daily Tips & Premium Tips kocke (same size as ticket cards) */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
