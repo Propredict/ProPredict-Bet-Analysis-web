@@ -120,12 +120,57 @@ export function LiveChatDock() {
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
+  if (!open) {
+    return (
+      <>
+        {/* Mobile: compact floating button so it never covers content */}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open live chat"
+          className="fixed bottom-24 left-3 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/50 bg-gradient-to-br from-sidebar to-primary text-primary-foreground shadow-xl shadow-primary/30 md:hidden"
+        >
+          <MessageCircle className="h-5 w-5" />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 rounded-full bg-success px-1.5 py-0.5 text-[9px] font-bold text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </button>
+        {/* Desktop: full bar */}
+        <div className="fixed bottom-4 left-4 z-40 hidden w-[330px] md:block">
+          <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="flex w-full items-center gap-2 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 px-3 py-2.5 text-left"
+            >
+              <span className="rounded-lg bg-primary/25 p-1.5 text-primary-foreground">
+                <MessageCircle className="h-4 w-4" />
+              </span>
+              <span className="flex-1">
+                <span className="block text-sm font-black text-primary-foreground">Live Chat</span>
+                <span className="block text-[10px] text-primary-foreground/70">Talk with other members</span>
+              </span>
+              {unread > 0 && (
+                <span className="rounded-full bg-success px-2 py-0.5 text-[10px] font-bold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+              <ChevronUp className="h-4 w-4 text-primary-foreground" />
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className="fixed bottom-20 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-4">
+    <div className="fixed bottom-24 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-4">
       <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(false)}
           className="flex w-full items-center gap-2 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 px-3 py-2.5 text-left"
         >
           <span className="rounded-lg bg-primary/25 p-1.5 text-primary-foreground">
