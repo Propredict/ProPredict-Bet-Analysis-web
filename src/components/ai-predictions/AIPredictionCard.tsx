@@ -442,16 +442,13 @@ const AIPredictionCardInner = ({
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground p-1 md:p-1.5 h-auto bg-secondary rounded"
+                <button
+                  className="w-full flex items-center justify-end gap-1.5 text-[11px] md:text-xs font-bold text-primary hover:text-primary/80 transition-colors py-1"
                 >
-                  <span className="flex items-center gap-1 md:gap-1.5">
-                    <Brain className="w-2.5 md:w-3 h-2.5 md:h-3" />
-                    AI Analysis
-                  </span>
-                  <ChevronDown className={cn("w-2.5 md:w-3 h-2.5 md:h-3 transition-transform", isAnalysisOpen && "rotate-180")} />
-                </Button>
+                  <Brain className="w-3.5 h-3.5" />
+                  View Full Analysis
+                  <ChevronDown className={cn("w-3.5 h-3.5 -rotate-90 transition-transform", isAnalysisOpen && "rotate-0")} />
+                </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-secondary rounded space-y-1.5 md:space-y-2">
