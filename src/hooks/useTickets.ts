@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import type { Ticket, TicketMatch } from "@/types/admin";
 import type { Database } from "@/integrations/supabase/types";
+import { calculateCombinedOdds } from "@/lib/formatOdds";
 
 /* =======================
    Types
@@ -64,13 +65,18 @@ export function useTickets(includeAll = false) {
       const { data, error } = await query as any;
       if (error) throw error;
 
-      return (data ?? []).map((ticket: any) => ({
-        ...ticket,
-        matches: (ticket.matches ?? []).sort(
+      return (data ?? []).map((ticket: any) => {
+        const matches = (ticket.matches ?? []).sort(
           (a: TicketMatch, b: TicketMatch) =>
             (a.sort_order ?? 0) - (b.sort_order ?? 0),
-        ),
-      })) as TicketWithMatches[];
+        );
+
+        return {
+          ...ticket,
+          matches,
+          total_odds: calculateCombinedOdds(matches, Number(ticket.total_odds ?? 0)),
+        };
+      }) as TicketWithMatches[];
     },
   });
 
