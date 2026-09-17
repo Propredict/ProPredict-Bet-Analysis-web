@@ -134,7 +134,7 @@ export function getAIBestPick(prediction: AIPrediction): PickCandidate {
  * value (usually Over 1.5 ≈ 71%), even when the headline pick differed.
  */
 function getStrongestConfidencePick(prediction: AIPrediction): PickCandidate {
-  return getBestPick(prediction);
+  return getAIBestPick(prediction);
 }
 
 
@@ -142,9 +142,11 @@ interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
   displayTier?: "free" | "pro" | "premium";
+  /** When true, the big "Best Pick" box is skipped — the card header strip already shows it. */
+  hidePickBox?: boolean;
 }
 
-export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false }: Props) {
   const pick = getStrongestConfidencePick(prediction);
 
 
@@ -154,7 +156,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {
+      {!hidePickBox && (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center justify-center gap-1.5 relative">
