@@ -274,7 +274,7 @@ serve(async (req) => {
     };
     const tierRouteMap: Record<string, string> = {
       premium: type === "tip" ? "premium-analysis" : "premium-predictions",
-      exclusive: type === "tip" ? "pro-analysis" : "pro-predictions",
+      exclusive: type === "tip" ? "premium-analysis" : "premium-predictions",
       daily: type === "tip" ? "daily-analysis" : "daily-predictions",
       free: type === "tip" ? "daily-analysis" : "daily-predictions",
     };
