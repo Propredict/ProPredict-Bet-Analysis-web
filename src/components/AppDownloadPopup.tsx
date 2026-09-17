@@ -35,8 +35,8 @@ export function AppDownloadPopup() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-sm rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-background shadow-2xl overflow-hidden animate-scale-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-[calc(1rem+env(safe-area-inset-top,0px))]">
+      <div className="relative w-full max-w-sm max-h-full overflow-y-auto overscroll-contain rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-background shadow-2xl animate-scale-in">
         {/* Stadium light accents */}
         <div className="absolute top-0 left-4 w-1 h-16 bg-gradient-to-b from-primary/40 to-transparent rounded-full blur-sm" />
         <div className="absolute top-0 right-4 w-1 h-16 bg-gradient-to-b from-primary/40 to-transparent rounded-full blur-sm" />
