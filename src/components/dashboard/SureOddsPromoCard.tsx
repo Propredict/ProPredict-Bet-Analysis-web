@@ -143,12 +143,12 @@ export function SureOddsPromoCard({
     <div className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15 md:rounded-2xl md:border-primary md:shadow-[0_20px_60px_-10px_rgba(0,148,230,0.45)] md:ring-1 md:ring-primary/40">
       <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
         <div className="flex items-start justify-between gap-3">
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca / Dnevni tiket</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
           <Badge className="border border-primary-foreground/20 bg-primary-foreground/15 text-[10px] text-primary-foreground"><Star className="mr-1 h-3 w-3 fill-current" />PRO</Badge>
         </div>
         <div className="mt-5 flex items-end justify-between">
-          <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds</p><p className="text-3xl font-extrabold leading-none">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : "2.00+"}</p></div>
-          <div className="text-right"><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date</p><p className="text-xs font-semibold">{ticketDate}</p></div>
+          <div><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Combined odds / Ukupna kvota</p><p className="text-3xl font-extrabold leading-none">{ticket.totalOdds > 0 ? formatCombinedOdds(ticket.totalOdds) : "2.00+"}</p></div>
+          <div className="text-right"><p className="text-[9px] font-bold uppercase text-primary-foreground/70">Ticket date / Datum tiketa</p><p className="text-xs font-semibold">{ticketDate}</p></div>
         </div>
       </div>
 
