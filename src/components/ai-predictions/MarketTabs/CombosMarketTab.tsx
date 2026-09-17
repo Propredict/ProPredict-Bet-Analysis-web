@@ -168,7 +168,7 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
       <div
         key={`${view.kind}-${index}`}
         className={cn(
-          "flex min-w-0 flex-col gap-2 rounded-lg border p-2.5 transition-colors sm:flex-row sm:items-center md:gap-3 md:p-3",
+          "flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-2 overflow-hidden rounded-lg border p-2.5 transition-colors md:gap-x-3 md:p-3",
           styles.card,
         )}
       >
