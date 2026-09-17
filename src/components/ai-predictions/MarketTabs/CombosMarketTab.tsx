@@ -4,6 +4,7 @@ import {
   calculateGoalMarketProbs,
   deriveMarkets,
   getConsistentSafeCombo,
+  getNormalized1x2,
 } from "../utils/marketDerivation";
 import {
   BarChart3,
