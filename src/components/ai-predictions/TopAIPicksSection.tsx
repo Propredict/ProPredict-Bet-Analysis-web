@@ -23,6 +23,7 @@ interface Props {
   onUnlock?: (contentType: "tip", contentId: string, tier: ContentTier) => void;
   unlockingId?: string | null;
   getPredictionTier: (p: AIPrediction) => "free" | "pro" | "premium" | null;
+  teamMatches?: any[];
 }
 
 /** Short market tag for visual scanning (BTTS, Over, 1X2, etc.) */
@@ -58,6 +59,7 @@ export function TopAIPicksSection({
   onUnlock,
   unlockingId,
   getPredictionTier,
+  teamMatches,
 }: Props) {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -231,6 +233,7 @@ export function TopAIPicksSection({
                     onGoPremium={() => navigate("/get-premium")}
                     onUnlockClick={onUnlock}
                     isUnlocking={unlockingId === rp.prediction.id}
+                    teamMatches={teamMatches}
                   />
                 </div>
               </div>
