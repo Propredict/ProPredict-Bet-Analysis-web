@@ -176,7 +176,7 @@ export function SureOddsPromoCard({
           )}
       </div>
       <div className="border-t border-border bg-card p-4">
-          <p className="mb-3 text-center text-[10px] text-muted-foreground"><span className="font-bold text-primary">{socialPct}% of users</span> unlocked this ticket</p>
+          <p className="mb-3 text-center text-[10px] text-muted-foreground"><span className="font-bold text-primary">{socialPct}% of users / korisnika</span> unlocked this ticket / otključalo ovaj tiket</p>
           <Button
             size="lg"
             disabled={isUnlocking}
@@ -190,12 +190,12 @@ export function SureOddsPromoCard({
             {isUnlocking ? (
               <>
                 <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Unlocking...
+                Unlocking... / Otključavanje...
               </>
             ) : (
               <>
                 <Ticket className="h-5 w-5" />
-                <span className="flex-1 text-left">Unlock Today's Ticket</span>
+                <span className="flex-1 text-left">Unlock Today's Ticket / Otključaj današnji tiket</span>
                 <span className="rounded-lg bg-primary-foreground/15 px-2 py-1 text-sm">{priceLabel}</span>
                 <ChevronRight className="h-5 w-5" />
               </>
