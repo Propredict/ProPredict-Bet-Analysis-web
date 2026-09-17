@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn, Link2, Check, Share2, Home, ChevronRight } from "lucide-react";
+import { Loader2, Lock, CheckCircle2, Crown, Star, Sparkles, LogIn, Link2, Check, Share2, Home, ChevronRight, Target, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
 import { toast } from "sonner";
+import { useLiveScores } from "@/hooks/useLiveScores";
+import { findTicketTeamLogo, TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 
 // Get tier-specific OG image
 const getTierOgImage = (tier: string) => {
@@ -54,6 +56,7 @@ export default function TicketDetails() {
   const [copied, setCopied] = useState(false);
 
   const { tickets, isLoading } = useTickets(false);
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const { getUnlockMethod } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
 
@@ -322,7 +325,7 @@ export default function TicketDetails() {
           {JSON.stringify(breadcrumbSchema)}
         </script>
       </Helmet>
-      <div className="space-y-4 max-w-xl mx-auto">
+      <div className="mx-auto max-w-5xl space-y-4">
         {/* Breadcrumb Navigation */}
         <Breadcrumb>
           <BreadcrumbList className="text-xs sm:text-sm">
@@ -355,16 +358,13 @@ export default function TicketDetails() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <Card className={cn(
-          "overflow-hidden bg-white text-gray-900 border-gray-200 shadow-lg",
-          !isLocked ? "border-primary/40" : "border-gray-200"
-        )}>
+        <Card className="overflow-hidden border-2 border-primary/65 bg-card text-foreground shadow-xl">
           {/* Header - VISIBLE */}
-          <div className="p-4 pb-0">
+          <div className="bg-gradient-to-r from-sidebar via-sidebar-accent to-primary px-4 pb-4 pt-5 text-sidebar-foreground sm:px-6 sm:pb-5">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 {getTierBadge()}
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-sidebar-foreground/70">
                   {ticket.matches?.length || 0} Matches
                 </span>
               </div>
@@ -387,32 +387,44 @@ export default function TicketDetails() {
           </div>
 
           {/* Title - VISIBLE */}
-          <div className="px-3 sm:px-4 pb-2 sm:pb-3">
-            <h1 className="font-bold text-sm sm:text-base text-gray-900">{ticket.title}</h1>
+          <div className="border-b border-primary/25 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary px-4 pb-5 sm:px-6">
+            <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase text-primary"><Trophy className="h-4 w-4" /> Premium multi match ticket</p>
+            <h1 className="break-words text-xl font-extrabold uppercase leading-tight text-sidebar-foreground sm:text-2xl">{ticket.title}</h1>
+            <p className="mt-1 text-xs font-semibold uppercase text-sidebar-foreground/70">Carefully selected picks</p>
+          </div>
+
+          <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-secondary/70 py-3 text-center">
+            <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Matches</p><p className="text-lg font-extrabold">{matchCount}</p></div>
+            <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Confidence</p><p className="text-lg font-extrabold text-primary">High</p></div>
+            <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Status</p><p className="text-lg font-extrabold text-success">Ready</p></div>
           </div>
 
           {/* Matches */}
-          <div className="px-4 pb-3 space-y-2">
+          <div className="divide-y divide-border px-3 sm:px-5">
             {isLocked ? (
               // Locked: Show match names visible, predictions/odds blurred
               <>
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
-                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <div className="flex items-center justify-between">
+                    <div key={idx} className="py-4">
+                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem] sm:items-center">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                         {/* Match name — always visible, even when ticket is locked */}
-                        <div className="flex-1 mr-4 min-w-0">
-                          <span className="text-sm font-bold text-gray-900 block break-words">
-                            {parsed.homeTeam} vs {parsed.awayTeam}
-                          </span>
+                        <div className="min-w-0">
                           {parsed.league && (
-                            <span className="text-xs text-gray-500">{parsed.league}</span>
+                            <span className="text-xs font-bold uppercase text-muted-foreground">{parsed.league}</span>
                           )}
+                          <div className="mt-2 flex min-w-0 items-center gap-2">
+                            <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} />
+                            <span className="min-w-0 break-words text-base font-extrabold leading-snug sm:text-lg">{parsed.homeTeam} <span className="px-1 text-xs text-muted-foreground">vs</span> {parsed.awayTeam}</span>
+                            <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} />
+                          </div>
                         </div>
                         {/* Prediction & Confidence - BLURRED */}
-                        <div className="flex items-center gap-2 blur-sm opacity-50">
-                          <Badge variant="secondary" className="border border-success/40 bg-success/10 text-sm font-bold text-success">
+                        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-3 opacity-70">
+                          <Lock className="h-4 w-4" />
+                          <Badge variant="secondary" className="border-0 bg-transparent text-sm font-bold text-muted-foreground blur-sm">
                             {match.prediction}
                           </Badge>
                         </div>
@@ -427,20 +439,24 @@ export default function TicketDetails() {
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
-                    <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                      <div className="flex-1 mr-4 min-w-0">
-                        <span className="text-sm font-bold text-gray-900 block break-words">
-                          {parsed.homeTeam} vs {parsed.awayTeam}
-                        </span>
+                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_1.5rem] sm:items-center">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
+                      <div className="min-w-0">
                         {parsed.league && (
-                          <span className="text-xs text-gray-500">{parsed.league}</span>
+                          <span className="text-xs font-bold uppercase text-muted-foreground">{parsed.league}</span>
                         )}
+                        <div className="mt-2 flex min-w-0 items-center gap-2">
+                          <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} />
+                          <span className="min-w-0 break-words text-base font-extrabold leading-snug sm:text-lg">{parsed.homeTeam} <span className="px-1 text-xs text-muted-foreground">vs</span> {parsed.awayTeam}</span>
+                          <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Badge variant="secondary" className="border border-success/40 bg-success/10 text-sm font-bold text-success">
+                      <div className="flex shrink-0 items-center gap-3">
+                        <Badge variant="secondary" className="w-full border border-success/40 bg-success/10 px-3 py-2 text-sm font-extrabold text-success sm:w-auto">
                           {match.prediction}
                         </Badge>
                       </div>
+                      <CheckCircle2 className="hidden h-5 w-5 text-success sm:block" />
                     </div>
                   );
                 })}
@@ -449,9 +465,9 @@ export default function TicketDetails() {
           </div>
 
           {/* Combined Confidence Score - Blurred when locked */}
-          <div className="px-4 py-3 bg-primary/10 border-t border-primary/20">
+          <div className="border-t border-primary/20 bg-secondary/70 px-4 py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-700">Combined Confidence Score</span>
+              <span className="flex items-center gap-2 text-sm font-bold text-foreground"><Target className="h-4 w-4 text-primary" /> Total Odds</span>
               <span className={cn(
                 "font-bold text-lg text-primary",
                 isLocked && "blur-sm opacity-50"
@@ -479,9 +495,9 @@ export default function TicketDetails() {
           )}
 
           {/* Share Section */}
-          <div className="p-4 border-t border-gray-100 bg-gray-50">
+           <div className="border-t border-border bg-secondary/45 p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Share2 className="h-4 w-4" />
                 <span>Share this AI Combo</span>
               </div>
