@@ -144,7 +144,8 @@ const Index = () => {
             <p className="text-sm font-semibold text-primary-foreground/85">
               Svi Premium tiketi, AI predikcije i Sure Odds 2+ su uključeni.
             </p>
-          </Link>
+            </Link>
+          </div>
           {/* Script accent text (desktop) */}
           <p className="pointer-events-none absolute right-52 top-6 hidden -rotate-3 select-none text-2xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
             More<br />Than Just<br />Predictions
