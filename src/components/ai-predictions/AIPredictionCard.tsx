@@ -366,25 +366,25 @@ const AIPredictionCardInner = ({
               <TabsTrigger value="main" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 BTTS
               </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 DC
               </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Combo
               </TabsTrigger>
-              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Correct
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
-              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} />
+              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} hidePickBox />
             </TabsContent>
 
             <TabsContent value="goals" className="mt-2 md:mt-3">
