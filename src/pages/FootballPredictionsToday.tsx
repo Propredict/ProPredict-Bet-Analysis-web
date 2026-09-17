@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useWebGate } from "@/components/HomeGate";
 import { TrendingUp, Users, Eye, Clock, ChevronRight, Lock, CheckCircle, Download, X, Trophy, Zap, BarChart3, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -91,28 +90,9 @@ export default function FootballPredictionsToday() {
   const checkedToday = useLiveCount(17420, 800);
   const joinedThisWeek = useLiveCount(2100, 300);
 
-  const { confirmAndEnter } = useWebGate();
-  const [autoEnterIn, setAutoEnterIn] = useState(12);
-
   const handleContinueWeb = () => {
-    confirmAndEnter();
+    navigate(user ? "/" : "/login");
   };
-
-  // Auto-continue to web after 12s for guests who don't interact
-  useEffect(() => {
-    if (user) return;
-    const iv = setInterval(() => {
-      setAutoEnterIn((s) => {
-        if (s <= 1) {
-          clearInterval(iv);
-          confirmAndEnter();
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [user, confirmAndEnter]);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -178,7 +158,7 @@ export default function FootballPredictionsToday() {
                 onClick={handleContinueWeb}
                 className="border-sidebar-foreground/40 bg-sidebar/20 px-6 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground"
               >
-                Continue on Web →{!user && autoEnterIn > 0 ? ` (${autoEnterIn}s)` : ""}
+                {user ? "Open Dashboard →" : "Sign In →"}
               </Button>
             </div>
             <p className="text-[10px] text-sidebar-foreground/50">Free access • No signup required</p>

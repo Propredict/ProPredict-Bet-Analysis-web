@@ -154,8 +154,8 @@ export function BettingTickets() {
     );
   };
 
-  // --- WEB: simplified kockice layout — Daily/Premium tickets + tips ---
-  if (!isAndroidApp) {
+  // Shared dashboard layout for web and Android.
+  {
     const freeCount = todayDbTickets.filter((t: any) => t.tier === "daily").length;
     const premiumCount = todayDbTickets.filter((t: any) => t.tier === "premium").length;
 

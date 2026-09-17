@@ -26,7 +26,6 @@ import { PlayerProfileModal } from "@/components/PlayerProfileModal";
 // Lightweight pages - eager import
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import HomeGate from "./components/HomeGate";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -73,6 +72,7 @@ const AdminSureOddsAnalytics = lazy(() => import("./pages/admin/SureOddsAnalytic
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { AuthProvider } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 import { AndroidAuthGate } from "./components/AndroidAuthGate";
 
@@ -86,6 +86,16 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function RootEntry() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex min-h-[60vh] items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+  }
+
+  return user ? <Index /> : <Navigate to="/login" replace />;
+}
 
 const App = () => {
   // 🛡️ Global safety net: catch unhandled async errors so UI never silently breaks
@@ -200,7 +210,7 @@ const App = () => {
 
                   {/* Layout pages */}
                   <Route element={<AppLayout />}>
-                    <Route path="/" element={<HomeGate dashboard={<Index />} landing={<FootballPredictionsToday />} />} />
+                    <Route path="/" element={<RootEntry />} />
                     <Route path="/dashboard" element={<Navigate to="/" replace />} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="/how-ai-works" element={<HowAIWorks />} />
