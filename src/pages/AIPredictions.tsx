@@ -600,102 +600,54 @@ export default function AIPredictions() {
       <div className="flex gap-2 md:gap-4 lg:gap-6">
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-3 md:space-y-4">
-          {/* Top Header: Title + Day Selector */}
-          <div className="overflow-hidden rounded-2xl border-2 border-primary/50 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 shadow-lg shadow-primary/20">
-            <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-primary/20 p-2.5 ring-1 ring-primary/40">
-                  <Brain className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <div className="text-left">
-                  <h1 className="text-xl font-black tracking-tight text-primary-foreground sm:text-2xl">AI Predictions</h1>
-                  <p className="text-xs text-primary-foreground/70 sm:text-sm">ML-powered match analysis</p>
-                  <div
-                    className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-success/50 bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success"
-                    title="Smart diversity: caps repetitive bet types, keeps highest-confidence picks first."
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    AI Balanced Picks
-                  </div>
-                </div>
-              </div>
+          {/* Reference-style hero: title + day selector + feature chips */}
+          <AIHeroBanner day={day} onDayChange={setDay} />
 
-              {/* Day Selector */}
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "h-11 flex-1 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 sm:flex-none",
-                    day === "today"
-                      ? "bg-card text-primary shadow-lg"
-                      : "border border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
-                  )}
-                  onClick={() => setDay("today")}
-                >
-                  <CalendarDays className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">Predictions for&nbsp;</span>Today
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "h-11 flex-1 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 sm:flex-none",
-                    day === "tomorrow"
-                      ? "bg-card text-primary shadow-lg"
-                      : "border border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
-                  )}
-                  onClick={() => setDay("tomorrow")}
-                >
-                  <CalendarDays className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">Predictions for&nbsp;</span>Tomorrow
-                </Button>
-              </div>
-            </div>
-          </div>
-
-
-
-          {/* Stats Cards Row - Active / Analyzed / Accuracy */}
+          {/* Stats Cards Row - Active Matches / Analyzed Today / Accuracy Rate */}
           <div className="grid grid-cols-3 gap-2 md:gap-3">
-            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-primary/35 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
-              <div className="rounded-xl bg-primary/10 p-2 md:p-2.5">
-                <Brain className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Active</p>
-                <p className="text-lg md:text-2xl font-extrabold text-primary leading-none">
-                  {loading ? "..." : activeCount}
-                </p>
-                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">Picks running now</p>
-              </div>
-            </Card>
-            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-primary/35 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
-              <div className="rounded-xl bg-primary/10 p-2 md:p-2.5">
-                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Analyzed</p>
-                <p className="text-lg md:text-2xl font-extrabold text-primary leading-none">
-                  {loading ? "..." : totalAnalyzed.toLocaleString()}
-                </p>
-                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">Matches analyzed</p>
+            <Card className="rounded-2xl border-2 border-primary/25 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
+              <div className="flex items-center gap-2.5 md:gap-3">
+                <div className="shrink-0 rounded-xl bg-accent p-2 md:p-2.5">
+                  <Brain className="h-4 w-4 text-primary md:h-5 md:w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Active Matches</p>
+                  <p className="text-lg font-black leading-tight text-primary md:text-2xl">
+                    {loading ? "..." : activeCount}
+                  </p>
+                  <p className="mt-0.5 hidden truncate text-[11px] text-muted-foreground md:block">Live & upcoming today</p>
+                </div>
               </div>
             </Card>
-            <Card className="flex items-center gap-2.5 rounded-2xl border-2 border-success/40 bg-card p-3 shadow-md shadow-success/10 md:p-4">
-              <div className="rounded-xl bg-success/10 p-2 md:p-2.5">
-                <Target className="w-4 h-4 md:w-5 md:h-5 text-success" />
+            <Card className="rounded-2xl border-2 border-primary/25 bg-card p-3 shadow-md shadow-primary/10 md:p-4">
+              <div className="flex items-center gap-2.5 md:gap-3">
+                <div className="shrink-0 rounded-xl bg-accent p-2 md:p-2.5">
+                  <BarChart3 className="h-4 w-4 text-primary md:h-5 md:w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Analyzed Today</p>
+                  <p className="text-lg font-black leading-tight text-primary md:text-2xl">
+                    {loading ? "..." : totalAnalyzed.toLocaleString()}
+                  </p>
+                  <p className="mt-0.5 hidden truncate text-[11px] text-muted-foreground md:block">Matches analyzed by AI</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-muted-foreground truncate">Accuracy</p>
-                <p className="text-lg md:text-2xl font-extrabold text-success leading-none">
-                  {loading ? "..." : `${dayStats.accuracy}%`}
-                </p>
-                <p className="hidden md:block text-[11px] text-muted-foreground mt-1">AI success rate</p>
+            </Card>
+            <Card className="rounded-2xl border-2 border-success/35 bg-card p-3 shadow-md shadow-success/10 md:p-4">
+              <div className="flex items-center gap-2.5 md:gap-3">
+                <div className="shrink-0 rounded-xl bg-success/10 p-2 md:p-2.5">
+                  <Target className="h-4 w-4 text-success md:h-5 md:w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[9px] font-bold uppercase tracking-wide text-muted-foreground md:text-xs">Accuracy Rate</p>
+                  <p className="text-lg font-black leading-tight text-success md:text-2xl">
+                    {loading ? "..." : `${dayStats.accuracy}%`}
+                  </p>
+                  <p className="mt-0.5 hidden truncate text-[11px] text-muted-foreground md:block">AI success rate</p>
+                </div>
               </div>
             </Card>
           </div>
-
-          {/* Neon AI hero banner */}
-          <AIHeroBanner />
 
           {/* 🔥 GLOBAL TEASER BANNER — for non-paying users */}
           {!isPremiumUser && !isProUser && !isAdmin && !loading && predictions.length > 0 && (
