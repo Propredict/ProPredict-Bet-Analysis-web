@@ -26,7 +26,8 @@ const TodaysMatches = lazy(() => import("@/components/dashboard/TodaysMatches").
 const DashboardAIPredictions = lazy(() => import("@/components/dashboard/DashboardAIPredictions").then(m => ({ default: m.DashboardAIPredictions })));
 const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/DashboardMatchPreviews"));
 
-const BottomCTA = lazy(() => import("@/components/dashboard/BottomCTA").then(m => ({ default: m.BottomCTA })));
+
+
 
 // Android-only dashboard sections
 const TodaysTopPicks = lazy(() => import("@/components/dashboard/TodaysTopPicks").then(m => ({ default: m.TodaysTopPicks })));
