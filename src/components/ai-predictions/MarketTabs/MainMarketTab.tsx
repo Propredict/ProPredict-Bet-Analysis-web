@@ -110,10 +110,10 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
  * Displayed AI Confidence ALWAYS equals the probability of the pick that is
  * shown as Best Pick (e.g. Under 2.5 at 70% -> AI Confidence 70%).
  * Uses the canonical probability map so Main matches the market tabs exactly.
+ * Exported so the card header strip shows the exact same pick + confidence.
  */
-function getBestPick(prediction: AIPrediction): PickCandidate {
+export function getAIBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
-  const probs = getRawProbMap(prediction);
   const meta = MARKET_META[bestType];
   const strongest = getBestEligibleProbability(prediction);
   // Premium band: the headline shows the informative pick (e.g. "Panathinaikos

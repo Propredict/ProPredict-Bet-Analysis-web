@@ -25,7 +25,7 @@ export function TicketTeamCrest({ name, logo, size = "md" }: TicketTeamCrestProp
 
 export function findTicketTeamLogo(
   teamName: string,
-  matches: Array<{ homeTeam: string; awayTeam: string; homeLogo: string; awayLogo: string }>,
+  matches: Array<{ homeTeam: string; awayTeam: string; homeLogo?: string | null; awayLogo?: string | null }>,
 ) {
   const normalize = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
   const wanted = normalize(teamName);
