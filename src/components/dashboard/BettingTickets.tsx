@@ -229,7 +229,7 @@ export function BettingTickets() {
             {item.desc}
           </span>
           <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:text-sm">
-            Klikni i otvori
+            Open / Otvori
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
           </span>
         </span>
