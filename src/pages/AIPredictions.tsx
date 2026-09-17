@@ -1131,6 +1131,7 @@ export default function AIPredictions() {
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
+                    {isAndroidApp ? (
                       /* Android: show ALL pro predictions with ad-unlock */
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
