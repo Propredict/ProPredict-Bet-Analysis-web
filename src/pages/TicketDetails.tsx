@@ -456,10 +456,9 @@ export default function TicketDetails() {
                           <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} />
                         </div>
                       </div>
-                      <div className="flex items-center justify-center">
-                        <Badge variant="secondary" className="w-full border border-success/40 bg-success/10 px-3 py-2.5 text-center text-lg font-extrabold text-success">
-                          {match.prediction}
-                        </Badge>
+                      <div className="w-full rounded-lg border border-success/50 bg-success/10 px-3 py-2.5 text-center">
+                        <p className="text-xs font-bold uppercase text-success">Pick</p>
+                        <p className="whitespace-normal break-words text-lg font-extrabold leading-snug text-success sm:text-xl">{match.prediction}</p>
                       </div>
                       <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5 sm:block sm:bg-transparent sm:px-0 sm:py-0 sm:text-center">
                         <span className="text-xs font-bold uppercase text-muted-foreground sm:hidden">Odds</span>
