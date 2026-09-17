@@ -239,6 +239,18 @@ export function MatchCommentsSheet({
                       )}
                     </div>
 
+                    {editingId !== c.id && mine && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Delete my comment"
+                        onClick={() => handleDelete(c.id)}
+                        className="h-6 w-6 flex-shrink-0 self-start mt-1 opacity-70 hover:opacity-100 text-destructive hover:text-destructive"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+
                     {editingId !== c.id && (mine || isAdmin || user) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
