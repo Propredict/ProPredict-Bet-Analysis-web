@@ -58,6 +58,7 @@ import type { TicketWithMatches } from "@/hooks/useTickets";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 
 // Get today's date in Belgrade timezone (YYYY-MM-DD)
 function getTodayBelgradeDate() {
@@ -671,10 +672,12 @@ export default function ManageTickets() {
                             className="flex items-center justify-between p-2 rounded-md bg-muted/50 hover:bg-muted cursor-pointer"
                             onClick={() => addMatchFromFixture(fixture)}
                           >
-                            <div className="text-sm">
-                              <span className="font-medium">{fixture.homeTeam}</span>
+                            <div className="flex min-w-0 items-center gap-2 text-sm">
+                              <TicketTeamCrest name={fixture.homeTeam} logo={fixture.homeLogo} size="sm" />
+                              <span className="min-w-0 font-medium">{fixture.homeTeam}</span>
                               <span className="text-muted-foreground"> vs </span>
-                              <span className="font-medium">{fixture.awayTeam}</span>
+                              <TicketTeamCrest name={fixture.awayTeam} logo={fixture.awayLogo} size="sm" />
+                              <span className="min-w-0 font-medium">{fixture.awayTeam}</span>
                               {fixture.league && (
                                 <span className="text-xs text-muted-foreground ml-2">
                                   ({fixture.league})
