@@ -119,9 +119,15 @@ export function LiveChatDock() {
     if (!content || !user || sending) return;
     setSending(true);
     const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
+    const displayName =
+      profileUsernameRef.current ||
+      meta.username ||
+      meta.full_name ||
+      user.email?.split("@")[0] ||
+      "Member";
     const { error } = await (supabase as any).from("community_messages").insert({
       user_id: user.id,
-      display_name: meta.username || meta.full_name || user.email?.split("@")[0] || "Member",
+      display_name: displayName,
       avatar_url: meta.avatar_url ?? null,
       content: content.slice(0, MAX_LEN),
     });
