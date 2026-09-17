@@ -628,14 +628,16 @@ export default function ManageTickets() {
                   </div>
 
                   <div>
-                    <Label>Odds</Label>
+                    <Label>Match Odds *</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      min="1"
+                      min="1.01"
                       value={todayOdds}
                       onChange={(e) => setTodayOdds(e.target.value)}
+                      placeholder="e.g. 1.50"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">Enter the decimal odds for this match.</p>
                   </div>
 
                   <div className="relative">
@@ -793,14 +795,16 @@ export default function ManageTickets() {
                   </div>
 
                   <div>
-                    <Label>Odds *</Label>
+                    <Label>Match Odds *</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      min="1"
+                      min="1.01"
                       value={customOdds}
                       onChange={(e) => setCustomOdds(e.target.value)}
+                      placeholder="e.g. 1.50"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">Enter the decimal odds for this match.</p>
                   </div>
 
                   <Button
@@ -863,16 +867,18 @@ export default function ManageTickets() {
                           placeholder="Prediction"
                         />
 
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="1"
-                          value={match.odds}
-                          onChange={(e) =>
-                            updateMatch(index, "odds", parseFloat(e.target.value) || 1.5)
-                          }
-                          className="w-16 h-8 text-xs"
-                        />
+                        <div className="w-20">
+                          <Label className="sr-only">Match Odds</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="1.01"
+                            value={match.odds}
+                            onChange={(e) => updateMatch(index, "odds", parseFloat(e.target.value) || 1.5)}
+                            className="h-8 w-full text-xs"
+                            aria-label={`Odds for ${match.homeTeam} vs ${match.awayTeam}`}
+                          />
+                        </div>
 
                         <Button
                           type="button"
