@@ -1130,13 +1130,13 @@ export default function AIPredictions() {
                       {isAndroidApp ? `${tierCounts.pro} picks available` : `🔒 ${tierCounts.pro} picks waiting to unlock`}
                     </Badge>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                     {isAndroidApp ? (
                       /* Android: show ALL pro predictions with ad-unlock */
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
                         .map((prediction) => (
-                          <div key={prediction.id} id={`prediction-${prediction.id}`}>
+                          <div key={prediction.id} id={`prediction-${prediction.id}`} className="min-w-0 w-full">
                             <AIPredictionCard
                               overrideTier="pro"
                               prediction={prediction}
@@ -1269,7 +1269,7 @@ export default function AIPredictions() {
                       🔒 {tierCounts.premium} Premium picks locked
                     </Badge>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                     {(isAndroidApp
                       ? featuredPredictions.filter(p => getPredictionTier(p) === "premium")
                       : featuredPredictions.filter(p => getPredictionTier(p) === "premium").slice(0, 3)
@@ -1347,7 +1347,7 @@ export default function AIPredictions() {
             const visiblePro = visibleFeatured.filter((p) => getPredictionTier(p) === "pro");
 
             const renderCard = (prediction: typeof predictions[0]) => (
-              <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
+              <div key={prediction.id} id={`prediction-${prediction.id}`} className="min-w-0 w-full transition-all duration-500">
                 <AIPredictionCard
                   overrideTier={getPredictionTier(prediction) ?? undefined}
                   prediction={prediction}
@@ -1382,7 +1382,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                       {visiblePremium.map(renderCard)}
                     </div>
                   </div>
@@ -1403,7 +1403,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                       {visiblePro.map(renderCard)}
                     </div>
                   </div>
@@ -1476,13 +1476,13 @@ export default function AIPredictions() {
                 </p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2">
                 {visibleRegular.map((prediction, idx) => {
                   // Inject a locked Premium teaser card after every 3rd Free card
                   const showLockedCard = !isPremiumUser && !isAdmin && (idx === 2 || idx === 5 || idx === 9) && tierCounts.premium > 0;
                   return (
                     <React.Fragment key={prediction.id}>
-                      <div id={`prediction-${prediction.id}`} className="transition-all duration-500">
+                      <div id={`prediction-${prediction.id}`} className="min-w-0 w-full transition-all duration-500">
                         <AIPredictionCard
                           overrideTier={getPredictionTier(prediction) ?? "free"}
                           prediction={prediction}

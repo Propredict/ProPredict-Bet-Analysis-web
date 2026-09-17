@@ -185,7 +185,7 @@ const AIPredictionCardInner = ({
 
   return (
     <Card className={cn(
-      "bg-card border-2 border-primary/20 overflow-hidden rounded-2xl shadow-md",
+      "w-full min-w-0 bg-card border-2 border-primary/20 overflow-hidden rounded-2xl shadow-md",
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
