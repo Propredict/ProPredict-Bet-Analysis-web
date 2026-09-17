@@ -265,11 +265,62 @@ const AIPredictionCardInner = ({
           </div>
         </div>
 
-        {/* Match Title */}
-        <div className="px-2 md:px-3 pb-1.5 md:pb-2 space-y-1">
-          <h3 className="font-extrabold uppercase tracking-wide text-lg md:text-xl text-sidebar text-center truncate">
-            {prediction.home_team} vs {prediction.away_team}
-          </h3>
+        {/* Match row — crests + VS, reference design */}
+        <div className="px-2.5 md:px-3.5 pb-2 space-y-2">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1 justify-end">
+              <TicketTeamCrest name={prediction.home_team} logo={homeLogo} size="md" />
+              <span className="font-extrabold uppercase tracking-wide text-xs md:text-base text-sidebar truncate">
+                {prediction.home_team}
+              </span>
+            </div>
+            <span className="shrink-0 rounded-full bg-primary/10 border border-primary/25 px-2 py-0.5 text-[9px] md:text-[10px] font-black text-primary">
+              VS
+            </span>
+            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
+              <span className="font-extrabold uppercase tracking-wide text-xs md:text-base text-sidebar truncate">
+                {prediction.away_team}
+              </span>
+              <TicketTeamCrest name={prediction.away_team} logo={awayLogo} size="md" />
+            </div>
+          </div>
+
+          {/* AI PREDICTION strip — pick + big confidence, reference design */}
+          <div className="rounded-xl border border-primary/25 bg-primary/5 px-3 py-2.5 md:py-3">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="h-9 w-9 md:h-10 md:w-10 shrink-0 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-wider text-primary">AI Prediction</p>
+                <p className={cn(
+                  "text-sm md:text-lg font-extrabold text-sidebar leading-tight truncate",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>
+                  {bestPick.label}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className={cn(
+                  "text-xl md:text-2xl font-black tabular-nums text-success",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>
+                  {bestPick.conf}%
+                </p>
+                <p className="text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Confidence</p>
+              </div>
+            </div>
+            <div className="mt-2 h-1.5 md:h-2 bg-secondary rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-700",
+                  bestPick.conf >= 70 ? "bg-gradient-to-r from-green-500 to-emerald-500" : "bg-gradient-to-r from-primary to-blue-500"
+                )}
+                style={{ width: `${Math.max(10, bestPick.conf)}%` }}
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-1.5 flex-wrap">
             {(() => {
               const pred = (prediction.prediction || "").toLowerCase();
