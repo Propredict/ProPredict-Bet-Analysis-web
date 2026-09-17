@@ -9,7 +9,8 @@ import {
   getPickConfidence,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck, BarChart3 } from "lucide-react";
+import { TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 import { getMarketColors, classifyMarket } from "../utils/marketColors";
 
 /**
