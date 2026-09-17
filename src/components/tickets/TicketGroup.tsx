@@ -115,7 +115,7 @@ export function TicketGroup({
                     </div>
                   </div>
 
-                  <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] gap-4 border-b border-border bg-secondary/30 px-4 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
+                  <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] gap-4 border-b border-border bg-secondary/30 px-4 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
                     <span>#</span><span>Match</span><span className="text-center">Pick</span><span className="text-center">Odds</span>
                   </div>
 
@@ -123,7 +123,7 @@ export function TicketGroup({
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] sm:items-center sm:gap-4">
+                        <div key={match.id} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:items-center sm:gap-4">
                           <div className="flex min-w-0 items-center gap-2 sm:contents">
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
                               {matchIndex + 1}

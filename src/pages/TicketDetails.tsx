@@ -399,7 +399,7 @@ export default function TicketDetails() {
             <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Total odds</p><p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p></div>
           </div>
 
-          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] gap-4 border-b border-border bg-secondary/30 px-5 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
+          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_5rem] gap-4 border-b border-border bg-secondary/30 px-5 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
             <span>#</span><span>Match</span><span className="text-center">Pick</span><span className="text-center">Odds</span>
           </div>
 
