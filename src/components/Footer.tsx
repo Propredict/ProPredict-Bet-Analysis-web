@@ -111,42 +111,23 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
               target="_blank"
               rel="noopener noreferrer sponsored"
               onClick={openExternal(MELBET_URL)}
-              aria-label="Melbet exclusive bonus — Play now"
-              className="group relative overflow-hidden rounded-2xl border border-[#C9A227]/50 bg-gradient-to-br from-[#0B0B12] via-[#14101E] to-[#0B0B12] shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#C9A227]/20"
+              aria-label="Melbet exclusive bonus — Play now (sponsored)"
+              className="group relative block overflow-hidden rounded-2xl border border-[#C9A227]/50 shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#C9A227]/25"
             >
-              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#F5C518]/15 blur-3xl" />
-              <div className="relative flex items-center justify-between gap-4 p-5 sm:p-6">
-                <div className="min-w-0">
-                  <p className="text-2xl font-black italic uppercase leading-none tracking-tight text-white sm:text-3xl">
-                    Mel<span className="text-[#F5C518]">Bet</span>
-                  </p>
-                  <p className="mt-2 text-sm font-black uppercase tracking-wide text-white sm:text-base">
-                    Exclusive <span className="text-[#F5C518]">Bonus</span>
-                  </p>
-                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/60 sm:text-xs">
-                    Welcome offer for new players
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#F5C518] px-5 py-2.5 text-xs font-black uppercase tracking-wide text-black shadow-lg shadow-[#F5C518]/30 transition-all group-hover:brightness-110 sm:text-sm">
-                    Play Now
-                    <ChevronRight className="h-4 w-4" />
-                  </span>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2.5">
-                  <Crown className="h-8 w-8 text-[#F5C518] sm:h-10 sm:w-10" aria-hidden="true" />
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <Gift className="h-3.5 w-3.5 text-[#F5C518]" /> Big Bonuses
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <Zap className="h-3.5 w-3.5 text-[#F5C518]" /> Fast Payouts
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <ShieldCheck className="h-3.5 w-3.5 text-[#F5C518]" /> Trusted Bookmaker
-                  </span>
-                </div>
-              </div>
-              <p className="relative border-t border-white/10 px-5 py-1.5 text-right text-[8px] font-semibold uppercase tracking-widest text-white/40">
-                Sponsored · 18+ Play responsibly
-              </p>
+              <img
+                src={melbetCard}
+                alt="Melbet — Exclusive Bonus, welcome offer for new players"
+                className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transform-none"
+                loading="lazy"
+                width={1408}
+                height={576}
+              />
+              <span className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/85 backdrop-blur">
+                Sponsored
+              </span>
+              <span className="absolute bottom-1.5 right-2 z-10 text-[9px] font-semibold text-white/80">
+                18+ · Play responsibly
+              </span>
             </a>
 
             {/* 1xBet */}
@@ -155,53 +136,34 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
               target="_blank"
               rel="noopener noreferrer sponsored"
               onClick={openExternal(ONEXBET_URL)}
-              aria-label="1xBet exclusive bonus — Play now"
-              className="group relative overflow-hidden rounded-2xl border border-[#2AABEE]/50 bg-gradient-to-br from-[#04162E] via-[#0A2A5E] to-[#04162E] shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#2AABEE]/20"
+              aria-label="1xBet exclusive bonus — Play now (sponsored)"
+              className="group relative block overflow-hidden rounded-2xl border border-[#2AABEE]/50 shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#2AABEE]/25"
             >
-              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#2AABEE]/20 blur-3xl" />
-              <div className="relative flex items-center justify-between gap-4 p-5 sm:p-6">
-                <div className="min-w-0">
-                  <p className="text-2xl font-black italic uppercase leading-none tracking-tight text-white sm:text-3xl">
-                    1x<span className="text-[#4FC3F7]">Bet</span>
-                  </p>
-                  <p className="mt-2 text-sm font-black uppercase tracking-wide text-white sm:text-base">
-                    Exclusive <span className="text-[#4FC3F7]">Bonus</span>
-                  </p>
-                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/60 sm:text-xs">
-                    Welcome offer for new players
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2AABEE] px-5 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-lg shadow-[#2AABEE]/30 transition-all group-hover:brightness-110 sm:text-sm">
-                    Play Now
-                    <ChevronRight className="h-4 w-4" />
-                  </span>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2.5">
-                  <ShieldCheck className="h-8 w-8 text-[#4FC3F7] sm:h-10 sm:w-10" aria-hidden="true" />
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <Gift className="h-3.5 w-3.5 text-[#4FC3F7]" /> Big Bonuses
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <Zap className="h-3.5 w-3.5 text-[#4FC3F7]" /> Fast Payouts
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-white/85 sm:text-xs">
-                    <Globe className="h-3.5 w-3.5 text-[#4FC3F7]" /> Global Trust
-                  </span>
-                </div>
-              </div>
-              <p className="relative border-t border-white/10 px-5 py-1.5 text-right text-[8px] font-semibold uppercase tracking-widest text-white/40">
-                Sponsored · 18+ Play responsibly
-              </p>
+              <img
+                src={oneXbetCard}
+                alt="1xBet — Exclusive Bonus, welcome offer for new players"
+                className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transform-none"
+                loading="lazy"
+                width={1408}
+                height={576}
+              />
+              <span className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/85 backdrop-blur">
+                Sponsored
+              </span>
+              <span className="absolute bottom-1.5 right-2 z-10 text-[9px] font-semibold text-white/80">
+                18+ · Play responsibly
+              </span>
             </a>
           </div>
         )}
 
         {/* Follow us divider */}
         <div className="mt-7 flex items-center gap-4">
-          <span className="h-px flex-1 bg-border/40" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-foreground sm:text-xs">
+          <span className="h-px flex-1 bg-white/25" />
+          <p className="text-sm font-black uppercase tracking-widest text-white sm:text-base">
             Follow us for daily picks &amp; updates
           </p>
-          <span className="h-px flex-1 bg-border/40" />
+          <span className="h-px flex-1 bg-white/25" />
         </div>
 
         {/* Social Links */}
