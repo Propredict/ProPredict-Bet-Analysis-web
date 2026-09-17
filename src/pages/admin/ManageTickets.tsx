@@ -277,7 +277,11 @@ export default function ManageTickets() {
 
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Save failed");
+      console.error("[ManageTickets] save failed", error);
+      const err = error as any;
+      const detail =
+        err?.message || err?.error_description || err?.details || err?.hint || err?.code;
+      toast.error(detail ? `Save failed: ${detail}` : "Save failed");
     }
   };
 
