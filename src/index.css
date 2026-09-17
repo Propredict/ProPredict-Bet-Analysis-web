@@ -431,3 +431,11 @@
   background-size: 200% 100%;
   animation: diamondShine 3.5s linear infinite;
 }
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
