@@ -399,7 +399,7 @@ export default function TicketDetails() {
             <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Total odds</p><p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p></div>
           </div>
 
-          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] gap-4 border-b border-border bg-secondary/30 px-5 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
+          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_5rem] gap-4 border-b border-border bg-secondary/30 px-5 py-2 text-sm font-extrabold uppercase text-muted-foreground sm:grid">
             <span>#</span><span>Match</span><span className="text-center">Pick</span><span className="text-center">Odds</span>
           </div>
 
@@ -412,7 +412,7 @@ export default function TicketDetails() {
                   const parsed = parseMatchName(match.match_name);
                   return (
                     <div key={idx} className="py-4">
-                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] sm:items-center sm:gap-4">
+                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:items-center sm:gap-4">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                         {/* Match name — always visible, even when ticket is locked */}
                         <div className="min-w-0">
@@ -444,7 +444,7 @@ export default function TicketDetails() {
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
-                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(10rem,13rem)_5rem] sm:items-center sm:gap-4">
+                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:items-center sm:gap-4">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                       <div className="min-w-0">
                         {parsed.league && (
