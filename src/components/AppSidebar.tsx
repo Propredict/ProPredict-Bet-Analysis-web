@@ -49,7 +49,7 @@ const mainItems = [
 ];
 
 const packagesItems = [
-  { title: "Get Premium", url: "/get-premium", icon: Crown, highlight: true },
+  { title: "Get Premium / Kupi Premium", url: "/get-premium", icon: Crown, highlight: true },
 ];
 
 const premiumItems = [
