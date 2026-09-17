@@ -178,35 +178,63 @@ export function BettingTickets() {
       },
     ];
 
-    const bottomCards = [
-      {
-        img: sureOddsCard,
-        title: "Sure Odds 2+",
-        desc: "High confidence picks. Odds 2.00+.",
-        cta: "View Sure Odds",
-        to: "/sure-odds",
-        accent: "text-emerald-700",
-        border: "border-emerald-500/40 hover:border-emerald-500",
-      },
+    const tipCards = [
       {
         img: dailyTipsCard,
-        title: "Daily Tips",
+        alt: "Daily Tips — Today's best value picks from our AI",
+        titleA: "Daily",
+        titleB: "Tips",
+        titleBClass: "text-primary",
         desc: "Today's best value picks from our AI.",
-        cta: "View Daily Tips",
         to: "/single-tips",
-        accent: "text-primary",
-        border: "border-primary/40 hover:border-primary",
+        border: "border-primary/50 hover:border-primary",
+        shadow: "shadow-primary/20 hover:shadow-primary/35",
       },
       {
         img: premiumTipsCard,
-        title: "Premium Tips",
+        alt: "Premium Tips — Top picks for Premium members. Maximum edge.",
+        titleA: "Premium",
+        titleB: "Tips",
+        titleBClass: "text-violet-600",
         desc: "Top picks for Premium members. Maximum edge.",
-        cta: "View Premium Tips",
         to: "/single-tips?view=premium",
-        accent: "text-violet-700",
-        border: "border-violet-500/40 hover:border-violet-500",
+        border: "border-violet-500/50 hover:border-violet-500",
+        shadow: "shadow-violet-500/20 hover:shadow-violet-500/35",
       },
     ];
+
+    const renderTipCard = (item: (typeof tipCards)[number]) => (
+      <button
+        key={item.to}
+        type="button"
+        onClick={() => navigate(item.to)}
+        className={cn(
+          "group relative overflow-hidden rounded-2xl border-2 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl",
+          item.border,
+          item.shadow
+        )}
+      >
+        <img
+          src={item.img}
+          alt={item.alt}
+          loading="lazy"
+          className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+        <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-6">
+          <span className="text-xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-3xl">
+            {item.titleA}{" "}
+            <span className={item.titleBClass}>{item.titleB}</span>
+          </span>
+          <span className="max-w-[60%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
+            {item.desc}
+          </span>
+          <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:text-sm">
+            Klikni i otvori
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+          </span>
+        </span>
+      </button>
+    );
 
     return (
       <section className="space-y-4">
@@ -245,40 +273,35 @@ export function BettingTickets() {
           ))}
         </div>
 
-        {/* Row 2 — Sure Odds 2+ / Daily Tips / Premium Tips kockice */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {bottomCards.map((item) => (
-            <button
-              key={item.title}
-              type="button"
-              onClick={() => navigate(item.to)}
-              className={cn(
-                "group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg",
-                item.border
-              )}
-            >
-              <img
-                src={item.img}
-                alt=""
-                loading="lazy"
-                width={912}
-                height={736}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <span className="relative flex flex-1 flex-col p-4 sm:p-5">
-                <span className="text-xl font-black uppercase leading-tight tracking-tight text-sidebar drop-shadow-sm sm:text-2xl">
-                  {item.title}
-                </span>
-                <span className="mt-1 max-w-[70%] flex-1 text-xs font-semibold leading-relaxed text-sidebar/80">
-                  {item.desc}
-                </span>
-                <span className={cn("mt-3 inline-flex items-center gap-1.5 rounded-lg bg-card/90 px-3 py-1.5 text-sm font-extrabold shadow-sm backdrop-blur-sm", item.accent)}>
-                  {item.cta}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </span>
-            </button>
-          ))}
+        {/* Row 2 — Sure Odds 2+ full-width kocka (same size as ticket cards) */}
+        <button
+          type="button"
+          onClick={() => navigate("/sure-odds")}
+          className="group relative overflow-hidden rounded-2xl border-2 border-emerald-500/50 text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
+        >
+          <img
+            src={sureOddsCard}
+            alt="Sure Odds 2+ — High confidence picks. Odds 2.00+."
+            loading="lazy"
+            className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-8">
+            <span className="text-2xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-4xl">
+              Sure <span className="text-success">Odds 2+</span>
+            </span>
+            <span className="max-w-[55%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
+              High confidence picks. Odds 2.00+.
+            </span>
+            <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:px-4 sm:text-sm">
+              Klikni i otvori
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+            </span>
+          </span>
+        </button>
+
+        {/* Row 3 — Daily Tips & Premium Tips kocke (same size as ticket cards) */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {tipCards.map(renderTipCard)}
         </div>
       </section>
     );
