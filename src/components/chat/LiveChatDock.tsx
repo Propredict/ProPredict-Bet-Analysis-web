@@ -35,6 +35,27 @@ export function LiveChatDock() {
   const openRef = useRef(open);
   openRef.current = open;
 
+  // Use the profile username (e.g. "soccerx") as the chat display name
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  const profileUsernameRef = useRef<string | null>(null);
+  profileUsernameRef.current = profileUsername;
+  useEffect(() => {
+    let active = true;
+    setProfileUsername(null);
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("profiles")
+        .select("username")
+        .eq("user_id", user.id)
+        .single();
+      if (active && data?.username) setProfileUsername(data.username as string);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
