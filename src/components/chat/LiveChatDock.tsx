@@ -180,16 +180,7 @@ export function LiveChatDock() {
             <span className="block text-sm font-black text-primary-foreground">Live Chat</span>
             <span className="block text-[10px] text-primary-foreground/70">Talk with other members</span>
           </span>
-          {!open && unread > 0 && (
-            <span className="rounded-full bg-success px-2 py-0.5 text-[10px] font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-          {open ? (
-            <ChevronDown className="h-4 w-4 text-primary-foreground" />
-          ) : (
-            <ChevronUp className="h-4 w-4 text-primary-foreground" />
-          )}
+          <ChevronDown className="h-4 w-4 text-primary-foreground" />
         </button>
 
         {open && (
