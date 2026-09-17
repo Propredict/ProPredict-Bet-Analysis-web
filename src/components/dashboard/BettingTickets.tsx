@@ -221,11 +221,11 @@ export function BettingTickets() {
           className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
         <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-6">
-          <span className="text-xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-3xl">
+          <span className="text-xl font-black uppercase leading-none tracking-tight text-white drop-shadow-md sm:text-3xl">
             {item.titleA}{" "}
             <span className={item.titleBClass}>{item.titleB}</span>
           </span>
-          <span className="max-w-[60%] text-[11px] font-bold leading-snug text-sidebar/80 sm:text-sm">
+          <span className="max-w-[60%] text-[11px] font-bold leading-snug text-white/85 drop-shadow-sm sm:text-sm">
             {item.desc}
           </span>
           <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:text-sm">
