@@ -51,6 +51,9 @@ export interface Tip {
   result?: TipResult | null;
   final_result?: string | null;
   tip_date?: string | null;
+  match_date?: string | null;
+  match_time?: string | null;
+  match_id?: string | null;
   created_at?: string;
   created_at_ts?: string;
   updated_at?: string;

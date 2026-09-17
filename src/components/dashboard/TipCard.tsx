@@ -1,4 +1,4 @@
-import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, TrendingUp, Trash2, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, Target, CalendarDays, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLiveScores } from "@/hooks/useLiveScores";
 
 export type TipResult = "pending" | "won" | "lost";
 
@@ -28,6 +29,8 @@ export interface Tip {
   result?: TipResult | null;
   finalResult?: string | null;
   extraNote?: { label: string; value: string } | null;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
 }
 
 interface TipCardProps {
@@ -83,10 +86,46 @@ function getLockedCTAText(unlockMethod: UnlockMethod, override?: string): string
 export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondaryUnlock, isUnlocking = false, lockedCTAText, lockedCTABrand = "premium", lockedLabel }: TipCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAdminAccess();
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const queryClient = useQueryClient();
   const [adminBusy, setAdminBusy] = useState<null | "delete">(null);
   const isPremiumLocked = unlockMethod?.type === "upgrade_premium";
   const isBasicLocked = unlockMethod?.type === "upgrade_basic";
+
+  const teamInitials = (name: string) => name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+
+  const findTeamLogo = (name: string, suppliedLogo?: string | null) => {
+    if (suppliedLogo) return suppliedLogo;
+    const normalize = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
+    const wanted = normalize(name);
+    const candidate = todayMatches.find((match) => {
+      const home = normalize(match.homeTeam);
+      const away = normalize(match.awayTeam);
+      return home === wanted || away === wanted || (wanted.length >= 3 && (home.includes(wanted) || wanted.includes(home) || away.includes(wanted) || wanted.includes(away)));
+    });
+    if (!candidate) return null;
+    const home = normalize(candidate.homeTeam);
+    return home === wanted || home.includes(wanted) || wanted.includes(home) ? candidate.homeLogo : candidate.awayLogo;
+  };
+
+  const homeLogo = findTeamLogo(tip.homeTeam, tip.homeLogo);
+  const awayLogo = findTeamLogo(tip.awayTeam, tip.awayLogo);
+
+  const TeamCrest = ({ logo, name }: { logo?: string | null; name: string }) => (
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-primary/25 bg-card shadow-sm sm:h-16 sm:w-16">
+      {logo ? (
+        <img src={logo} alt={`${name} symbol`} loading="lazy" className="h-10 w-10 object-contain sm:h-12 sm:w-12" />
+      ) : (
+        <span className="text-sm font-black text-primary sm:text-base">{teamInitials(name)}</span>
+      )}
+    </div>
+  );
 
   const accent = TIER_ACCENT[tip.tier] || TIER_ACCENT.daily;
 
@@ -167,51 +206,46 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
   // --- Shared card shell ---
   const cardShell = cn(
-    "relative rounded-xl border-2 border-primary/65 bg-card overflow-hidden transition-all duration-300 hover:border-primary",
+    "relative overflow-hidden rounded-lg border-2 border-primary bg-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
     accent.glow
   );
 
   // --- Match header (shared) ---
   const renderHeader = () => (
     <>
-      {/* Top accent line */}
       <div className={cn("h-1 w-full", accent.line)} />
-
-      {/* Gradient overlay behind header */}
-      <div className={cn("bg-gradient-to-b", accent.gradient)}>
-        <div className="p-3.5 sm:p-4">
-          {/* Badges row */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5">
-              {getTierBadge(tip.tier)}
-              <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
-                {tip.league?.replace(/\s+\d{1,2}[:.]\d{2}\s*$/, "").trim()}
-              </span>
-            </div>
-            {/* Status — hide when locked */}
+      <div className="bg-primary/10 px-3 py-2.5 sm:px-4">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            {getTierBadge(tip.tier)}
+            <span className="truncate text-xs font-semibold text-muted-foreground">
+              {tip.league?.replace(/\s+\d{1,2}[:.]\d{2}\s*$/, "").trim()}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 text-right">
             {!isLocked && getStatusBadge()}
+            {(tip.kickoffDate || tip.kickoffTime || tip.kickoff) && (
+              <div className="flex items-center gap-1.5 text-foreground">
+                {tip.kickoffTime ? <Clock className="h-4 w-4 text-primary" /> : <CalendarDays className="h-4 w-4 text-primary" />}
+                <div className="leading-tight">
+                  <p className="text-xs font-black">{tip.kickoffTime || tip.kickoff}</p>
+                  {tip.kickoffDate ? <p className="text-[9px] text-muted-foreground">{tip.kickoffDate}</p> : null}
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Match name — always visible, even when locked */}
-          <div className="flex items-center justify-center gap-2">
-            <span className="flex-1 truncate rounded-lg border border-primary/35 bg-card px-2.5 py-1.5 text-right text-base font-bold leading-tight text-foreground sm:text-lg">
-              {tip.homeTeam}
-            </span>
-            <span className="shrink-0 text-muted-foreground font-normal text-xs">vs</span>
-            <span className="flex-1 truncate rounded-lg border border-primary/35 bg-card px-2.5 py-1.5 text-left text-base font-bold leading-tight text-foreground sm:text-lg">
-              {tip.awayTeam}
-            </span>
-          </div>
-          {(tip.kickoffDate || tip.kickoffTime || tip.kickoff) && (
-            <div className="mt-1.5 flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>
-                {[tip.kickoffDate || (!tip.kickoffTime ? tip.kickoff : ""), tip.kickoffTime]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-            </div>
-          )}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-card px-3 py-4 sm:gap-4 sm:px-5 sm:py-5">
+        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+          <TeamCrest logo={homeLogo} name={tip.homeTeam} />
+          <span className="w-full text-balance text-base font-black leading-tight text-foreground sm:text-lg">{tip.homeTeam}</span>
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">VS</div>
+        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+          <TeamCrest logo={awayLogo} name={tip.awayTeam} />
+          <span className="w-full text-balance text-base font-black leading-tight text-foreground sm:text-lg">{tip.awayTeam}</span>
         </div>
       </div>
     </>
@@ -230,7 +264,7 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
 
         {/* Prediction area - locked hero */}
         <div className="px-3.5 sm:px-4 pb-2 pt-1">
-          <div className="rounded-xl bg-background/40 border border-border/40 overflow-hidden">
+          <div className="overflow-hidden rounded-lg border border-border/40 bg-background/40">
             {/* Panel header */}
             <div className="flex items-center justify-between px-3 py-2.5">
               <span className={cn("text-[11px] uppercase tracking-[0.16em] font-bold flex items-center gap-1.5", accent.text)}>
@@ -248,15 +282,9 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
             <div className="h-px bg-border/40 mx-3" />
 
             {/* Lock hero */}
-            <div className="flex flex-col items-center gap-2 py-5 px-3">
-              <div className="flex items-center justify-center gap-2 w-full">
-                <ChevronRight className={cn("h-6 w-6 opacity-20", accent.text)} />
-                <ChevronRight className={cn("h-7 w-7 opacity-40", accent.text)} />
-                <div className={cn("mx-1 flex h-14 w-14 items-center justify-center rounded-full border-2 bg-background/60", accent.ring, accent.halo)}>
+            <div className="flex flex-col items-center gap-2 px-3 py-5">
+              <div className={cn("flex h-14 w-14 items-center justify-center rounded-full border-2 bg-background/60", accent.ring, accent.halo)}>
                   <Lock className={cn("h-6 w-6", accent.text)} />
-                </div>
-                <ChevronLeft className={cn("h-7 w-7 opacity-40", accent.text)} />
-                <ChevronLeft className={cn("h-6 w-6 opacity-20", accent.text)} />
               </div>
               <p className="text-xs text-muted-foreground">
                 This is a <span className={cn("font-bold", accent.text)}>{lockedLabel || (isPremium ? "PREMIUM" : isPro ? "PRO" : "DAILY")}</span> prediction
@@ -332,7 +360,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
         </div>
 
         {/* Prediction row */}
-        <div className="flex items-center justify-center gap-2 rounded-xl border border-success/45 bg-success/10 p-2.5">
+        <div className="flex items-center justify-center gap-2 rounded-lg border border-success/45 bg-success/10 p-3">
+          <Trophy className="h-5 w-5 shrink-0 text-success" />
           <span className="truncate text-sm font-extrabold uppercase text-success sm:text-base">
             {tip.prediction}
           </span>
