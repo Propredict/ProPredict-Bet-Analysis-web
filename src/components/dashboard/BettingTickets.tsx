@@ -18,8 +18,8 @@ import { usePlatform } from "@/hooks/usePlatform";
 import TicketCard, { type BettingTicket } from "./TicketCard";
 import { PricingModal } from "@/components/PricingModal";
 
-import dailyFreeTicketCard from "@/assets/daily-free-ticket-card.jpg";
-import premiumTicketCard from "@/assets/premium-ticket-card.jpg";
+import dailyFreeTicketCard from "@/assets/daily-free-ticket-card-updated.png";
+import premiumTicketCard from "@/assets/premium-ticket-card-updated.png";
 import sureOddsStadiumCard from "@/assets/sure-odds-stadium-card.jpg";
 import dailyTipsCard from "@/assets/daily-tips-card.jpg";
 import premiumTipsCard from "@/assets/premium-tips-card.jpg";
