@@ -212,10 +212,22 @@ export default function ManageTickets() {
   };
 
   const handleSubmit = async () => {
+    if (!title.trim()) {
+      toast.error("Please enter a ticket title");
+      return;
+    }
     if (matches.length === 0) {
       toast.error("Please add at least one match");
       return;
     }
+    const invalidMatch = matches.find(
+      (m) => !m.prediction?.trim() || !Number.isFinite(Number(m.odds)) || Number(m.odds) <= 0
+    );
+    if (invalidMatch) {
+      toast.error("Every match needs a prediction and odds greater than 0");
+      return;
+    }
+
 
     const dbMatches = matches.map((m) => ({
       match_name: createMatchName(
