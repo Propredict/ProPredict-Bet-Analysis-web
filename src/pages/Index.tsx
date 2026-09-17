@@ -274,9 +274,6 @@ const Index = () => {
         {isAndroid ? (
           <>
             <Suspense fallback={<LazyFallback />}>
-              <SureOddsDashboardSection />
-            </Suspense>
-            <Suspense fallback={<LazyFallback />}>
               <TodaysTopPicks />
             </Suspense>
             <Suspense fallback={<LazyFallback />}>
@@ -292,13 +289,7 @@ const Index = () => {
               <TodaysTopTickets />
             </Suspense>
           </>
-        ) : (
-          <>
-            <Suspense fallback={<LazyFallback />}>
-              <SureOddsDashboardSection />
-            </Suspense>
-          </>
-        )}
+        ) : null}
         
         {/* AI Predictions Section – web only */}
         {!isAndroid && (
