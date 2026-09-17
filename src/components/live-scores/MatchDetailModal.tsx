@@ -113,7 +113,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="w-full max-w-2xl rounded-xl bg-[#1a1f2e] border border-border overflow-hidden"
+          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card text-foreground border-2 border-primary/40 shadow-2xl shadow-primary/20"
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
