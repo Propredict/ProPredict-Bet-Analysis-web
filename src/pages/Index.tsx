@@ -15,7 +15,7 @@ import { GuestSignInModal } from "@/components/GuestSignInModal";
 import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { TelegramPromoPopup } from "@/components/TelegramPromoPopup";
 import { RateAppCard } from "@/components/dashboard/RateAppCard";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
+
 
 
 // Heavy components – lazy loaded for faster initial paint
