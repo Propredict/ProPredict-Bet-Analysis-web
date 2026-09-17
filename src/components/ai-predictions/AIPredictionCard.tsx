@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap, DollarSign } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Sparkles, CheckCircle2, Flame, Zap, DollarSign, ShieldCheck } from "lucide-react";
+import { TicketTeamCrest, findTicketTeamLogo } from "@/components/tickets/TicketTeamCrest";
+import { getAIBestPick } from "./MarketTabs/MainMarketTab";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
@@ -81,6 +83,8 @@ interface Props {
   forceUnlocked?: boolean;
   /** When true, force locked teaser state even if user has access (used by Top AI Picks to hide picks beyond unlocked slot) */
   forceLocked?: boolean;
+  /** Today's fixtures used to resolve team crests (reference-style card header) */
+  teamMatches?: Parameters<typeof findTicketTeamLogo>[1];
 }
 
 const AIPredictionCardInner = ({ 
@@ -97,6 +101,7 @@ const AIPredictionCardInner = ({
   isUnlocking = false,
   forceUnlocked = false,
   forceLocked = false,
+  teamMatches,
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
@@ -174,22 +179,24 @@ const AIPredictionCardInner = ({
     return time.length >= 5 ? time.slice(0, 5) : time;
   };
 
+  const bestPick = getAIBestPick(prediction);
+  const homeLogo = teamMatches ? findTicketTeamLogo(prediction.home_team, teamMatches) : null;
+  const awayLogo = teamMatches ? findTicketTeamLogo(prediction.away_team, teamMatches) : null;
+
   return (
     <Card className={cn(
-      "bg-card border-primary/30 overflow-hidden rounded",
+      "bg-card border-2 border-primary/20 overflow-hidden rounded-2xl shadow-md",
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
-        {/* Header */}
-        <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
-          <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
-            <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
-              <Bot className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
-              AI
+        {/* Header — league chip + time left, heart + badges right */}
+        <div className="px-2.5 md:px-3.5 py-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground min-w-0">
+            <Badge className="bg-primary/10 text-primary border-primary/25 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full font-bold max-w-[140px] md:max-w-[220px] truncate">
+              ⚽ {prediction.league || "League"}
             </Badge>
-            <span className="truncate max-w-[70px] md:max-w-none">{prediction.league || "League"}</span>
             <span>•</span>
-            <span className="whitespace-nowrap">{formatTime(prediction.match_time)}</span>
+            <span className="whitespace-nowrap font-semibold">{formatTime(prediction.match_time)}</span>
           </div>
           <div className="flex items-center gap-0.5 md:gap-1">
             <Button
@@ -258,11 +265,62 @@ const AIPredictionCardInner = ({
           </div>
         </div>
 
-        {/* Match Title */}
-        <div className="px-2 md:px-3 pb-1.5 md:pb-2 space-y-1">
-          <h3 className="font-extrabold uppercase tracking-wide text-lg md:text-xl text-sidebar text-center truncate">
-            {prediction.home_team} vs {prediction.away_team}
-          </h3>
+        {/* Match row — crests + VS, reference design */}
+        <div className="px-2.5 md:px-3.5 pb-2 space-y-2">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1 justify-end">
+              <TicketTeamCrest name={prediction.home_team} logo={homeLogo} size="md" />
+              <span className="font-extrabold uppercase tracking-wide text-xs md:text-base text-sidebar truncate">
+                {prediction.home_team}
+              </span>
+            </div>
+            <span className="shrink-0 rounded-full bg-primary/10 border border-primary/25 px-2 py-0.5 text-[9px] md:text-[10px] font-black text-primary">
+              VS
+            </span>
+            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
+              <span className="font-extrabold uppercase tracking-wide text-xs md:text-base text-sidebar truncate">
+                {prediction.away_team}
+              </span>
+              <TicketTeamCrest name={prediction.away_team} logo={awayLogo} size="md" />
+            </div>
+          </div>
+
+          {/* AI PREDICTION strip — pick + big confidence, reference design */}
+          <div className="rounded-xl border border-primary/25 bg-primary/5 px-3 py-2.5 md:py-3">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="h-9 w-9 md:h-10 md:w-10 shrink-0 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-wider text-primary">AI Prediction</p>
+                <p className={cn(
+                  "text-sm md:text-lg font-extrabold text-sidebar leading-tight truncate",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>
+                  {bestPick.label}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className={cn(
+                  "text-xl md:text-2xl font-black tabular-nums text-success",
+                  !hasAccess && "blur-[5px] select-none"
+                )}>
+                  {bestPick.conf}%
+                </p>
+                <p className="text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Confidence</p>
+              </div>
+            </div>
+            <div className="mt-2 h-1.5 md:h-2 bg-secondary rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-700",
+                  bestPick.conf >= 70 ? "bg-gradient-to-r from-green-500 to-emerald-500" : "bg-gradient-to-r from-primary to-blue-500"
+                )}
+                style={{ width: `${Math.max(10, bestPick.conf)}%` }}
+              />
+            </div>
+          </div>
+
           <div className="flex items-center gap-1.5 flex-wrap">
             {(() => {
               const pred = (prediction.prediction || "").toLowerCase();
@@ -300,33 +358,33 @@ const AIPredictionCardInner = ({
         </div>
 
         {/* Market Tabs */}
-        <div className="px-2 md:px-3 pb-2 md:pb-3">
+        <div className="px-2.5 md:px-3.5 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
-              "w-full bg-secondary h-6 md:h-7 rounded grid grid-cols-6"
+              "w-full bg-secondary h-7 md:h-8 rounded-full grid grid-cols-6 p-0.5"
             )}>
-              <TabsTrigger value="main" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="main" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Main
               </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Goals
               </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 BTTS
               </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="double" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 DC
               </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Combo
               </TabsTrigger>
-              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Correct
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
-              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} />
+              <MainMarketTab prediction={prediction} hasAccess={hasAccess} displayTier={displayTier} hidePickBox />
             </TabsContent>
 
             <TabsContent value="goals" className="mt-2 md:mt-3">
@@ -384,16 +442,13 @@ const AIPredictionCardInner = ({
           <div className="px-2 md:px-3 pb-2 md:pb-3">
             <Collapsible open={isAnalysisOpen} onOpenChange={setIsAnalysisOpen}>
               <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between text-[9px] md:text-[10px] text-muted-foreground hover:text-foreground p-1 md:p-1.5 h-auto bg-secondary rounded"
+                <button
+                  className="w-full flex items-center justify-end gap-1.5 text-[11px] md:text-xs font-bold text-primary hover:text-primary/80 transition-colors py-1"
                 >
-                  <span className="flex items-center gap-1 md:gap-1.5">
-                    <Brain className="w-2.5 md:w-3 h-2.5 md:h-3" />
-                    AI Analysis
-                  </span>
-                  <ChevronDown className={cn("w-2.5 md:w-3 h-2.5 md:h-3 transition-transform", isAnalysisOpen && "rotate-180")} />
-                </Button>
+                  <Brain className="w-3.5 h-3.5" />
+                  View Full Analysis
+                  <ChevronDown className={cn("w-3.5 h-3.5 -rotate-90 transition-transform", isAnalysisOpen && "rotate-0")} />
+                </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-secondary rounded space-y-1.5 md:space-y-2">

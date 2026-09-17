@@ -110,10 +110,10 @@ function getAllRawProbs(prediction: AIPrediction): Record<MarketType, number> {
  * Displayed AI Confidence ALWAYS equals the probability of the pick that is
  * shown as Best Pick (e.g. Under 2.5 at 70% -> AI Confidence 70%).
  * Uses the canonical probability map so Main matches the market tabs exactly.
+ * Exported so the card header strip shows the exact same pick + confidence.
  */
-function getBestPick(prediction: AIPrediction): PickCandidate {
+export function getAIBestPick(prediction: AIPrediction): PickCandidate {
   const bestType = getBestPickType(prediction);
-  const probs = getRawProbMap(prediction);
   const meta = MARKET_META[bestType];
   const strongest = getBestEligibleProbability(prediction);
   // Premium band: the headline shows the informative pick (e.g. "Panathinaikos
@@ -134,7 +134,7 @@ function getBestPick(prediction: AIPrediction): PickCandidate {
  * value (usually Over 1.5 ≈ 71%), even when the headline pick differed.
  */
 function getStrongestConfidencePick(prediction: AIPrediction): PickCandidate {
-  return getBestPick(prediction);
+  return getAIBestPick(prediction);
 }
 
 
@@ -142,9 +142,11 @@ interface Props {
   prediction: AIPrediction;
   hasAccess: boolean;
   displayTier?: "free" | "pro" | "premium";
+  /** When true, the big "Best Pick" box is skipped — the card header strip already shows it. */
+  hidePickBox?: boolean;
 }
 
-export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false }: Props) {
   const pick = getStrongestConfidencePick(prediction);
 
 
@@ -154,7 +156,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {
+      {!hidePickBox && (
         <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4 space-y-2">
           {/* Label */}
           <div className="flex items-center justify-center gap-1.5 relative">
@@ -324,14 +326,14 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
           )}
 
         </div>
-      }
+      )}
 
-      {/* ===== 1X2 Probabilities — compact row ===== */}
-      <div className="grid grid-cols-3 gap-1 pt-1">
+      {/* ===== 1X2 Probabilities — reference-style cells: 1 / X / 2 with big % ===== */}
+      <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
           {[
-            { label: prediction.home_team, pct: prediction.home_win, outcome: "home" as const },
-            { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
-            { label: prediction.away_team, pct: prediction.away_win, outcome: "away" as const },
+            { label: prediction.home_team, short: "1", pct: prediction.home_win, outcome: "home" as const },
+            { label: "Draw", short: "X", pct: prediction.draw, outcome: "draw" as const },
+            { label: prediction.away_team, short: "2", pct: prediction.away_win, outcome: "away" as const },
           ].map((item) => {
             // Highlight the outcome with the highest probability. The previous
             // string matching on `prediction.prediction` mis-flagged nearly every
@@ -348,14 +350,16 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free" }: P
 
             return (
               <div key={item.outcome} className={cn(
-                "text-center py-1.5 rounded-md border",
-                isSelected ? "border-primary/40 bg-primary/10" : "border-border/30 bg-card/20"
+                "text-center py-2 md:py-2.5 rounded-xl border",
+                isSelected ? "border-success/60 bg-success/10" : "border-border/40 bg-secondary/60"
               )}>
-                <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
+                <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-muted-foreground" title={item.label}>
+                  {item.short} · <span className="normal-case">{item.label.length > 12 ? item.label.slice(0, 12) + "…" : item.label}</span>
+                </div>
                 <div className={cn(
-                  "text-xs md:text-sm font-bold",
+                  "text-lg md:text-xl font-extrabold tabular-nums",
                   !hasAccess && "blur-[5px] select-none",
-                  isSelected ? "text-primary" : "text-foreground/80"
+                  isSelected ? "text-success" : "text-sidebar"
                 )}>
                   {item.pct}%
                 </div>
