@@ -179,22 +179,24 @@ const AIPredictionCardInner = ({
     return time.length >= 5 ? time.slice(0, 5) : time;
   };
 
+  const bestPick = getAIBestPick(prediction);
+  const homeLogo = teamMatches ? findTicketTeamLogo(prediction.home_team, teamMatches) : null;
+  const awayLogo = teamMatches ? findTicketTeamLogo(prediction.away_team, teamMatches) : null;
+
   return (
     <Card className={cn(
-      "bg-card border-primary/30 overflow-hidden rounded",
+      "bg-card border-2 border-primary/20 overflow-hidden rounded-2xl shadow-md",
       prediction.is_live && "ring-1 ring-red-500/50"
     )}>
       <CardContent className="p-0">
-        {/* Header */}
-        <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center justify-between">
-          <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-muted-foreground">
-            <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] md:text-[9px] px-1 md:px-1.5 py-0.5 rounded">
-              <Bot className="w-2 md:w-2.5 h-2 md:h-2.5 mr-0.5" />
-              AI
+        {/* Header — league chip + time left, heart + badges right */}
+        <div className="px-2.5 md:px-3.5 py-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-muted-foreground min-w-0">
+            <Badge className="bg-primary/10 text-primary border-primary/25 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full font-bold max-w-[140px] md:max-w-[220px] truncate">
+              ⚽ {prediction.league || "League"}
             </Badge>
-            <span className="truncate max-w-[70px] md:max-w-none">{prediction.league || "League"}</span>
             <span>•</span>
-            <span className="whitespace-nowrap">{formatTime(prediction.match_time)}</span>
+            <span className="whitespace-nowrap font-semibold">{formatTime(prediction.match_time)}</span>
           </div>
           <div className="flex items-center gap-0.5 md:gap-1">
             <Button
