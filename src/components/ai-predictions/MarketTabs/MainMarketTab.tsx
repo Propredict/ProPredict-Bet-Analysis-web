@@ -326,14 +326,14 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
           )}
 
         </div>
-      }
+      )}
 
-      {/* ===== 1X2 Probabilities — compact row ===== */}
-      <div className="grid grid-cols-3 gap-1 pt-1">
+      {/* ===== 1X2 Probabilities — reference-style cells: 1 / X / 2 with big % ===== */}
+      <div className="grid grid-cols-3 gap-1.5 md:gap-2 pt-1">
           {[
-            { label: prediction.home_team, pct: prediction.home_win, outcome: "home" as const },
-            { label: "Draw", pct: prediction.draw, outcome: "draw" as const },
-            { label: prediction.away_team, pct: prediction.away_win, outcome: "away" as const },
+            { label: prediction.home_team, short: "1", pct: prediction.home_win, outcome: "home" as const },
+            { label: "Draw", short: "X", pct: prediction.draw, outcome: "draw" as const },
+            { label: prediction.away_team, short: "2", pct: prediction.away_win, outcome: "away" as const },
           ].map((item) => {
             // Highlight the outcome with the highest probability. The previous
             // string matching on `prediction.prediction` mis-flagged nearly every
@@ -350,14 +350,16 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
 
             return (
               <div key={item.outcome} className={cn(
-                "text-center py-1.5 rounded-md border",
-                isSelected ? "border-primary/40 bg-primary/10" : "border-border/30 bg-card/20"
+                "text-center py-2 md:py-2.5 rounded-xl border",
+                isSelected ? "border-success/60 bg-success/10" : "border-border/40 bg-secondary/60"
               )}>
-                <div className="text-[8px] md:text-[9px] text-muted-foreground truncate px-1">{item.label}</div>
+                <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-wide text-muted-foreground" title={item.label}>
+                  {item.short} · <span className="normal-case">{item.label.length > 12 ? item.label.slice(0, 12) + "…" : item.label}</span>
+                </div>
                 <div className={cn(
-                  "text-xs md:text-sm font-bold",
+                  "text-lg md:text-xl font-extrabold tabular-nums",
                   !hasAccess && "blur-[5px] select-none",
-                  isSelected ? "text-primary" : "text-foreground/80"
+                  isSelected ? "text-success" : "text-sidebar"
                 )}>
                   {item.pct}%
                 </div>
