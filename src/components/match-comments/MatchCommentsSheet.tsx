@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Send, MoreVertical, Pencil, Trash2, Flag, MessageSquare, Loader2 } from "lucide-react";
+import { Send, MoreVertical, Pencil, Trash2, Flag, MessageSquare, Loader2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useMatchComments } from "@/hooks/useMatchComments";
