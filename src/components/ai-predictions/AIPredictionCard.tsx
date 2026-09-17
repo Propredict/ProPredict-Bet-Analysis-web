@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Bot, Sparkles, CheckCircle2, Flame, Zap, DollarSign } from "lucide-react";
+import { ChevronDown, Brain, Star, Heart, Radio, Loader2, Crown, Sparkles, CheckCircle2, Flame, Zap, DollarSign, ShieldCheck } from "lucide-react";
+import { TicketTeamCrest, findTicketTeamLogo } from "@/components/tickets/TicketTeamCrest";
+import { getAIBestPick } from "./MarketTabs/MainMarketTab";
 
 // Top-tier leagues that always deserve a "BIG MATCH" highlight even when confidence is low
 const BIG_MATCH_LEAGUES = [
@@ -81,6 +83,8 @@ interface Props {
   forceUnlocked?: boolean;
   /** When true, force locked teaser state even if user has access (used by Top AI Picks to hide picks beyond unlocked slot) */
   forceLocked?: boolean;
+  /** Today's fixtures used to resolve team crests (reference-style card header) */
+  teamMatches?: Parameters<typeof findTicketTeamLogo>[1];
 }
 
 const AIPredictionCardInner = ({ 
@@ -97,6 +101,7 @@ const AIPredictionCardInner = ({
   isUnlocking = false,
   forceUnlocked = false,
   forceLocked = false,
+  teamMatches,
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
