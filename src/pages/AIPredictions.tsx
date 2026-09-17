@@ -782,86 +782,56 @@ export default function AIPredictions() {
             </div>
           </div>
 
-          {/* Tier Filter Tabs - In Gradient Card */}
-          <Card className="p-3 md:p-5 bg-gradient-to-br from-primary/10 via-card to-accent/5 border-primary/20 rounded-2xl">
-            <p className="text-xs md:text-lg text-muted-foreground mb-2.5 md:mb-4 text-center">
-              Choose your prediction tier below
-            </p>
-
-            {/* Mobile: 2x2 Grid | Desktop: Row */}
-            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-4 md:justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-9 md:h-14 px-3 md:px-8 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-1.5 justify-center",
-                  tierFilter === "all"
-                    ? "bg-primary/30 text-primary border border-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]"
-                    : "bg-primary/15 text-primary border border-primary/40 hover:bg-primary/25 hover:border-primary"
-                )}
-                onClick={() => setTierFilter("all")}
-              >
-                All ({tierCounts.free + tierCounts.pro + tierCounts.premium})
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "free"
-                    ? "bg-green-500/30 text-green-400 border border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
-                    : "bg-green-500/15 text-green-400 border border-green-500/40 hover:bg-green-500/25 hover:border-green-500"
-                )}
-                onClick={() => setTierFilter("free")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Gift className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Free ({tierCounts.free})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-success/90 leading-none">
-                  {Math.max(tierStats.free.accuracy, 50)}%
-                </span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "pro"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
-                    : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
-                )}
-                onClick={() => setTierFilter("pro")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Star className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Pro ({tierCounts.pro})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
-                  {Math.max(tierStats.pro.accuracy, 75)}%
-                </span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-auto md:h-14 py-1.5 md:py-2 px-3 md:px-7 text-xs md:text-base font-semibold rounded-lg md:rounded-2xl transition-all duration-300 gap-0.5 justify-center flex-col",
-                  tierFilter === "premium"
-                    ? "bg-blue-500/30 text-blue-400 border border-blue-500 shadow-[0_0_12px_rgba(8,120,249,0.4)]"
-                    : "bg-blue-500/15 text-blue-400 border border-blue-500/40 hover:bg-blue-500/25 hover:border-blue-500"
-                )}
-                onClick={() => setTierFilter("premium")}
-              >
-                <span className="flex items-center gap-1.5">
-                  <Crown className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                  Premium ({tierCounts.premium})
-                </span>
-                <span className="text-[9px] md:text-sm font-bold text-primary/90 leading-none">
-                  {Math.max(tierStats.premium.accuracy, 87)}%
-                </span>
-              </Button>
-            </div>
-          </Card>
+          {/* Tier Filter Pills — colorful chips like the reference design */}
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5">
+            <button
+              onClick={() => setTierFilter("all")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2",
+                tierFilter === "all"
+                  ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30"
+                  : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+              )}
+            >
+              All ({tierCounts.free + tierCounts.pro + tierCounts.premium})
+            </button>
+            <button
+              onClick={() => setTierFilter("free")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "free"
+                  ? "bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/30"
+                  : "bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/20"
+              )}
+            >
+              <Gift className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Free ({tierCounts.free})
+            </button>
+            <button
+              onClick={() => setTierFilter("pro")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "pro"
+                  ? "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/30"
+                  : "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20"
+              )}
+            >
+              <Star className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Pro ({tierCounts.pro})
+            </button>
+            <button
+              onClick={() => setTierFilter("premium")}
+              className={cn(
+                "h-10 md:h-11 px-4 md:px-6 rounded-full text-xs md:text-sm font-extrabold transition-all duration-300 border-2 flex items-center gap-1.5",
+                tierFilter === "premium"
+                  ? "bg-violet-500 text-white border-violet-500 shadow-lg shadow-violet-500/30"
+                  : "bg-violet-500/10 text-violet-600 border-violet-500/30 hover:bg-violet-500/20"
+              )}
+            >
+              <Crown className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              Premium ({tierCounts.premium})
+            </button>
+          </div>
 
           {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
           {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
