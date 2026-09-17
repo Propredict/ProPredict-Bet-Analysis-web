@@ -140,6 +140,10 @@ export default function ManageTickets() {
         )
       : 0;
 
+  // DB column has limited precision — store a safe value, real total is recalculated from matches
+  const storedTotalOdds = Math.min(totalOdds, 99.99);
+
+
   const filteredFixtures = fixtures.filter((f) => {
     const s = matchSearch.toLowerCase();
     return (
