@@ -150,14 +150,15 @@ export function LiveChatDock() {
   if (!open) {
     return (
       <>
-        {/* Mobile: compact floating button so it never covers content */}
+        {/* Mobile: pill button with label so it's obvious it's chat */}
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open live chat"
-          className="fixed bottom-24 left-3 z-40 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/50 bg-gradient-to-br from-sidebar to-primary text-primary-foreground shadow-xl shadow-primary/30 md:hidden"
+          className="fixed bottom-24 left-3 z-40 flex h-12 items-center gap-2 rounded-full border-2 border-primary/50 bg-gradient-to-br from-sidebar to-primary pl-3 pr-4 text-primary-foreground shadow-xl shadow-primary/30 md:hidden"
         >
           <MessageCircle className="h-5 w-5" />
+          <span className="text-sm font-black uppercase tracking-wide">Chat</span>
           {unread > 0 && (
             <span className="absolute -right-1 -top-1 rounded-full bg-success px-1.5 py-0.5 text-[9px] font-bold text-white">
               {unread > 9 ? "9+" : unread}
