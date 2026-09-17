@@ -85,7 +85,8 @@ const Index = () => {
         <div className="relative overflow-hidden rounded-2xl border border-primary/25 shadow-lg">
           <img src={heroStadiumPlayer} alt="Football player celebrating in a stadium at night" className="absolute inset-0 h-full w-full object-cover" width={1920} height={864} />
           <div className="absolute inset-0 bg-gradient-to-r from-sidebar/95 via-sidebar/75 to-sidebar/25" />
-          <div className="relative flex flex-col justify-center gap-2 px-5 py-6 text-center sm:px-8 sm:py-8 sm:text-left md:py-10">
+          <div className="relative flex flex-col justify-center gap-2 px-5 py-6 text-center sm:px-8 sm:py-8 sm:text-left md:py-10 xl:flex-row xl:items-center xl:gap-4 xl:pr-60">
+            <div className="flex min-w-0 flex-col justify-center gap-2 xl:flex-1">
             <p className="text-xs font-semibold text-primary-foreground/85 sm:text-sm">
               {firstName ? `Welcome back, ${firstName}!` : "Welcome to ProPredict!"}
             </p>
@@ -122,8 +123,31 @@ const Index = () => {
               Be Premium — Unlock All Tips for 1 Month
             </Link>
           </div>
+            {/* Center Premium Access block (desktop), like reference design */}
+            <Link
+              to="/get-premium"
+              aria-label="Premium Access all month — Postani Premium korisnik"
+              className="hidden w-[38%] max-w-md shrink-0 select-none flex-col items-center gap-1 text-center xl:flex"
+            >
+            <svg viewBox="0 0 24 24" className="mb-1 h-9 w-9 text-yellow-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" fill="currentColor" aria-hidden="true">
+              <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
+            </svg>
+            <p className="whitespace-nowrap text-2xl font-black uppercase leading-tight tracking-tight text-primary-foreground drop-shadow-md">
+              Premium Access. <span className="text-primary">All Month.</span>
+            </p>
+            <p className="text-sm font-semibold text-primary-foreground/90 sm:text-base">
+              All Premium Tips, AI Predictions &amp; Sure Odds 2+ included.
+            </p>
+            <p className="mt-1 text-lg font-black uppercase leading-tight tracking-tight text-blue-300/95 drop-shadow-md xl:text-xl">
+              Premium pristup. CEO mesec.
+            </p>
+            <p className="text-sm font-semibold text-primary-foreground/85">
+              Svi Premium tiketi, AI predikcije i Sure Odds 2+ su uključeni.
+            </p>
+            </Link>
+          </div>
           {/* Script accent text (desktop) */}
-          <p className="pointer-events-none absolute right-52 top-6 hidden -rotate-3 select-none text-2xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
+          <p className="pointer-events-none absolute right-44 top-3 hidden -rotate-3 select-none text-xl font-black italic leading-tight text-blue-200/90 drop-shadow-md lg:block">
             More<br />Than Just<br />Predictions
           </p>
           {/* Right-side stats column (desktop), like reference design */}
