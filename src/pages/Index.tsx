@@ -85,7 +85,8 @@ const Index = () => {
         <div className="relative overflow-hidden rounded-2xl border border-primary/25 shadow-lg">
           <img src={heroStadiumPlayer} alt="Football player celebrating in a stadium at night" className="absolute inset-0 h-full w-full object-cover" width={1920} height={864} />
           <div className="absolute inset-0 bg-gradient-to-r from-sidebar/95 via-sidebar/75 to-sidebar/25" />
-          <div className="relative flex flex-col justify-center gap-2 px-5 py-6 text-center sm:px-8 sm:py-8 sm:text-left md:py-10">
+          <div className="relative flex flex-col justify-center gap-2 px-5 py-6 text-center sm:px-8 sm:py-8 sm:text-left md:py-10 xl:flex-row xl:items-center xl:gap-4 xl:pr-60">
+            <div className="flex min-w-0 flex-col justify-center gap-2 xl:flex-1">
             <p className="text-xs font-semibold text-primary-foreground/85 sm:text-sm">
               {firstName ? `Welcome back, ${firstName}!` : "Welcome to ProPredict!"}
             </p>
