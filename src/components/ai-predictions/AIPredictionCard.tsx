@@ -359,28 +359,24 @@ const AIPredictionCardInner = ({
 
         {/* Market Tabs */}
         <div className="px-2.5 md:px-3.5 pb-2 md:pb-3">
-          <Tabs defaultValue="main" className="w-full">
-            <TabsList className={cn(
-              "w-full bg-secondary h-7 md:h-8 rounded-full grid grid-cols-6 p-0.5"
-            )}>
-              <TabsTrigger value="main" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                Main
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                Goals
-              </TabsTrigger>
-              <TabsTrigger value="btts" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                BTTS
-              </TabsTrigger>
-              <TabsTrigger value="double" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                DC
-              </TabsTrigger>
-              <TabsTrigger value="combos" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                Combo
-              </TabsTrigger>
-              <TabsTrigger value="correct" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
-                Correct
-              </TabsTrigger>
+          <Tabs defaultValue="main" className="w-full min-w-0">
+            <TabsList className="flex w-full min-w-0 overflow-x-auto no-scrollbar bg-secondary h-8 md:h-9 rounded-full p-0.5 gap-0.5">
+              {[
+                ["main", "Main"],
+                ["goals", "Goals"],
+                ["btts", "BTTS"],
+                ["double", "DC"],
+                ["combos", "Combo"],
+                ["correct", "Correct"],
+              ].map(([value, label]) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="shrink-0 flex-1 basis-auto whitespace-nowrap px-2.5 md:px-3 text-[10px] md:text-xs font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full"
+                >
+                  {label}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="main" className="mt-2 md:mt-3">
