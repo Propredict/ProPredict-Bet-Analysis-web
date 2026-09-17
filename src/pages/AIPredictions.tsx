@@ -845,7 +845,7 @@ export default function AIPredictions() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar leading-tight">
-                    🔥 AI Elite Picks
+                    AI Elite Picks
                   </h2>
                   <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
                     Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
