@@ -88,7 +88,7 @@ export function TicketGroup({
                         {isPremium ? <Crown className="h-4 w-4 text-primary" /> : <TicketIcon className="h-4 w-4 text-primary" />}
                         <span className="text-xs font-bold uppercase text-primary">{isPremium ? "Premium Ticket" : "Daily Ticket"}</span>
                       </div>
-                      <p className="truncate text-base font-extrabold uppercase text-sidebar-foreground sm:text-lg">{ticket.title}</p>
+                      <p className="whitespace-normal break-words text-base font-extrabold uppercase leading-tight text-sidebar-foreground sm:text-lg">{ticket.title}</p>
                       <p className="mt-1 text-xs font-semibold uppercase text-sidebar-foreground/65">Carefully selected picks</p>
                     </div>
                     <div className="shrink-0 text-right">
