@@ -3,8 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { BarChart3, Crown, Gem, Lightbulb, Loader2, RefreshCw, Target } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { TipCard } from "@/components/dashboard/TipCard";
 import { FreeInAppPopup } from "@/components/FreeInAppPopup";
 import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
@@ -209,10 +207,6 @@ export default function SingleTips() {
         </div>
 
         <p className="text-center text-[10px] text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
-        <div className="mx-auto grid w-full max-w-xs grid-cols-2 gap-3" aria-label="Sponsored partners">
-          <AffiliateBanner1xBet compact />
-          <AffiliateBannerMelbet compact />
-        </div>
       </div>
 
       <PricingModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} highlightPlan={upgradeHighlight} />

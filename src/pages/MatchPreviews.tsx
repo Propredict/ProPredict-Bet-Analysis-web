@@ -15,7 +15,6 @@ import { getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
 import { PageHero } from "@/components/layout/PageHero";
 import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
 
@@ -272,7 +271,6 @@ export default function MatchPreviews() {
 
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
-        <AffiliateBanner1xBet />
 
         {/* Premium Info Card */}
         <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-background/80 to-background p-5">
