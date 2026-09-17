@@ -1136,7 +1136,7 @@ export default function AIPredictions() {
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
                         .map((prediction) => (
-                          <div key={prediction.id} id={`prediction-${prediction.id}`}>
+                          <div key={prediction.id} id={`prediction-${prediction.id}`} className="min-w-0 w-full">
                             <AIPredictionCard
                               overrideTier="pro"
                               prediction={prediction}
