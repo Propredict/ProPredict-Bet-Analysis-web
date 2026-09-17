@@ -17,6 +17,7 @@ import { LeagueStatsYellowCardsTab } from "@/components/league-statistics/League
 import { LeagueStatsRedCardsTab } from "@/components/league-statistics/LeagueStatsRedCardsTab";
 import { LeagueStatsSquadsTab } from "@/components/league-statistics/LeagueStatsSquadsTab";
 import { LeagueSearchSelect } from "@/components/league-statistics/LeagueSearchSelect";
+import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
 import { HeroStat } from "@/components/layout/HeroStat";
@@ -53,6 +54,11 @@ const LEAGUE_ID_MAP: Record<string, string> = {
 export default function LeagueStatistics() {
   const [selectedLeagueId, setSelectedLeagueId] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("standings");
+  const { maybeShowInterstitial } = useAndroidInterstitial();
+
+  useEffect(() => {
+    maybeShowInterstitial("league_statistics");
+  }, [maybeShowInterstitial]);
   const {
     matches,
     isLoading,
