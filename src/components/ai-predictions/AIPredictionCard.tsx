@@ -358,12 +358,12 @@ const AIPredictionCardInner = ({
         </div>
 
         {/* Market Tabs */}
-        <div className="px-2 md:px-3 pb-2 md:pb-3">
+        <div className="px-2.5 md:px-3.5 pb-2 md:pb-3">
           <Tabs defaultValue="main" className="w-full">
             <TabsList className={cn(
-              "w-full bg-secondary h-6 md:h-7 rounded grid grid-cols-6"
+              "w-full bg-secondary h-7 md:h-8 rounded-full grid grid-cols-6 p-0.5"
             )}>
-              <TabsTrigger value="main" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
+              <TabsTrigger value="main" className="text-[9px] md:text-[10px] font-bold text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded-full">
                 Main
               </TabsTrigger>
               <TabsTrigger value="goals" className="text-[9px] md:text-[10px] text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-0.5 rounded">
