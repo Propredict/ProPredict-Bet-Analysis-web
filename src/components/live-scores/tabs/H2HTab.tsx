@@ -122,7 +122,7 @@ export function H2HTab({ h2h, loading, homeTeamName, awayTeamName }: H2HTabProps
             return (
               <div
                 key={idx}
-                className="bg-[#0F172A] rounded-lg px-4 py-3"
+                className="bg-secondary/60 rounded-lg px-4 py-3"
               >
                 {/* Row layout: Date/League on left, Teams+Score on right */}
                 <div className="flex items-center">

@@ -113,16 +113,16 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="w-full max-w-2xl rounded-xl bg-[#1a1f2e] border border-white/10 overflow-hidden"
+          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card text-foreground border-2 border-primary/40 shadow-2xl shadow-primary/20"
           onClick={(e) => e.stopPropagation()}
         >
           {/* HEADER */}
-          <div className="flex justify-between items-center p-4 border-b border-white/10">
-            <div className="flex gap-3 items-center text-sm text-muted-foreground">
+          <div className="flex justify-between items-center gap-2 p-4 border-b border-border bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80">
+            <div className="flex gap-2 items-center text-sm font-semibold text-primary-foreground">
               {match.league} • {match.leagueCountry}
               {getStatusBadge()}
             </div>
-            <Button size="icon" variant="ghost" onClick={onClose}>
+            <Button size="icon" variant="ghost" onClick={onClose} className="text-primary-foreground hover:bg-primary-foreground/15">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -133,22 +133,22 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
               {homeLogo && (
                 <img src={homeLogo} alt="" className="w-10 h-10 object-contain" />
               )}
-              <span className="text-sm font-medium">{match.homeTeam}</span>
+              <span className="text-sm font-bold uppercase leading-snug text-sidebar">{match.homeTeam}</span>
             </div>
-            <div className="text-4xl font-bold px-4">
+            <div className="text-4xl font-black px-4 text-primary">
               {isUpcoming ? "VS" : `${match.homeScore ?? 0} : ${match.awayScore ?? 0}`}
             </div>
             <div className="text-center flex-1 flex flex-col items-center gap-2">
               {awayLogo && (
                 <img src={awayLogo} alt="" className="w-10 h-10 object-contain" />
               )}
-              <span className="text-sm font-medium">{match.awayTeam}</span>
+              <span className="text-sm font-bold uppercase leading-snug text-sidebar">{match.awayTeam}</span>
             </div>
           </div>
 
           {/* TABS */}
           {!details && (loading || error) ? (
-            <div className="border-t border-white/10 p-5">
+            <div className="border-t border-border p-5">
               {loading ? (
                 <div className="space-y-3 animate-pulse">
                   <div className="h-4 w-1/3 rounded bg-muted" />
@@ -164,7 +164,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
             </div>
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="px-3 py-3 border-b border-white/10">
+              <div className="px-3 py-3 border-b border-border">
                 <TabsList
                   className="w-full gap-1 bg-secondary/50 p-1.5 rounded-lg border border-border"
                   style={{ display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)` }}

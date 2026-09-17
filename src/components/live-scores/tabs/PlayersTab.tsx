@@ -97,7 +97,7 @@ export function PlayersTab({ players, loading }: PlayersTabProps) {
   return (
     <div className="max-h-[400px] overflow-y-auto">
       {/* Sort buttons */}
-      <div className="flex gap-1.5 px-3 py-2 border-b border-white/10 overflow-x-auto">
+      <div className="flex gap-1.5 px-3 py-2 border-b border-border overflow-x-auto">
         {sortButtons.map(({ key, label }) => (
           <button
             key={key}
@@ -120,7 +120,7 @@ export function PlayersTab({ players, loading }: PlayersTabProps) {
 
         return (
           <div key={team.team.id}>
-            <div className="flex items-center gap-2 px-3 py-2 bg-secondary/40 border-b border-white/10">
+            <div className="flex items-center gap-2 px-3 py-2 bg-secondary/40 border-b border-border">
               <img src={team.team.logo} alt="" className="w-5 h-5 object-contain" />
               <span className="text-xs font-semibold">{team.team.name}</span>
             </div>

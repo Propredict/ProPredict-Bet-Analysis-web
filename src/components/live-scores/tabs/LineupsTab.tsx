@@ -164,10 +164,10 @@ function PitchView({ lineups }: { lineups: TeamLineup[] }) {
         {/* Pitch markings */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/10" />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-white/10" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-border" />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white/15" />
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-32 border-r border-t border-b border-white/10 rounded-r-sm" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-32 border-l border-t border-b border-white/10 rounded-l-sm" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-32 border-r border-t border-b border-border rounded-r-sm" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-32 border-l border-t border-b border-border rounded-l-sm" />
         </div>
 
         <div className="relative z-10 flex flex-row h-full min-h-[280px]">
