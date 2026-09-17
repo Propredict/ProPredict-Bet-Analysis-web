@@ -159,18 +159,18 @@ export function SureOddsPromoCard({
               <div key={idx} className="rounded-lg border-2 border-primary/50 bg-card p-3 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="truncate text-[9px] font-bold uppercase text-muted-foreground">{parsed.league || `Match ${idx + 1}`}</p>
-                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending</span>
+                  <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] font-extrabold uppercase text-primary">Pending / U toku</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1 space-y-1.5"><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.homeTeam}</p></div><div className="flex min-w-0 items-center gap-2"><TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><p className="min-w-0 break-words text-sm font-bold text-foreground">{parsed.awayTeam}</p></div></div>
-                  <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked</div></div>
+                  <div className="text-right"><p className="mb-1 text-[9px] font-semibold uppercase text-muted-foreground">Pick / Tip</p><div className="flex items-center gap-1.5 rounded-lg bg-sidebar px-3 py-1.5 text-xs font-bold text-sidebar-foreground"><Lock className="h-3 w-3 text-blue-300" />Locked / Zaključano</div></div>
                   </div>
               </div>
             );
           })}
           {remainingCount > 0 && (
             <p className="text-center text-[10px] text-primary pt-1 flex items-center justify-center gap-0.5">
-              +{remainingCount} more matches
+              +{remainingCount} more matches / još utakmica
               <ChevronRight className="h-3 w-3" />
             </p>
           )}
