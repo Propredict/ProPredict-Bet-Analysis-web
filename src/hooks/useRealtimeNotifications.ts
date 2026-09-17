@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 /** Map category to a dedicated route, or fall back to tier route */
 function getCategoryRoute(category: string | null): string | null {
-  if (category === "diamond_pick") return "/diamond-pick";
-  if (category === "risk_of_the_day") return "/risk-of-the-day";
+  if (category === "diamond_pick") return "/single-tips?view=diamond";
+  if (category === "risk_of_the_day") return "/single-tips?view=risk";
   if (category === "sure_odds") return "/sure-odds";
   return null;
 }
@@ -15,16 +15,16 @@ function getCategoryRoute(category: string | null): string | null {
 function getTierRoute(type: "tip" | "ticket", tier: string): string {
   const routes: Record<string, Record<string, string>> = {
     tip: {
-      premium: "/premium-analysis",
-      exclusive: "/top-picks",
-      daily: "/daily-analysis",
-      free: "/daily-analysis",
+      premium: "/single-tips?view=premium",
+      exclusive: "/single-tips?view=premium",
+      daily: "/single-tips",
+      free: "/single-tips",
     },
     ticket: {
-      premium: "/premium-predictions",
+      premium: "/premium-tickets",
       exclusive: "/sure-odds",
-      daily: "/daily-predictions",
-      free: "/daily-predictions",
+      daily: "/tickets",
+      free: "/tickets",
     },
   };
   return routes[type]?.[tier] ?? routes[type].daily;
@@ -77,7 +77,7 @@ export function useRealtimeNotifications() {
               description: `${rec.home_team} vs ${rec.away_team}`,
               action: {
                 label: "View",
-                onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
+                onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&plan_required=${tier}`),
               },
               duration: 8000,
             });
@@ -101,7 +101,7 @@ export function useRealtimeNotifications() {
               description: rec.title || "A new AI Combo is available!",
               action: {
                 label: "View",
-                onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
+                onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&plan_required=${tier}`),
               },
               duration: 8000,
             });
@@ -124,7 +124,7 @@ export function useRealtimeNotifications() {
             description: `${rec.home_team} vs ${rec.away_team}`,
             action: {
               label: "View",
-              onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
+              onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&plan_required=${tier}`),
             },
             duration: 8000,
           });
@@ -146,7 +146,7 @@ export function useRealtimeNotifications() {
             description: rec.title || "A new AI Combo is available!",
             action: {
               label: "View",
-              onClick: () => navigate(`${route}?highlight=${rec.id}&plan_required=${tier}`),
+              onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&plan_required=${tier}`),
             },
             duration: 8000,
           });
@@ -173,7 +173,7 @@ export function useRealtimeNotifications() {
               description: `${matchLabel} — prediction confirmed!`,
               action: {
                 label: "View",
-                onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),
+                onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&result=won`),
               },
               duration: 8000,
             });
@@ -198,7 +198,7 @@ export function useRealtimeNotifications() {
               description: rec.title || "An AI Combo prediction confirmed!",
               action: {
                 label: "View",
-                onClick: () => navigate(`${route}?highlight=${rec.id}&result=won`),
+                onClick: () => navigate(`${route}${route.includes("?") ? "&" : "?"}highlight=${rec.id}&result=won`),
               },
               duration: 8000,
             });
