@@ -74,11 +74,11 @@ export function SureOddsPromoCard({
                 <Star className="h-3 w-3 fill-current" />PRO
               </Badge>
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 bg-muted/40 rounded-full border border-border/30">
-                {ticket.matchCount} Matches
+                {ticket.matchCount} Matches / Utakmica
               </span>
             </div>
             <Badge variant="outline" className="text-success border-success/30 bg-success/10 text-[10px] px-2">
-              <CheckCircle2 className="h-3 w-3 mr-1" />Unlocked
+              <CheckCircle2 className="h-3 w-3 mr-1" />Unlocked / Otključano
             </Badge>
           </div>
           <h3 className="font-bold text-base sm:text-lg text-foreground text-center leading-tight">
@@ -91,7 +91,7 @@ export function SureOddsPromoCard({
             </span>
             {ticket.totalOdds > 0 && (
               <span className="flex items-center gap-1">
-                <span className="opacity-60">Total odds</span>
+                <span className="opacity-60">Total odds / Ukupna kvota</span>
                 <span className="font-bold text-foreground">{formatCombinedOdds(ticket.totalOdds)}</span>
               </span>
             )}
