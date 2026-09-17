@@ -785,32 +785,6 @@ export default function AIPredictions() {
             </button>
           </div>
 
-          {/* TOP AI PICKS — ranked highlight section above Safe Picks */}
-          {/* 🔥 AI ELITE PICKS — hero banner above all curated sections */}
-          {!loading && predictions.length > 0 && (diamondPick || safePicks.length > 0 || topPicks.length > 0) && (
-            <div className="relative overflow-hidden rounded-2xl border border-blue-400/30 bg-gradient-to-r from-blue-500/10 via-blue-500/10 to-cyan-500/10 px-3 py-2.5 md:px-6 md:py-6 shadow-[0_0_25px_rgba(8,120,249,0.12)]">
-              <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-blue-500/15 blur-2xl" />
-              <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-cyan-500/15 blur-2xl" />
-              <div className="relative flex items-center gap-2 md:gap-3">
-                <div className="p-1.5 md:p-4 rounded-lg md:rounded-2xl bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-500 shadow-md ring-1 ring-blue-300/40">
-                  <Flame className="w-3.5 h-3.5 md:w-8 md:h-8 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar leading-tight">
-                    AI Elite Picks
-                  </h2>
-                  <p className="text-[10px] md:text-base text-muted-foreground leading-snug md:mt-1">
-                    Filtered from <span className="font-semibold text-foreground">{totalAnalyzed}+ matches</span> today — only the strongest signals shown below
-                  </p>
-                </div>
-                <Badge className="hidden sm:inline-flex bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 text-[9px] md:text-base px-2 md:px-5 py-0.5 md:py-2 rounded-full shadow shrink-0">
-                  <Sparkles className="w-2.5 h-2.5 md:w-4 md:h-4 mr-1 md:mr-2" />
-                  Curated
-                </Badge>
-              </div>
-            </div>
-          )}
-
           {/* ⭐ FEATURED ROW — Safe Pick + Diamond Pick side by side (reference layout) */}
           <div className="grid gap-3 md:gap-4 lg:grid-cols-2 items-start">
           {/* 🛡️ SAFE PICK — green panel like the reference design */}
