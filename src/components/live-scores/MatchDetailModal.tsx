@@ -173,7 +173,7 @@ export function MatchDetailModal({ match, onClose }: MatchDetailModalProps) {
                     <TabsTrigger
                       key={value}
                       value={value}
-                      className="rounded-md bg-card/80 py-2 text-[9px] font-bold text-primary sm:text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                      className="rounded-md bg-primary/15 py-2 text-[9px] font-bold text-primary hover:bg-primary/25 sm:text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                     >
                       <Icon className="h-3 w-3 mr-0.5 hidden sm:inline" /> {label}
                     </TabsTrigger>
