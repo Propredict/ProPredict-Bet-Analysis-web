@@ -207,12 +207,13 @@ export function BettingTickets() {
     ];
 
     const renderTipCard = (item: (typeof tipCards)[number]) => (
-      <button
+      <Button
         key={item.to}
         type="button"
+        variant="ghost"
         onClick={() => navigate(item.to)}
         className={cn(
-          "group relative block w-full overflow-hidden rounded-2xl border-2 text-left shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl",
+          "group relative block h-auto w-full overflow-hidden rounded-2xl border-2 p-0 text-left shadow-lg transition-all hover:-translate-y-1 hover:bg-transparent hover:shadow-2xl",
           item.border,
           item.shadow
         )}
@@ -223,20 +224,21 @@ export function BettingTickets() {
           loading="lazy"
           className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
-        <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-6">
-          <span className="text-xl font-black uppercase leading-none tracking-tight text-white drop-shadow-md sm:text-3xl">
+        <span className="absolute inset-0 bg-gradient-to-r from-sidebar/95 via-sidebar/45 to-transparent" />
+        <span className="absolute inset-y-0 left-0 flex w-[64%] flex-col justify-center gap-1.5 p-4 sm:gap-2 sm:p-6">
+          <span className="text-2xl font-black uppercase leading-none text-sidebar-foreground drop-shadow-md sm:text-4xl">
             {item.titleA}{" "}
             <span className={item.titleBClass}>{item.titleB}</span>
           </span>
-          <span className="max-w-[60%] text-[11px] font-bold leading-snug text-white/85 drop-shadow-sm sm:text-sm">
+          <span className="text-xs font-extrabold leading-snug text-sidebar-foreground/90 drop-shadow-sm sm:text-base">
             {item.desc}
           </span>
-          <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm sm:text-sm">
+          <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-card px-3 py-2 text-xs font-black text-foreground shadow-md sm:px-4 sm:text-sm">
             Open / Otvori
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
           </span>
         </span>
-      </button>
+      </Button>
     );
 
     return (
@@ -277,61 +279,50 @@ export function BettingTickets() {
         </div>
 
         {/* Row 2 — Sure Odds 2+ full-width kocka (bigger, ball symbol, open + buy) */}
-        <div
-          role="link"
-          tabIndex={0}
-          onClick={() => navigate("/sure-odds")}
-          onKeyDown={(e) => e.key === "Enter" && navigate("/sure-odds")}
-          className="group relative block w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-emerald-500/50 bg-sidebar text-left shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/35"
-        >
+        <div className="group relative block min-h-52 w-full overflow-hidden rounded-2xl border-2 border-success/60 bg-sidebar text-left shadow-lg shadow-success/20 transition-all hover:-translate-y-1 hover:border-success hover:shadow-2xl hover:shadow-success/35 sm:min-h-64">
           <img
             src={sureOddsCard}
             alt="Sure Odds 2+ Ticket — High confidence Ticket. Sigurna kvota >2."
             loading="lazy"
-            className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-64"
+            className="absolute inset-0 h-full w-full object-cover opacity-45 transition-transform duration-300 group-hover:scale-[1.02]"
           />
-          {/* Green ball symbol */}
+          <div className="absolute inset-0 bg-gradient-to-r from-sidebar via-sidebar/90 to-success/20" />
           <img
             src={sureOddsBall.url}
-            alt=""
-            aria-hidden="true"
+            alt="Sure Odds 2+ football symbol"
             loading="lazy"
-            className="pointer-events-none absolute -right-2 top-1/2 h-32 w-32 -translate-y-1/2 object-contain drop-shadow-[0_0_18px_rgba(34,197,94,0.45)] sm:-right-4 sm:h-56 sm:w-56"
+            className="pointer-events-none absolute -right-3 top-1/2 h-44 w-44 -translate-y-1/2 object-contain drop-shadow-xl sm:right-4 sm:h-64 sm:w-64"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-sidebar via-sidebar/85 to-transparent" />
-          <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-2 p-4 sm:gap-3 sm:p-8">
-            <span className="text-2xl font-black uppercase leading-none tracking-tight text-sidebar drop-shadow-sm sm:text-5xl">
+          <div className="relative flex min-h-52 w-[68%] flex-col justify-center gap-2 p-4 sm:min-h-64 sm:gap-3 sm:p-8">
+            <span className="text-3xl font-black uppercase leading-none text-sidebar-foreground drop-shadow-md sm:text-5xl">
               Sure <span className="text-success">Odds 2+</span> Ticket
             </span>
-            <span className="max-w-[65%] text-xs font-bold leading-snug text-sidebar/85 sm:text-lg">
+            <span className="text-xs font-extrabold leading-snug text-sidebar-foreground/90 sm:text-lg">
               High confidence Ticket / Sigurna kvota &gt;2
             </span>
             <span className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <button
+              <Button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/sure-odds");
-                }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-[11px] font-extrabold text-foreground shadow-md backdrop-blur-sm transition-colors hover:bg-card sm:px-4 sm:py-2 sm:text-sm"
+                variant="secondary"
+                onClick={() => navigate("/sure-odds")}
+                className="h-9 gap-1.5 rounded-lg bg-card px-3 text-xs font-black text-foreground shadow-md hover:bg-card/90 sm:h-10 sm:px-4 sm:text-sm"
               >
                 Open / Otvori
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   void trackSureOddsEvent("cta_click", "dashboard");
                   startSureOddsPurchase(undefined, "dashboard");
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-[11px] font-extrabold text-white shadow-md transition-transform hover:scale-[1.03] sm:px-4 sm:py-2 sm:text-sm"
+                className="h-9 gap-1.5 rounded-lg bg-success px-3 text-xs font-black text-success-foreground shadow-md transition-transform hover:scale-[1.03] hover:bg-success/90 sm:h-10 sm:px-4 sm:text-sm"
               >
                 <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Get Ticket / Kupi Tiket
-              </button>
+                Get Ticket / Kupi tiket
+              </Button>
             </span>
-          </span>
+          </div>
         </div>
 
         {/* Row 3 — Daily Tips & Premium Tips kocke (same size as ticket cards) */}
