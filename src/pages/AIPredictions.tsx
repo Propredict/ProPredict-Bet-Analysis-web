@@ -1347,7 +1347,7 @@ export default function AIPredictions() {
             const visiblePro = visibleFeatured.filter((p) => getPredictionTier(p) === "pro");
 
             const renderCard = (prediction: typeof predictions[0]) => (
-              <div key={prediction.id} id={`prediction-${prediction.id}`} className="transition-all duration-500">
+              <div key={prediction.id} id={`prediction-${prediction.id}`} className="min-w-0 w-full transition-all duration-500">
                 <AIPredictionCard
                   overrideTier={getPredictionTier(prediction) ?? undefined}
                   prediction={prediction}
@@ -1382,8 +1382,7 @@ export default function AIPredictions() {
                         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-1.5 md:gap-2">
-                      {visiblePremium.map(renderCard)}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                     </div>
                   </div>
                 )}
