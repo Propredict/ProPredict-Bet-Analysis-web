@@ -231,7 +231,7 @@ export default function ExclusiveTickets() {
 
             return (
               <React.Fragment key={ticket.id}>
-                <div id={`ticket-${ticket.id}`}>
+                <div id={`ticket-${ticket.id}`} className="md:mx-auto md:w-full md:max-w-xl">
                   {isLocked ? (
                     <SureOddsPromoCard
                       ticket={{

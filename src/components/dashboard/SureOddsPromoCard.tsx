@@ -140,7 +140,7 @@ export function SureOddsPromoCard({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15">
+    <div className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-md shadow-primary/15 md:rounded-2xl md:border-primary md:shadow-[0_20px_60px_-10px_rgba(0,148,230,0.45)] md:ring-1 md:ring-primary/40">
       <div className="bg-primary px-4 py-4 text-primary-foreground sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground/70">Daily Acca</p><h3 className="mt-0.5 text-xl font-extrabold uppercase leading-none">{ticket.title}</h3></div>
