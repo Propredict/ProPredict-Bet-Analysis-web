@@ -298,7 +298,7 @@ export default function ExclusiveTickets() {
           </p>
           {!hasTicketAccess && (
             <Button className="mt-5 h-11 w-full text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleBuyDailyTicket}>
-              <Ticket className="mr-2 h-4 w-4" />Unlock – {SURE_ODDS_PRICE_LABEL}
+              <Ticket className="mr-2 h-4 w-4" />Unlock / Otključaj – {SURE_ODDS_PRICE_LABEL}
             </Button>
           )}
         </div>
@@ -315,7 +315,7 @@ export default function ExclusiveTickets() {
                 className="relative mt-5 h-11 w-full bg-white text-[hsl(211_100%_30%)] font-bold hover:bg-white/90"
                 onClick={() => { setUpgradeHighlight("premium"); setUpgradeModalOpen(true); }}
               >
-                Get Premium <Crown className="ml-1 h-4 w-4 text-warning" />
+                Get Premium / Kupi Premium <Crown className="ml-1 h-4 w-4 text-warning" />
               </Button>
             )}
           </div>
