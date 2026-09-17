@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { FreeUserUpsellModal } from "@/components/FreeUserUpsellModal";
 import { TicketGroup } from "@/components/tickets/TicketGroup";
 import { useTickets } from "@/hooks/useTickets";
@@ -80,10 +78,6 @@ export default function Tickets() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
-        <section aria-label="Sponsored partners" className="mx-auto grid w-full max-w-2xl grid-cols-2 gap-3 sm:gap-5">
-          <AffiliateBanner1xBet compact />
-          <AffiliateBannerMelbet compact />
-        </section>
       </div>
     </>
   );

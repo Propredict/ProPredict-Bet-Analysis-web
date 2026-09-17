@@ -15,8 +15,6 @@ import { toast } from "sonner";
 import { startSureOddsPurchase } from "@/lib/sureOddsPurchase";
 import { trackSureOddsEvent } from "@/lib/sureOddsAnalytics";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { useDailyTicketUnlock, SURE_ODDS_PRICE_LABEL } from "@/hooks/useDailyTicketUnlock";
 
 
@@ -135,7 +133,6 @@ export default function ExclusiveTickets() {
     <div className="section-gap">
       {/* Sponsored: Melbet affiliate banner at top */}
       <div className="mb-4">
-        <AffiliateBannerMelbet />
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-primary/20 bg-secondary/70 shadow-lg shadow-primary/10">
@@ -329,7 +326,6 @@ export default function ExclusiveTickets() {
       </p>
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="mt-4">
-        <AffiliateBanner1xBet />
       </div>
 
     </div>

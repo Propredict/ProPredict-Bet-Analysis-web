@@ -5,7 +5,6 @@ import { useTickets } from "@/hooks/useTickets";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { PremiumLockBadge, PremiumLockCard } from "@/components/premium/PremiumLock";
-import { AffiliateBanner1xBet } from "./AffiliateBanner1xBet";
 
 function todayBelgrade() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
@@ -273,8 +272,6 @@ export function DashboardOverview() {
             </Link>
           </div>
         </section>
-
-        <AffiliateBanner1xBet />
       </div>
     </div>
   );

@@ -14,8 +14,6 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
 
 export default function ExclusiveTips() {
@@ -96,7 +94,6 @@ export default function ExclusiveTips() {
     <div className="section-gap">
       {/* Sponsored: Melbet affiliate banner at top */}
       <div className="mb-4">
-        <AffiliateBannerMelbet />
       </div>
 
       {/* Header */}
@@ -245,7 +242,6 @@ export default function ExclusiveTips() {
       </p>
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="mt-4">
-        <AffiliateBanner1xBet />
       </div>
 
     </div>

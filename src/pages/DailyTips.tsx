@@ -13,8 +13,6 @@ import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
-import { AffiliateBanner1xBet } from "@/components/dashboard/AffiliateBanner1xBet";
-import { AffiliateBannerMelbet } from "@/components/dashboard/AffiliateBannerMelbet";
 
 
 export default function DailyTips() {
@@ -133,7 +131,6 @@ export default function DailyTips() {
     <div className="section-gap">
       {/* Sponsored: Melbet affiliate banner at top */}
       <div className="mb-4">
-        <AffiliateBannerMelbet />
       </div>
 
       {/* Header */}
@@ -220,7 +217,6 @@ export default function DailyTips() {
       </p>
       {/* Sponsored: 1xBet affiliate banner – web only */}
       <div className="mt-4">
-        <AffiliateBanner1xBet />
       </div>
 
     </div>
