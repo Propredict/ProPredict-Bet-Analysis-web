@@ -1,10 +1,12 @@
-import { CheckCircle2, Crown, Loader2, Lock, RefreshCw, Sparkles, Target, Ticket as TicketIcon } from "lucide-react";
+import { ArrowRight, CheckCircle2, Crown, Loader2, Lock, RefreshCw, Sparkles, Target, Ticket as TicketIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import type { TicketWithMatches } from "@/hooks/useTickets";
 import type { ContentTier, UnlockMethod } from "@/hooks/useUserPlan";
 import { formatCombinedOdds } from "@/lib/formatOdds";
 import { parseMatchName } from "@/types/admin";
+import { useLiveScores } from "@/hooks/useLiveScores";
+import { findTicketTeamLogo, TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 
 export type TicketGroupProps = {
   title: string;
@@ -33,6 +35,7 @@ export function TicketGroup({
 }: TicketGroupProps) {
   const navigate = useNavigate();
   const isPremium = tier === "premium";
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
 
   if (isLoading) {
     return (
@@ -44,22 +47,22 @@ export function TicketGroup({
 
   return (
     <section className="relative min-w-0">
-      <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/45 to-transparent opacity-50 blur-sm" />
-      <div className="relative h-full overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-xl">
-        <header className="flex items-center justify-between gap-3 border-b border-sidebar-border bg-sidebar-accent/55 px-4 py-4 sm:px-5">
+      <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/50 to-transparent opacity-50 blur-sm" />
+      <div className="relative h-full overflow-hidden rounded-2xl border border-primary/45 bg-secondary shadow-xl">
+        <header className="flex items-center justify-between gap-3 border-b border-primary/20 bg-card px-4 py-4 sm:px-6">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               {isPremium ? <Crown className="h-5 w-5 shrink-0 text-primary" /> : <TicketIcon className="h-5 w-5 shrink-0 text-primary" />}
-              <h2 className="truncate text-xl font-bold text-sidebar-foreground">{title}</h2>
+              <h2 className="truncate text-xl font-extrabold text-foreground sm:text-2xl">{title}</h2>
             </div>
             <p className="mt-1 text-sm font-semibold uppercase text-primary">{subtitle}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-primary/35 bg-primary/15 px-3 py-1 text-[10px] font-bold uppercase text-primary">
+          <span className="shrink-0 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase text-primary">
             {badge}
           </span>
         </header>
 
-        <div className="space-y-4 p-3 sm:p-5">
+        <div className="space-y-4 p-2.5 sm:p-4">
           {tickets.length === 0 ? (
             <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-accent/25 px-5 text-center">
               <TicketIcon className="mb-3 h-10 w-10 text-sidebar-foreground/35" />
@@ -80,7 +83,7 @@ export function TicketGroup({
                   <Button
                     type="button"
                     variant="ghost"
-                    className="flex h-auto w-full items-center justify-between gap-3 rounded-none border-b border-primary/25 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary/80 px-4 py-4 text-left hover:from-sidebar-accent hover:to-primary/90 hover:text-sidebar-foreground"
+                    className="flex h-auto w-full items-center justify-between gap-3 rounded-none border-b border-primary/25 bg-gradient-to-r from-sidebar via-sidebar-accent to-primary px-4 py-4 text-left hover:opacity-95 hover:text-sidebar-foreground sm:px-5"
                     onClick={() => navigate(`/tickets/${ticket.id}`)}
                   >
                     <div className="min-w-0">
@@ -88,7 +91,7 @@ export function TicketGroup({
                         {isPremium ? <Crown className="h-4 w-4 text-primary" /> : <TicketIcon className="h-4 w-4 text-primary" />}
                         <span className="text-xs font-bold uppercase text-primary">{isPremium ? "Premium Ticket" : "Daily Ticket"}</span>
                       </div>
-                      <p className="whitespace-normal break-words text-base font-extrabold uppercase leading-tight text-sidebar-foreground sm:text-lg">{ticket.title}</p>
+                      <p className="whitespace-normal break-words text-lg font-extrabold uppercase leading-tight text-sidebar-foreground sm:text-xl">{ticket.title}</p>
                       <p className="mt-1 text-xs font-semibold uppercase text-sidebar-foreground/65">Carefully selected picks</p>
                     </div>
                     <div className="shrink-0 text-right">
@@ -116,14 +119,20 @@ export function TicketGroup({
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="flex min-w-0 flex-col gap-2 py-3.5 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(8rem,auto)_1.5rem] sm:items-center sm:gap-3">
-                          <div className="flex min-w-0 items-start gap-2 sm:contents">
+                        <div key={match.id} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(9rem,auto)_1.5rem] sm:items-center sm:gap-3">
+                          <div className="flex min-w-0 items-center gap-2 sm:contents">
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
                               {matchIndex + 1}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-bold uppercase text-muted-foreground">{parsed.league || "Football"}</p>
-                              <p className="mt-1 whitespace-normal break-words text-base font-extrabold leading-snug text-foreground">{parsed.homeTeam} <span className="px-1 text-sm font-medium text-muted-foreground">vs</span> {parsed.awayTeam}</p>
+                              <div className="mt-2 flex min-w-0 items-center gap-2">
+                                <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
+                                <p className="min-w-0 whitespace-normal break-words text-base font-extrabold leading-snug text-foreground sm:text-lg">
+                                  {parsed.homeTeam} <span className="px-1 text-xs font-bold uppercase text-muted-foreground">vs</span> {parsed.awayTeam}
+                                </p>
+                                <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
+                              </div>
                             </div>
                           </div>
                           {isLocked ? (
@@ -172,8 +181,8 @@ export function TicketGroup({
                         {isPremium ? "Unlock Premium Ticket" : "Unlock Daily Ticket"}
                       </Button>
                     ) : (
-                      <Button className="h-11 w-full bg-primary font-bold text-primary-foreground hover:bg-primary/90" onClick={() => navigate(`/tickets/${ticket.id}`)}>
-                        View Full Ticket
+                      <Button className="h-12 w-full gap-2 bg-primary text-sm font-extrabold text-primary-foreground hover:bg-primary/90 sm:text-base" onClick={() => navigate(`/tickets/${ticket.id}`)}>
+                        View Full Ticket / Otvori Tiket <ArrowRight className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
