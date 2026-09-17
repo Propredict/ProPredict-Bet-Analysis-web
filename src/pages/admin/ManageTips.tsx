@@ -58,6 +58,7 @@ import type {
   TipResult,
 } from "@/types/admin";
 import { normalizeTipCategory } from "@/types/admin";
+import { useLiveScores } from "@/hooks/useLiveScores";
 
 /* =====================
    Defaults
@@ -84,6 +85,8 @@ const defaultTip: TipInsert & { result: TipResult; tip_date?: string } = {
   tip_date: getTodayBelgradeDate(),
   category: "standard",
   final_result: "",
+  match_date: getTodayBelgradeDate(),
+  match_time: "",
 };
 
 /* =====================
@@ -132,6 +135,7 @@ const PREDICTIONS = [
 
 export default function ManageTips() {
   const { tips, isLoading, createTip, updateTip, deleteTip } = useTips(true);
+  const { matches: todayMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTip, setEditingTip] = useState<Tip | null>(null);
@@ -166,6 +170,8 @@ export default function ManageTips() {
       tip_date: tip.tip_date || getTodayBelgradeDate(),
       category: normalizeTipCategory((tip as any).category),
       final_result: (tip as any).final_result ?? "",
+      match_date: tip.match_date ?? tip.tip_date ?? getTodayBelgradeDate(),
+      match_time: tip.match_time ?? "",
     });
     setCustomPrediction("");
     setIsDialogOpen(true);
@@ -236,6 +242,17 @@ export default function ManageTips() {
     if (!tipDate) return false;
     const today = getTodayBelgradeDate();
     return tipDate > today;
+  };
+
+  const normalizeTeam = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
+  const teamLogo = (teamName: string) => {
+    const normalized = normalizeTeam(teamName);
+    if (!normalized) return null;
+    const match = todayMatches.find((item) =>
+      normalizeTeam(item.homeTeam) === normalized || normalizeTeam(item.awayTeam) === normalized
+    );
+    if (!match) return null;
+    return normalizeTeam(match.homeTeam) === normalized ? match.homeLogo : match.awayLogo;
   };
 
   /* =====================
@@ -349,21 +366,28 @@ export default function ManageTips() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Home Team</Label>
-                <Input
-                  value={formData.home_team}
-                  onChange={(e) =>
-                    setFormData({ ...formData, home_team: e.target.value })
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <Input value={formData.home_team} onChange={(e) => setFormData({ ...formData, home_team: e.target.value })} />
+                  {teamLogo(formData.home_team) ? <img src={teamLogo(formData.home_team) ?? ""} alt="Home team symbol" className="h-10 w-10 shrink-0 object-contain" /> : null}
+                </div>
               </div>
               <div>
                 <Label>Away Team</Label>
-                <Input
-                  value={formData.away_team}
-                  onChange={(e) =>
-                    setFormData({ ...formData, away_team: e.target.value })
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <Input value={formData.away_team} onChange={(e) => setFormData({ ...formData, away_team: e.target.value })} />
+                  {teamLogo(formData.away_team) ? <img src={teamLogo(formData.away_team) ?? ""} alt="Away team symbol" className="h-10 w-10 shrink-0 object-contain" /> : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Match Date</Label>
+                <Input type="date" value={formData.match_date ?? ""} onChange={(e) => setFormData({ ...formData, match_date: e.target.value })} />
+              </div>
+              <div>
+                <Label>Match Time</Label>
+                <Input type="time" value={formData.match_time ?? ""} onChange={(e) => setFormData({ ...formData, match_time: e.target.value })} />
               </div>
             </div>
 

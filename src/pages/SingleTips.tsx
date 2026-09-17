@@ -10,6 +10,7 @@ import { PricingModal } from "@/components/PricingModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTips } from "@/hooks/useTips";
+import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { formatKickoff, formatKickoffParts } from "@/lib/formatKickoff";
@@ -33,6 +34,7 @@ export default function SingleTips() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { tips, isLoading, refetch } = useTips(false);
+  const { matches: liveMatches } = useLiveScores({ dateMode: "today", statusFilter: "all" });
   const { canAccess, getUnlockMethod, plan, isAdmin, refetch: refetchPlan } = useUserPlan();
   const { unlockingId, handleUnlock } = useUnlockHandler();
   const requestedView = searchParams.get("view");
@@ -95,6 +97,16 @@ export default function SingleTips() {
   }).length;
   const showSubscribe = activeView !== "daily" && !isAdmin && plan !== "premium" && !(activeView === "risk" && plan === "basic");
 
+  const logoMap = useMemo(() => {
+    const normalize = (value: string) => value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
+    const map = new Map<string, string>();
+    liveMatches.forEach((match) => {
+      if (match.homeLogo) map.set(normalize(match.homeTeam), match.homeLogo);
+      if (match.awayLogo) map.set(normalize(match.awayTeam), match.awayLogo);
+    });
+    return map;
+  }, [liveMatches]);
+
   const renderTip = (tip: Tip, index: number) => {
     const tier = activeView === "daily" && tip.tier === "free" ? "free" : accessTier;
     const unlockMethod = getUnlockMethod(tier, "tip", tip.id);
@@ -121,6 +133,8 @@ export default function SingleTips() {
               extraNote: (activeView === "risk" || activeView === "diamond") && tip.ai_prediction
                 ? { label: "AI Top Scores", value: String(tip.ai_prediction) }
                 : null,
+              homeLogo: logoMap.get(tip.home_team.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")) ?? null,
+              awayLogo: logoMap.get(tip.away_team.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")) ?? null,
             }}
             isLocked={isLocked}
             unlockMethod={unlockMethod}
