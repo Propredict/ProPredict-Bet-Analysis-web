@@ -381,7 +381,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
                       isSelected ? "h-9 w-9 text-base md:h-11 md:w-11 md:text-lg" : "h-6 w-6 text-xs md:h-7 md:w-7"
                     )}>✕</span>
                   ) : (
-                    <TicketTeamCrest name={item.label} logo={item.logo} size={isSelected ? "lg" : "md"} />
+                    <TicketTeamCrest name={item.label} logo={item.logo} size={isSelected ? "md" : "sm"} />
                   )}
                 </div>
 
