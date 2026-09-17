@@ -347,15 +347,15 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
 
         <div className="flex gap-1.5 md:gap-2 items-stretch">
           {[
-            { label: prediction.home_team, short: "1", pct: prediction.home_win ?? 0, outcome: "home" as const, logo: homeLogo },
-            { label: "Draw", short: "X", pct: prediction.draw ?? 0, outcome: "draw" as const, logo: null },
-            { label: prediction.away_team, short: "2", pct: prediction.away_win ?? 0, outcome: "away" as const, logo: awayLogo },
+            { label: prediction.home_team, short: "1", pct: allProbs.home_win, outcome: "home" as const, logo: homeLogo },
+            { label: "Draw", short: "X", pct: allProbs.draw, outcome: "draw" as const, logo: null },
+            { label: prediction.away_team, short: "2", pct: allProbs.away_win, outcome: "away" as const, logo: awayLogo },
           ].map((item) => {
-            // Highlight the outcome with the highest probability.
+            // Highlight the outcome our model rates highest (normalised 1X2 probabilities).
             const predictedOutcome = (() => {
-              const h = prediction.home_win ?? 0;
-              const d = prediction.draw ?? 0;
-              const a = prediction.away_win ?? 0;
+              const h = allProbs.home_win;
+              const d = allProbs.draw;
+              const a = allProbs.away_win;
               if (h >= d && h >= a) return "home";
               if (a >= d && a >= h) return "away";
               return "draw";
