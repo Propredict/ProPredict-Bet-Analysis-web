@@ -399,8 +399,8 @@ export default function TicketDetails() {
             <div><p className="text-[10px] font-bold uppercase text-muted-foreground">Total odds</p><p className="text-lg font-extrabold text-primary">{formatCombinedOdds(ticket.total_odds)}</p></div>
           </div>
 
-          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] gap-3 border-b border-border bg-secondary/30 px-5 py-2 text-[10px] font-bold uppercase text-muted-foreground sm:grid">
-            <span>#</span><span>Match</span><span>Pick</span><span className="text-center">Odds</span>
+          <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_minmax(11rem,auto)_6rem] gap-3 border-b border-border bg-secondary/30 px-5 py-2 text-xs font-bold uppercase text-muted-foreground sm:grid">
+            <span>#</span><span>Match</span><span className="text-center">Pick</span><span className="text-center">Odds</span>
           </div>
 
           {/* Matches */}
@@ -412,7 +412,7 @@ export default function TicketDetails() {
                   const parsed = parseMatchName(match.match_name);
                   return (
                     <div key={idx} className="py-4">
-                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] sm:items-center">
+                      <div className="flex min-w-0 flex-col gap-3 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(11rem,auto)_6rem] sm:items-center">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                         {/* Match name — always visible, even when ticket is locked */}
                         <div className="min-w-0">
@@ -421,18 +421,18 @@ export default function TicketDetails() {
                           )}
                           <div className="mt-2 flex min-w-0 items-center gap-2">
                             <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} />
-                            <span className="min-w-0 break-words text-base font-extrabold leading-snug sm:text-lg">{parsed.homeTeam} <span className="px-1 text-xs text-muted-foreground">vs</span> {parsed.awayTeam}</span>
+                            <span className="min-w-0 break-words text-lg font-extrabold leading-snug sm:text-xl">{parsed.homeTeam} <span className="px-1 text-sm text-muted-foreground">vs</span> {parsed.awayTeam}</span>
                             <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} />
                           </div>
                         </div>
                         {/* Prediction & Confidence - BLURRED */}
-                        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-3 opacity-70">
+                        <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-muted px-3 py-3 opacity-70">
                           <Lock className="h-4 w-4" />
-                          <Badge variant="secondary" className="border-0 bg-transparent text-sm font-bold text-muted-foreground blur-sm">
+                          <Badge variant="secondary" className="border-0 bg-transparent text-base font-bold text-muted-foreground blur-sm">
                             {match.prediction}
                           </Badge>
                         </div>
-                        <span className="hidden text-center font-extrabold text-primary blur-sm sm:block">{match.odds.toFixed(2)}</span>
+                        <span className="hidden text-center text-lg font-extrabold text-primary blur-sm sm:block">{match.odds.toFixed(2)}</span>
                       </div>
                     </div>
                   );
@@ -444,7 +444,7 @@ export default function TicketDetails() {
                 {(ticket.matches || []).map((match, idx) => {
                   const parsed = parseMatchName(match.match_name);
                   return (
-                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_9rem_5rem] sm:items-center">
+                    <div key={idx} className="flex min-w-0 flex-col gap-3 py-4 sm:grid sm:grid-cols-[2.5rem_minmax(0,1fr)_minmax(11rem,auto)_6rem] sm:items-center">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">{idx + 1}</div>
                       <div className="min-w-0">
                         {parsed.league && (
@@ -452,18 +452,18 @@ export default function TicketDetails() {
                         )}
                         <div className="mt-2 flex min-w-0 items-center gap-2">
                           <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} />
-                          <span className="min-w-0 break-words text-base font-extrabold leading-snug sm:text-lg">{parsed.homeTeam} <span className="px-1 text-xs text-muted-foreground">vs</span> {parsed.awayTeam}</span>
+                          <span className="min-w-0 break-words text-lg font-extrabold leading-snug sm:text-xl">{parsed.homeTeam} <span className="px-1 text-sm text-muted-foreground">vs</span> {parsed.awayTeam}</span>
                           <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} />
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <Badge variant="secondary" className="w-full border border-success/40 bg-success/10 px-3 py-2 text-sm font-extrabold text-success sm:w-auto">
+                      <div className="flex shrink-0 items-center justify-center gap-3">
+                        <Badge variant="secondary" className="w-full border border-success/40 bg-success/10 px-3 py-2.5 text-center text-lg font-extrabold text-success sm:w-auto sm:min-w-40">
                           {match.prediction}
                         </Badge>
                       </div>
-                      <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2 sm:block sm:bg-transparent sm:px-0 sm:py-0 sm:text-center">
+                      <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2.5 sm:block sm:bg-transparent sm:px-0 sm:py-0 sm:text-center">
                         <span className="text-xs font-bold uppercase text-muted-foreground sm:hidden">Odds</span>
-                        <span className="text-base font-extrabold text-primary">{match.odds.toFixed(2)}</span>
+                        <span className="text-lg font-extrabold text-primary sm:text-xl">{match.odds.toFixed(2)}</span>
                       </div>
                     </div>
                   );
