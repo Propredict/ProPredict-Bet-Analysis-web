@@ -9,7 +9,8 @@ import {
   getPickConfidence,
   type MarketType,
 } from "../utils/marketDerivation";
-import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck } from "lucide-react";
+import { Trophy, TrendingUp, Target, Zap, CheckCircle, Flame, TrendingDown, Activity, DollarSign, Shield, Sparkles, Lock, ShieldCheck, BarChart3 } from "lucide-react";
+import { TicketTeamCrest } from "@/components/tickets/TicketTeamCrest";
 import { getMarketColors, classifyMarket } from "../utils/marketColors";
 
 /**
@@ -144,9 +145,12 @@ interface Props {
   displayTier?: "free" | "pro" | "premium";
   /** When true, the big "Best Pick" box is skipped — the card header strip already shows it. */
   hidePickBox?: boolean;
+  /** Team crests resolved by the card header — shown inside the 1X2 cells. */
+  homeLogo?: string | null;
+  awayLogo?: string | null;
 }
 
-export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false }: Props) {
+export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hidePickBox = false, homeLogo = null, awayLogo = null }: Props) {
   const pick = getStrongestConfidencePick(prediction);
 
 
@@ -328,16 +332,26 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
         </div>
       )}
 
-      {/* ===== 1X2 Probabilities — selected outcome zoomed, others quieter ===== */}
-      <div className="flex gap-1.5 md:gap-2 pt-1 items-stretch">
+      {/* ===== Match Result (1X2) — reference design: crests, big %, fair odds, bars ===== */}
+      <div className="rounded-xl border border-border/50 bg-secondary/30 p-2.5 md:p-3.5 space-y-2.5 md:space-y-3">
+        <div className="flex items-center justify-between gap-2 px-0.5">
+          <div className="flex items-center gap-1.5 text-primary">
+            <BarChart3 className="h-4 w-4" />
+            <span className="text-sm md:text-base font-extrabold text-foreground">Match Result (1X2)</span>
+          </div>
+          <Badge className="bg-primary/10 text-primary border-primary/30 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full gap-1 font-bold">
+            <Sparkles className="h-3 w-3" />
+            AI Analysis
+          </Badge>
+        </div>
+
+        <div className="flex gap-1.5 md:gap-2 items-stretch">
           {[
-            { label: prediction.home_team, short: "1", pct: prediction.home_win, outcome: "home" as const },
-            { label: "Draw", short: "X", pct: prediction.draw, outcome: "draw" as const },
-            { label: prediction.away_team, short: "2", pct: prediction.away_win, outcome: "away" as const },
+            { label: prediction.home_team, short: "1", pct: prediction.home_win ?? 0, outcome: "home" as const, logo: homeLogo },
+            { label: "Draw", short: "X", pct: prediction.draw ?? 0, outcome: "draw" as const, logo: null },
+            { label: prediction.away_team, short: "2", pct: prediction.away_win ?? 0, outcome: "away" as const, logo: awayLogo },
           ].map((item) => {
-            // Highlight the outcome with the highest probability. The previous
-            // string matching on `prediction.prediction` mis-flagged nearly every
-            // card as "away" even when the home side was the clear favourite.
+            // Highlight the outcome with the highest probability.
             const predictedOutcome = (() => {
               const h = prediction.home_win ?? 0;
               const d = prediction.draw ?? 0;
@@ -347,37 +361,72 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
               return "draw";
             })();
             const isSelected = predictedOutcome === item.outcome;
+            const fairOdds = item.pct > 0 ? (100 / item.pct).toFixed(2) : "—";
 
             return (
               <div
                 key={item.outcome}
                 className={cn(
-                  "text-center rounded-xl transition-all",
+                  "min-w-0 text-center rounded-xl transition-all",
                   isSelected
-                    ? "flex-[1.4] border-2 border-success bg-success/10 py-3 md:py-4 shadow-sm shadow-success/20"
-                    : "flex-1 border border-border/40 bg-secondary/50 py-1.5 md:py-2 opacity-75"
+                    ? "flex-[1.35] border-2 border-success bg-success/10 px-2 py-3 md:py-4 shadow-md shadow-success/15"
+                    : "flex-1 border border-border/40 bg-card px-1 py-2 md:py-2.5"
                 )}
               >
+                {/* Crest / draw symbol */}
+                <div className={cn("mx-auto flex items-center justify-center", isSelected ? "h-10 w-10 md:h-12 md:w-12" : "h-7 w-7 md:h-8 md:w-8")}>
+                  {item.outcome === "draw" ? (
+                    <span className={cn(
+                      "flex items-center justify-center rounded-full bg-secondary text-muted-foreground font-black",
+                      isSelected ? "h-9 w-9 text-base md:h-11 md:w-11 md:text-lg" : "h-6 w-6 text-xs md:h-7 md:w-7"
+                    )}>✕</span>
+                  ) : (
+                    <TicketTeamCrest name={item.label} logo={item.logo} size={isSelected ? "md" : "sm"} />
+                  )}
+                </div>
+
+                {/* Label */}
                 <div
                   className={cn(
-                    "font-bold uppercase tracking-wide text-muted-foreground truncate px-1",
-                    isSelected ? "text-[10px] md:text-xs" : "text-[8px] md:text-[9px]",
+                    "mt-1 font-bold text-muted-foreground truncate px-0.5",
+                    isSelected ? "text-[11px] md:text-sm" : "text-[9px] md:text-[11px]",
                   )}
-                  title={item.label}
+                  title={`${item.short} - ${item.label}`}
                 >
-                  {item.short} · <span className="normal-case">{item.label.length > (isSelected ? 14 : 10) ? item.label.slice(0, isSelected ? 14 : 10) + "…" : item.label}</span>
+                  {item.short} - {item.label}
                 </div>
-                <div className={cn(
-                  "tabular-nums leading-none",
-                  isSelected ? "mt-1 text-2xl md:text-3xl font-black" : "mt-0.5 text-sm md:text-base font-bold",
-                  !hasAccess && "blur-[5px] select-none",
-                  isSelected ? "text-success" : "text-muted-foreground"
-                )}>
-                  {item.pct}%
+
+                {/* Probability + fair odds */}
+                <div className={cn("flex items-baseline justify-center gap-1.5", isSelected ? "mt-1" : "mt-0.5")}>
+                  <span className={cn(
+                    "tabular-nums leading-none",
+                    isSelected ? "text-2xl md:text-4xl font-black" : "text-base md:text-xl font-extrabold",
+                    !hasAccess && "blur-[5px] select-none",
+                    isSelected ? "text-success" : "text-foreground/80"
+                  )}>
+                    {item.pct}%
+                  </span>
+                  <span className={cn(
+                    "rounded-md bg-secondary px-1.5 py-0.5 tabular-nums font-bold text-muted-foreground",
+                    isSelected ? "text-[10px] md:text-xs" : "text-[8px] md:text-[10px]",
+                    !hasAccess && "blur-[5px] select-none"
+                  )}>
+                    {fairOdds}
+                  </span>
+                </div>
+
+                {/* Probability bar */}
+                <div className={cn("mt-1.5 h-1.5 rounded-full bg-secondary overflow-hidden mx-1", !isSelected && "h-1")}>
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-700", isSelected ? "bg-success" : "bg-primary/60")}
+                    style={{ width: `${Math.max(6, item.pct)}%` }}
+                  />
                 </div>
               </div>
             );
           })}
+        </div>
+        <p className="text-[9px] md:text-[10px] text-muted-foreground px-0.5">Odds shown are fair odds from our model (100 ÷ probability).</p>
       </div>
     </div>
   );
