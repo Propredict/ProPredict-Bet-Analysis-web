@@ -60,8 +60,6 @@ const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const LiveChat = lazy(() => import("./pages/LiveChat"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 
-const FootballPredictionsToday = lazy(() => import("./pages/FootballPredictionsToday"));
-
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const ManageTips = lazy(() => import("./pages/admin/ManageTips"));
@@ -205,8 +203,8 @@ const App = () => {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/unsubscribe" element={<Unsubscribe />} />
 
-                  {/* Standalone landing page – no AppLayout */}
-                  <Route path="/football-predictions-today" element={<FootballPredictionsToday />} />
+                  {/* Legacy landing URL now enters the app directly */}
+                  <Route path="/football-predictions-today" element={<Navigate to="/" replace />} />
 
                   {/* Layout pages */}
                   <Route element={<AppLayout />}>
