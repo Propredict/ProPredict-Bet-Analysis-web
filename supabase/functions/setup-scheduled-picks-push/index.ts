@@ -39,8 +39,7 @@ serve(async (req) => {
   const setupKey = req.headers.get("x-setup-key") ?? "";
   const allowSetupKey = setupKey.length > 0 &&
     setupKey === (Deno.env.get("INTERNAL_PUSH_SECRET") ?? "\u0000");
-  const allowOnce = (Deno.env.get("ALLOW_SETUP_RUN") ?? "") === "true";
-  if (!isServiceRole && !allowSetupKey && !allowOnce) {
+  if (!isServiceRole && !allowSetupKey) {
     return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
   }
 

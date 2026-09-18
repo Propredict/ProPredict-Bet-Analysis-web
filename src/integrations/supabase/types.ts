@@ -1034,6 +1034,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          push_sent_at: string | null
           result: Database["public"]["Enums"]["ticket_result"]
           status: Database["public"]["Enums"]["content_status"]
           ticket_date: string | null
@@ -1049,6 +1050,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          push_sent_at?: string | null
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
           ticket_date?: string | null
@@ -1064,6 +1066,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          push_sent_at?: string | null
           result?: Database["public"]["Enums"]["ticket_result"]
           status?: Database["public"]["Enums"]["content_status"]
           ticket_date?: string | null
@@ -1091,6 +1094,7 @@ export type Database = {
           match_time: string | null
           odds: number
           prediction: string
+          push_sent_at: string | null
           result: Database["public"]["Enums"]["ticket_result"] | null
           status: Database["public"]["Enums"]["content_status"]
           tier: Database["public"]["Enums"]["content_tier"]
@@ -1113,6 +1117,7 @@ export type Database = {
           match_time?: string | null
           odds?: number
           prediction: string
+          push_sent_at?: string | null
           result?: Database["public"]["Enums"]["ticket_result"] | null
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
@@ -1135,6 +1140,7 @@ export type Database = {
           match_time?: string | null
           odds?: number
           prediction?: string
+          push_sent_at?: string | null
           result?: Database["public"]["Enums"]["ticket_result"] | null
           status?: Database["public"]["Enums"]["content_status"]
           tier?: Database["public"]["Enums"]["content_tier"]
