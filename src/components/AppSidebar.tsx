@@ -78,17 +78,19 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
+  const currentUrl = `${location.pathname}${location.search}`;
   const { isAdmin } = useAdminAccess();
   const supportUnread = useAdminSupportUnread();
 
-  // Auto-close mobile menu on navigation
+  // Auto-close mobile menu on navigation (also when only the ?view= changes)
   useEffect(() => {
     if (isMobile) {
       setOpenMobile(false);
     }
-  }, [currentPath, isMobile, setOpenMobile]);
+  }, [currentUrl, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => currentPath === path;
+  const isUrlActive = (url: string) => currentUrl === url;
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-xl">
