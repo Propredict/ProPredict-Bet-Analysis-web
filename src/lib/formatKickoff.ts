@@ -30,15 +30,9 @@ export function formatKickoffParts(
   }
   const t = matchTime?.trim();
   if (t) {
-    // match_time is stored as UTC ("HH:mm[:ss]"). Convert to user's local time.
-    const hhmm = t.length >= 5 ? t.slice(0, 5) : t;
-    if (matchDate) {
-      const d = new Date(`${matchDate}T${hhmm}:00Z`);
-      if (!isNaN(d.getTime())) {
-        time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-      }
-    }
-    if (!time) time = hhmm;
+    // match_time is entered by admin as the real local kickoff time.
+    // Show it EXACTLY as entered — no timezone conversion.
+    time = t.length >= 5 ? t.slice(0, 5) : t;
   }
   // NOTE: We intentionally do NOT fall back to created_at_ts (`fallbackTs`).
   // That timestamp is when the tip row was created, not the actual match
