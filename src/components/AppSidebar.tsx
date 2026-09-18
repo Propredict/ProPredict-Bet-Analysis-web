@@ -24,7 +24,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAdminSupportUnread } from "@/hooks/useAdminSupportUnread";
 import logoImage from "@/assets/logo.png";
@@ -78,17 +78,19 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
+  const currentUrl = `${location.pathname}${location.search}`;
   const { isAdmin } = useAdminAccess();
   const supportUnread = useAdminSupportUnread();
 
-  // Auto-close mobile menu on navigation
+  // Auto-close mobile menu on navigation (also when only the ?view= changes)
   useEffect(() => {
     if (isMobile) {
       setOpenMobile(false);
     }
-  }, [currentPath, isMobile, setOpenMobile]);
+  }, [currentUrl, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => currentPath === path;
+  const isUrlActive = (url: string) => currentUrl === url;
 
   return (
     <Sidebar className="border-r border-sidebar-border shadow-xl">
@@ -230,14 +232,18 @@ export function AppSidebar() {
               {premiumItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
+                    <Link
                       to={item.url}
-                      className="flex items-center gap-2.5 px-3 py-1.5 pl-4 rounded-md text-[13px] font-medium text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/20 text-primary"
+                      onClick={() => isMobile && setOpenMobile(false)}
+                      className={`flex items-center gap-2.5 px-3 py-1.5 pl-4 rounded-md text-[13px] font-medium transition-colors hover:bg-sidebar-accent ${
+                        isUrlActive(item.url)
+                          ? "bg-primary/20 text-primary"
+                          : "text-sidebar-foreground/85"
+                      }`}
                     >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
