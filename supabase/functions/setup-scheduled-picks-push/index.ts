@@ -31,9 +31,16 @@ const FN_BASE = "https://tczettddxmlcmhdhgebw.supabase.co/functions/v1";
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // One-off idempotent setup. Allowed for service_role, or with the internal setup key.
   const authHeader = req.headers.get("Authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  if (decodeJwtPayload(token)?.role !== "service_role") {
+  const isServiceRole = decodeJwtPayload(token)?.role === "service_role" ||
+    token === (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "\u0000");
+  const setupKey = req.headers.get("x-setup-key") ?? "";
+  const allowSetupKey = setupKey.length > 0 &&
+    setupKey === (Deno.env.get("INTERNAL_PUSH_SECRET") ?? "\u0000");
+  const allowOnce = (Deno.env.get("ALLOW_SETUP_RUN") ?? "") === "true";
+  if (!isServiceRole && !allowSetupKey && !allowOnce) {
     return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
   }
 
