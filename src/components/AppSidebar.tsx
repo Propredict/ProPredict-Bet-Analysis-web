@@ -24,7 +24,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAdminSupportUnread } from "@/hooks/useAdminSupportUnread";
 import logoImage from "@/assets/logo.png";
