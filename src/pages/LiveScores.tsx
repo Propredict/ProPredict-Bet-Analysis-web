@@ -486,9 +486,9 @@ export default function LiveScores() {
               <div className="absolute -inset-[2px] bg-gradient-to-r from-white/60 via-primary/40 to-white/60 rounded-xl blur-[2px]" />
               <div className="absolute -inset-[1px] bg-gradient-to-r from-white/40 via-primary/30 to-white/40 rounded-xl" />
               <div className="relative flex items-center bg-card/90 rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                 <Input 
-                  className="pl-9 h-9 sm:h-10 text-sm bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl placeholder:text-white/50 text-white" 
+                  className="pl-9 h-9 sm:h-10 text-sm font-semibold bg-transparent border-0 text-foreground caret-primary placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl" 
                   placeholder="Search teams…" 
                   value={search} 
                   onChange={e => setSearch(e.target.value)}
