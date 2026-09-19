@@ -35,11 +35,33 @@ function belgradeNow() {
   };
 }
 
+/** Offset (ms) of Europe/Belgrade vs UTC at the given instant. */
+function belgradeOffsetMs(at: Date): number {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Belgrade",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(at);
+  const g = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? "0");
+  const asUtc = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"), g("second"));
+  return asUtc - at.getTime();
+}
+
+/**
+ * Kickoff entered by admin is LOCAL (Europe/Belgrade) wall-clock time,
+ * not UTC. Convert it to a real instant.
+ */
 function tipKickoff(row: any): Date | null {
   if (!row.match_date) return null;
   const t = (row.match_time ?? "00:00").toString().slice(0, 5);
-  const d = new Date(`${row.match_date}T${t}:00Z`);
-  return isNaN(d.getTime()) ? null : d;
+  const naive = new Date(`${row.match_date}T${t}:00Z`);
+  if (isNaN(naive.getTime())) return null;
+  // First guess with the offset at the naive instant, then refine once (DST edges).
+  let off = belgradeOffsetMs(naive);
+  let real = new Date(naive.getTime() - off);
+  off = belgradeOffsetMs(real);
+  real = new Date(naive.getTime() - off);
+  return real;
 }
 
 serve(async (req) => {
