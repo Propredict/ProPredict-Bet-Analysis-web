@@ -1,1 +1,2 @@
 - [x] Objediniti Daily Predictions, Premium Predictions, Risk of the Day i Diamond Pick u Single Tips stranicu bez promene pravila
+- [x] Sabiti Daily i Premium tiket u pregledan mobilni ticket-listić bez promene unlock pravila

@@ -383,7 +383,7 @@ function TicketCard({
       {renderHeader()}
 
       {/* Match list - revealed */}
-      <div className="px-3.5 sm:px-4 pb-2 pt-2 space-y-2">
+      <div className="space-y-1.5 px-2 pb-2 pt-2 sm:space-y-2 sm:px-4">
         <div className="flex items-center justify-center gap-2 pb-0.5">
           <Star className="h-3.5 w-3.5 text-success fill-success" />
           <span className="text-[11px] uppercase tracking-[0.18em] font-bold text-success">Our Picks</span>
@@ -393,27 +393,28 @@ function TicketCard({
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className={cn("rounded-lg border p-2.5", light ? "border-border bg-secondary/45" : "border-border/40 bg-muted/10")}>
+              <div key={idx} className={cn("grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(4.75rem,0.7fr)_3rem] items-center gap-2 rounded-lg border p-2 sm:block sm:p-2.5", light ? "border-border bg-secondary/45" : "border-border/40 bg-muted/10")}>
                 {parsed.league && (
-                  <p className={cn("text-[9px] truncate text-center mb-1.5", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
+                  <p className={cn("col-span-3 truncate text-left text-[8px] sm:mb-1.5 sm:text-center sm:text-[9px]", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
-                <div className="flex items-center justify-center gap-2">
-                  <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5 break-words rounded-md border border-primary/35 bg-card px-2 py-1 text-right text-[15px] font-semibold leading-tight text-foreground sm:text-base">
-                    <span className="min-w-0 break-words">{parsed.homeTeam}</span><TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
+                <div className="min-w-0 space-y-1 sm:flex sm:items-center sm:justify-center sm:gap-2 sm:space-y-0">
+                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:flex-1 sm:justify-end sm:rounded-md sm:border sm:border-primary/35 sm:bg-card sm:px-2 sm:py-1 sm:text-right sm:text-base">
+                    <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.homeTeam}</span>
                   </span>
-                  <span className={cn("shrink-0 text-[10px]", "text-muted-foreground")}>vs</span>
-                  <span className="flex min-w-0 flex-1 items-center gap-1.5 break-words rounded-md border border-primary/35 bg-card px-2 py-1 text-left text-[15px] font-semibold leading-tight text-foreground sm:text-base">
-                    <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 break-words">{parsed.awayTeam}</span>
+                  <span className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline">vs</span>
+                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:flex-1 sm:rounded-md sm:border sm:border-primary/35 sm:bg-card sm:px-2 sm:py-1 sm:text-left sm:text-base">
+                    <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.awayTeam}</span>
                   </span>
                 </div>
                 <div className={cn(
-                  "mt-2 rounded-lg border py-2 px-3 text-center",
+                  "rounded-md border px-1.5 py-2 text-center sm:mt-2 sm:rounded-lg sm:px-3",
                   "border-success/45 bg-success/10"
                 )}>
-                  <span className="text-[13px] font-extrabold tracking-wide text-success">
+                  <span className="text-xs font-extrabold text-success sm:text-[13px]">
                     {match.prediction}
                   </span>
                 </div>
+                <div className="text-center sm:hidden"><span className="block text-[8px] font-bold uppercase text-muted-foreground">Odds</span><span className="text-sm font-extrabold text-primary">{match.odds.toFixed(2)}</span></div>
               </div>
             );
           })
