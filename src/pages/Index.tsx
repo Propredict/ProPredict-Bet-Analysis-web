@@ -2,6 +2,7 @@ import { useEffect, useRef, lazy, Suspense, forwardRef, useState } from "react";
 import googlePlayBanner from "@/assets/google-play-banner.jfif";
 import heroStadiumPlayer from "@/assets/hero-stadium-player.jpg";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -37,6 +38,7 @@ const Index = () => {
   const isAndroid = getIsAndroidApp();
   const firedRef = useRef(false);
   const { user } = useAuth();
+  const { isAdmin } = useAdminAccess();
   const [firstName, setFirstName] = useState<string | null>(null);
 
   // Fetch first name for the hero welcome message
@@ -210,9 +212,11 @@ const Index = () => {
           <DashboardAIPredictions />
         </Suspense>
 
-        <Suspense fallback={<LazyFallback />}>
-          <DashboardMatchPreviews />
-        </Suspense>
+        {isAdmin && (
+          <Suspense fallback={<LazyFallback />}>
+            <DashboardMatchPreviews />
+          </Suspense>
+        )}
 
         {/* Compliance Disclaimer */}
         <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
