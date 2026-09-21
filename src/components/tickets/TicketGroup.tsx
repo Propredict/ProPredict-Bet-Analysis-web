@@ -123,38 +123,41 @@ export function TicketGroup({
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5.25rem,0.72fr)_3.25rem] items-center gap-2 rounded-lg border border-primary/20 bg-secondary/70 p-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:gap-4 sm:p-4">
-                          <div className="flex min-w-0 items-center gap-2 sm:contents">
-                            <div className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:flex sm:h-9 sm:w-9">
-                              {matchIndex + 1}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-[9px] font-bold uppercase text-muted-foreground sm:text-xs">{parsed.league || "Football"}</p>
-                              <div className="mt-1.5 space-y-1.5">
-                                <div className="flex min-w-0 items-center gap-1.5">
-                                  <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
-                                  <span className="min-w-0 truncate text-[13px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.homeTeam}</span>
-                                </div>
-                                <div className="flex min-w-0 items-center gap-1.5">
-                                  <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
-                                  <span className="min-w-0 truncate text-[13px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.awayTeam}</span>
-                                </div>
+                        <div key={match.id} className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_3.5rem] items-center gap-2 rounded-lg border border-primary/20 bg-card p-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:gap-4 sm:p-4">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
+                            {matchIndex + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-[9px] font-bold uppercase text-primary sm:text-xs">{parsed.league || "Football"}</p>
+                            <div className="mt-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1">
+                              <div className="flex min-w-0 items-center gap-1">
+                                <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
+                                <span className="min-w-0 truncate text-[12px] font-extrabold leading-tight text-foreground sm:text-lg">{parsed.homeTeam}</span>
+                              </div>
+                              <span className="text-[9px] font-bold uppercase text-muted-foreground">vs</span>
+                              <div className="flex min-w-0 items-center gap-1">
+                                <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
+                                <span className="min-w-0 truncate text-[12px] font-extrabold leading-tight text-foreground sm:text-lg">{parsed.awayTeam}</span>
                               </div>
                             </div>
+                            {isLocked ? (
+                              <div className="mt-2 flex min-h-8 w-full items-center justify-center gap-1 rounded-md bg-muted px-2 py-1.5 text-[10px] font-bold text-muted-foreground">
+                                <Lock className="h-3.5 w-3.5" /> Locked
+                              </div>
+                            ) : (
+                              <div className="mt-2 w-full rounded-md bg-muted px-2 py-1.5 text-center">
+                                <p className="whitespace-normal break-words text-[13px] font-extrabold leading-tight text-success">PICK: {match.prediction}</p>
+                              </div>
+                            )}
                           </div>
-                          {isLocked ? (
-                            <div className="flex min-h-10 w-full items-center justify-center gap-1 rounded-md border border-border bg-muted px-1.5 py-2 text-[10px] font-bold text-muted-foreground sm:rounded-lg sm:px-3 sm:text-sm">
-                              <Lock className="h-3.5 w-3.5" /> Locked
+                          <div className="text-center">
+                            <span className="block text-[9px] font-bold uppercase text-muted-foreground">Odds</span>
+                            <span className={isLocked ? "text-base font-extrabold text-primary blur-sm" : "text-base font-extrabold text-primary sm:text-xl"}>{match.odds.toFixed(2)}</span>
+                          </div>
+                          <div className="hidden sm:contents">
+                            <div className="hidden">
+                              {matchIndex + 1}
                             </div>
-                          ) : (
-                            <div className="flex min-h-16 w-full flex-col items-center justify-center rounded-lg border border-success/50 bg-card px-1.5 py-2 text-center sm:px-3 sm:py-2.5">
-                              <p className="text-[9px] font-bold uppercase text-success sm:text-xs">Pick</p>
-                              <p className="whitespace-normal break-words text-sm font-extrabold leading-tight text-success sm:text-lg">{match.prediction}</p>
-                            </div>
-                          )}
-                          <div className={isLocked ? "hidden sm:block" : "text-center"}>
-                            {!isLocked && <span className="block text-[9px] font-bold uppercase text-muted-foreground sm:hidden">Odds</span>}
-                            <span className={isLocked ? "blur-sm text-primary" : "text-sm font-extrabold text-primary sm:text-xl"}>{match.odds.toFixed(2)}</span>
                           </div>
                         </div>
                       );
