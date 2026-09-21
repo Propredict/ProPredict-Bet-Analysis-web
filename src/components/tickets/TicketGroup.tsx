@@ -119,23 +119,22 @@ export function TicketGroup({
                     <span>#</span><span>Match</span><span className="text-center">Pick</span><span className="text-center">Odds</span>
                   </div>
 
-                  <div className="divide-y divide-primary/20 bg-card px-2 sm:px-4">
+                  <div className="space-y-2 bg-card p-2 sm:p-4">
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(4.75rem,0.7fr)_3rem] items-center gap-2 py-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:gap-4 sm:py-4">
+                        <div key={match.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5.25rem,0.72fr)_3.25rem] items-center gap-2 rounded-lg border border-primary/20 bg-secondary/70 p-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:gap-4 sm:p-4">
                           <div className="flex min-w-0 items-center gap-2 sm:contents">
                             <div className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:flex sm:h-9 sm:w-9">
                               {matchIndex + 1}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-[9px] font-bold uppercase text-muted-foreground sm:text-xs">{parsed.league || "Football"}</p>
-                              <div className="mt-1 space-y-1 sm:mt-2 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
+                              <div className="mt-1.5 space-y-1.5">
                                 <div className="flex min-w-0 items-center gap-1.5">
                                   <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
                                   <span className="min-w-0 truncate text-[13px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.homeTeam}</span>
                                 </div>
-                                <span className="hidden text-sm font-bold uppercase text-muted-foreground sm:inline">vs</span>
                                 <div className="flex min-w-0 items-center gap-1.5">
                                   <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
                                   <span className="min-w-0 truncate text-[13px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.awayTeam}</span>
@@ -148,9 +147,9 @@ export function TicketGroup({
                               <Lock className="h-3.5 w-3.5" /> Locked
                             </div>
                           ) : (
-                            <div className="w-full rounded-md border border-success/50 bg-success/10 px-1.5 py-2 text-center sm:rounded-lg sm:px-3 sm:py-2.5">
+                            <div className="flex min-h-16 w-full flex-col items-center justify-center rounded-lg border border-success/50 bg-card px-1.5 py-2 text-center sm:px-3 sm:py-2.5">
                               <p className="text-[9px] font-bold uppercase text-success sm:text-xs">Pick</p>
-                              <p className="whitespace-normal break-words text-sm font-extrabold leading-tight text-success sm:text-xl">{match.prediction}</p>
+                              <p className="whitespace-normal break-words text-sm font-extrabold leading-tight text-success sm:text-lg">{match.prediction}</p>
                             </div>
                           )}
                           <div className={isLocked ? "hidden sm:block" : "text-center"}>
