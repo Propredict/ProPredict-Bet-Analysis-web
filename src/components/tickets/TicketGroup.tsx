@@ -123,7 +123,7 @@ export function TicketGroup({
                     {visibleMatches.map((match, matchIndex) => {
                       const parsed = parseMatchName(match.match_name);
                       return (
-                        <div key={match.id} className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_3.5rem] items-center gap-2 rounded-lg border border-primary/20 bg-card p-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_5rem] sm:gap-4 sm:p-4">
+                        <div key={match.id} className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_3.5rem] items-center gap-2 rounded-lg border border-primary/20 bg-card p-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)_5rem] sm:gap-4 sm:p-4">
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground sm:h-9 sm:w-9">
                             {matchIndex + 1}
                           </div>
@@ -153,11 +153,6 @@ export function TicketGroup({
                           <div className="text-center">
                             <span className="block text-[9px] font-bold uppercase text-muted-foreground">Odds</span>
                             <span className={isLocked ? "text-base font-extrabold text-primary blur-sm" : "text-base font-extrabold text-primary sm:text-xl"}>{match.odds.toFixed(2)}</span>
-                          </div>
-                          <div className="hidden sm:contents">
-                            <div className="hidden">
-                              {matchIndex + 1}
-                            </div>
                           </div>
                         </div>
                       );
