@@ -393,24 +393,24 @@ function TicketCard({
           displayedMatches.map((match, idx) => {
             const parsed = parseMatchName(match.name);
             return (
-              <div key={idx} className={cn("grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(4.75rem,0.7fr)_3rem] items-center gap-2 rounded-lg border p-2 sm:block sm:p-2.5", light ? "border-border bg-secondary/45" : "border-border/40 bg-muted/10")}>
+              <div key={idx} className={cn("grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5.25rem,0.72fr)_3.25rem] items-center gap-2 rounded-lg border border-primary/20 bg-secondary/70 p-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(8rem,0.7fr)_4rem]", light && "border-primary/25")}>
                 {parsed.league && (
-                  <p className={cn("col-span-3 truncate text-left text-[8px] sm:mb-1.5 sm:text-center sm:text-[9px]", light ? "text-primary font-semibold uppercase tracking-wide" : "text-muted-foreground")}>{parsed.league}</p>
+                  <p className={cn("col-span-3 truncate text-left text-[8px] font-bold uppercase sm:text-[9px]", light ? "text-primary" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
-                <div className="min-w-0 space-y-1 sm:flex sm:items-center sm:justify-center sm:gap-2 sm:space-y-0">
-                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:flex-1 sm:justify-end sm:rounded-md sm:border sm:border-primary/35 sm:bg-card sm:px-2 sm:py-1 sm:text-right sm:text-base">
+                <div className="min-w-0 space-y-1.5">
+                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:text-base">
                     <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.homeTeam}</span>
                   </span>
-                  <span className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline">vs</span>
-                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:flex-1 sm:rounded-md sm:border sm:border-primary/35 sm:bg-card sm:px-2 sm:py-1 sm:text-left sm:text-base">
+                  <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-bold leading-tight text-foreground sm:text-base">
                     <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.awayTeam}</span>
                   </span>
                 </div>
                 <div className={cn(
-                  "rounded-md border px-1.5 py-2 text-center sm:mt-2 sm:rounded-lg sm:px-3",
-                  "border-success/45 bg-success/10"
+                  "flex min-h-16 flex-col items-center justify-center rounded-lg border px-1.5 py-2 text-center sm:px-3",
+                  "border-success/45 bg-card"
                 )}>
-                  <span className="text-xs font-extrabold text-success sm:text-[13px]">
+                  <span className="mb-0.5 text-[9px] font-bold uppercase text-success">Pick</span>
+                  <span className="text-sm font-extrabold leading-tight text-success sm:text-base">
                     {match.prediction}
                   </span>
                 </div>
