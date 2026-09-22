@@ -129,15 +129,15 @@ export function TicketGroup({
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-[9px] font-bold uppercase text-primary sm:text-xs">{parsed.league || "Football"}</p>
-                            <div className="mt-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1">
+                            <div className="mt-1.5 min-w-0 space-y-1 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-1 sm:space-y-0">
                               <div className="flex min-w-0 items-center gap-1">
                                 <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
-                                <span className="min-w-0 truncate text-[12px] font-extrabold leading-tight text-foreground sm:text-lg">{parsed.homeTeam}</span>
+                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:truncate sm:text-lg">{parsed.homeTeam}</span>
                               </div>
-                              <span className="text-[9px] font-bold uppercase text-muted-foreground">vs</span>
+                              <span className="hidden text-[9px] font-bold uppercase text-muted-foreground sm:block">vs</span>
                               <div className="flex min-w-0 items-center gap-1">
                                 <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
-                                <span className="min-w-0 truncate text-[12px] font-extrabold leading-tight text-foreground sm:text-lg">{parsed.awayTeam}</span>
+                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:truncate sm:text-lg">{parsed.awayTeam}</span>
                               </div>
                             </div>
                             {isLocked ? (

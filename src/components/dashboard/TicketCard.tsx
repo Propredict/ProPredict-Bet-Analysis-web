@@ -399,15 +399,15 @@ function TicketCard({
                   <p className={cn("col-start-2 row-start-1 truncate text-left text-[8px] font-bold uppercase sm:text-[9px]", light ? "text-primary" : "text-muted-foreground")}>{parsed.league}</p>
                 )}
                 <div className="col-start-2 row-start-2 min-w-0">
-                 <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1">
-                  <span className="flex min-w-0 items-center gap-1 text-[12px] font-bold leading-tight text-foreground sm:text-base">
-                    <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.homeTeam}</span>
-                  </span>
-                  <span className="text-[9px] font-bold text-muted-foreground">vs</span>
-                  <span className="flex min-w-0 items-center gap-1 text-[12px] font-bold leading-tight text-foreground sm:text-base">
-                    <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 truncate">{parsed.awayTeam}</span>
-                  </span>
-                 </div>
+                  <div className="min-w-0 space-y-1 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-1 sm:space-y-0">
+                   <span className="flex min-w-0 items-center gap-1 text-[12px] font-bold leading-tight text-foreground sm:text-base">
+                     <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 whitespace-normal break-words sm:truncate">{parsed.homeTeam}</span>
+                   </span>
+                   <span className="hidden text-[9px] font-bold text-muted-foreground sm:block">vs</span>
+                   <span className="flex min-w-0 items-center gap-1 text-[12px] font-bold leading-tight text-foreground sm:text-base">
+                     <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 whitespace-normal break-words sm:truncate">{parsed.awayTeam}</span>
+                   </span>
+                  </div>
                  <div className="mt-2 rounded-md bg-muted px-2 py-1.5 text-center"><span className="text-[13px] font-extrabold leading-tight text-success">PICK: {match.prediction}</span></div>
                 </div>
                 <div className="col-start-3 row-span-2 row-start-1 text-center"><span className="block text-[8px] font-bold uppercase text-muted-foreground">Odds</span><span className="text-base font-extrabold text-primary">{match.odds.toFixed(2)}</span></div>
