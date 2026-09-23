@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { isPendingPlaceholder } from "@/components/ai-predictions/PendingPickCard";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -209,7 +210,12 @@ function PredictionListRow({
 
 export function DashboardAIPredictions() {
   const navigate = useNavigate();
-  const { predictions, loading } = useAIPredictions("today");
+  const { predictions: allPredictions, loading } = useAIPredictions("today");
+  // Never surface rows the engine has not analysed yet (placeholder numbers).
+  const predictions = useMemo(
+    () => allPredictions.filter((p: any) => !isPendingPlaceholder(p)),
+    [allPredictions],
+  );
   const { plan, canAccess } = useUserPlan();
   const { isAndroidApp } = usePlatform();
   const { unlockingId, handleUnlock } = useUnlockHandler();
