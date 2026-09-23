@@ -128,25 +128,25 @@ export function TicketGroup({
                             {matchIndex + 1}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-[9px] font-bold uppercase text-primary sm:text-xs">{parsed.league || "Football"}</p>
+                            <p className="truncate text-[9px] font-bold uppercase text-primary sm:text-center sm:text-xs">{parsed.league || "Football"}</p>
                             <div className="mt-1.5 min-w-0 space-y-1 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-1 sm:space-y-0">
-                              <div className="flex min-w-0 items-center gap-1">
+                              <div className="flex min-w-0 items-center gap-1 sm:justify-center">
                                 <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
-                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:truncate sm:text-lg">{parsed.homeTeam}</span>
+                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.homeTeam}</span>
                               </div>
                               <span className="hidden text-[9px] font-bold uppercase text-muted-foreground sm:block">vs</span>
-                              <div className="flex min-w-0 items-center gap-1">
+                              <div className="flex min-w-0 items-center gap-1 sm:justify-center">
                                 <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
-                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:truncate sm:text-lg">{parsed.awayTeam}</span>
+                                <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.awayTeam}</span>
                               </div>
                             </div>
                             {isLocked ? (
-                              <div className="mt-2 flex min-h-8 w-full items-center justify-center gap-1 rounded-md bg-muted px-2 py-1.5 text-[10px] font-bold text-muted-foreground">
+                              <div className="mt-2 flex min-h-8 w-full items-center justify-center gap-1 rounded-md bg-muted px-2 py-1.5 text-[10px] font-bold text-muted-foreground sm:mx-auto sm:w-fit sm:min-w-56 sm:px-8">
                                 <Lock className="h-3.5 w-3.5" /> Locked
                               </div>
                             ) : (
-                              <div className="mt-2 w-full rounded-md bg-muted px-2 py-1.5 text-center">
-                                <p className="whitespace-normal break-words text-[13px] font-extrabold leading-tight text-success">PICK: {match.prediction}</p>
+                              <div className="mt-2 w-full rounded-md bg-muted px-2 py-1.5 text-center sm:mx-auto sm:w-fit sm:min-w-56 sm:px-8">
+                                <p className="whitespace-normal break-words text-[13px] font-extrabold leading-tight text-success sm:text-base">PICK: {match.prediction}</p>
                               </div>
                             )}
                           </div>
