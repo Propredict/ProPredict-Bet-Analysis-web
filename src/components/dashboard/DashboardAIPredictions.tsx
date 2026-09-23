@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAIPredictions } from "@/hooks/useAIPredictions";
+import { isPendingPlaceholder } from "@/components/ai-predictions/PendingPickCard";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { usePlatform } from "@/hooks/usePlatform";
