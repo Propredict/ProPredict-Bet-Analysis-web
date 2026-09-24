@@ -80,8 +80,8 @@ export interface GoalMarketProbs {
   bttsNo: number;
 }
 
-// Clamp helper: ensure minimum 5% floor on all probabilities
-function clampProb(n: number, min = 5, max = 95): number {
+// Keep displayed values inside 0-100 without inventing minimum/maximum floors.
+function clampProb(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
@@ -178,38 +178,13 @@ export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketPr
     }
   }
 
-  // Apply minimum 5% floor — NEVER return 0
-  let o15 = clampProb(over15 * 100);
-  let o25 = clampProb(over25 * 100);
-  let o35 = clampProb(over35 * 100);
-  let by = clampProb(bttsYes * 100);
-
-  // === ANTI-ERROR OVERRIDES (form-based consistency checks) ===
-  // When xG values are high, ensure Over/BTTS don't contradict
-  const totalXg = homeXg + awayXg;
-  
-  // Rule 1: High xG → prevent Under-biased output
-  if (totalXg >= 2.8 && homeXg >= 1.2 && awayXg >= 1.0) {
-    o25 = Math.max(o25, 58); // Floor Over 2.5 at 58%
-    by = Math.max(by, 55);   // Floor BTTS Yes at 55%
-  }
-  
-  // Rule 2: Very high xG → strong Over signal
-  if (totalXg >= 3.2) {
-    o25 = Math.max(o25, 65);
-    o35 = Math.max(o35, 40);
-  }
-  
-  // Rule 3: Both teams scoring ability high → prevent BTTS No
-  if (homeXg >= 1.3 && awayXg >= 1.1) {
-    by = Math.max(by, 55);
-  }
-  
-  // Rule 4: Very low xG → lock Under direction  
-  if (totalXg < 1.8) {
-    o25 = Math.min(o25, 35);
-    by = Math.min(by, 38);
-  }
+  // These are the unmodified probabilities from the same Poisson distribution
+  // used for exact scores. Do not add manual floors: they make Goals, BTTS and
+  // Correct Score disagree even when their shared xG input is valid.
+  const o15 = clampProb(over15 * 100);
+  const o25 = clampProb(over25 * 100);
+  const o35 = clampProb(over35 * 100);
+  const by = clampProb(bttsYes * 100);
 
   return {
     over15: o15,

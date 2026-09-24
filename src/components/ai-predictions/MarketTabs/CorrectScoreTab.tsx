@@ -37,9 +37,17 @@ const RANK_STYLES = [
 export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }: Props) {
   const pick = getBestPick(prediction);
   const scoreConstraints = getRecommendedScoreConstraints(prediction);
+  const directionalPick = ONE_X_TWO.includes(pick.type) ? pick.type : scoreConstraints.marketType;
   const topScores = getConsistentTopCorrectScores(
     prediction,
-    { ...scoreConstraints, extraMarketTypes: [scoreConstraints.marketType, pick.type], marketType: pick.type },
+    {
+      // Rank exact scores from the same full Poisson distribution as Goals.
+      // Keep only the displayed 1X2 direction; do not force all three score
+      // candidates above/below a goal line, which falsely made a 65% Over 2.5
+      // look like every likely score had 3+ goals.
+      marketType: directionalPick,
+      extraMarketTypes: directionalPick ? [directionalPick] : [],
+    },
     3
   );
 
@@ -73,7 +81,7 @@ export function CorrectScoreTab({ prediction, hasAccess, displayTier = "free" }:
         <div className="flex items-start gap-1.5 rounded-lg border border-primary/20 bg-card px-2 py-1.5">
           <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
           <p className="text-[10px] font-medium leading-snug text-muted-foreground">
-            Correct score predictions are based on team form, attacking strength and defensive records.
+            Each score is one exact outcome; Goals combines all scorelines. / Svaki rezultat je jedan ishod; Goals sabira sve rezultate.
           </p>
         </div>
       </div>
