@@ -489,16 +489,21 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     ng: { recommended: goalProbs.bttsNo > 50 },
   };
 
-  // Double Chance derived from main prediction (use 1X2 probabilities for goal market predictions)
-  const p = (prediction.prediction || "").toLowerCase();
-  const is1X2 = p === "1" || p === "2" || p === "x" || p === "draw";
-  const effectivePrediction = is1X2 ? prediction.prediction : 
-    ((prediction.home_win ?? 0) >= (prediction.away_win ?? 0) ? "1" : "2");
+  // The displayed Main tab is driven by normalized 1X2 probabilities. Combo
+  // direction must use that same source of truth instead of the stored headline,
+  // which may be stale (e.g. Main shows away at 73% while Combo still uses home).
+  const normalized = getNormalized1x2(prediction);
+  const effectivePrediction: "1" | "X" | "2" =
+    normalized.hw >= normalized.d && normalized.hw >= normalized.aw
+      ? "1"
+      : normalized.aw >= normalized.hw && normalized.aw >= normalized.d
+        ? "2"
+        : "X";
   
   let doubleChanceOption: "1X" | "12" | "X2" = "1X";
   if (effectivePrediction === "1") {
     doubleChanceOption = "1X";
-  } else if (effectivePrediction === "X" || effectivePrediction === "draw") {
+  } else if (effectivePrediction === "X") {
     doubleChanceOption = "12";
   } else if (effectivePrediction === "2") {
     doubleChanceOption = "X2";
@@ -509,39 +514,27 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     recommended: true,
   };
 
-  // Combos - max 2 options based on prediction + Poisson probabilities
-  const combos: { label: string; recommended: boolean }[] = [];
-  
-  if (effectivePrediction === "1") {
-    if (goalProbs.over15 > 55) {
-      combos.push({ label: "1 & Over 1.5", recommended: true });
-    }
-    if (goalProbs.over25 > 55) {
-      combos.push({ label: "1 & Over 2.5", recommended: true });
-    } else if (combos.length < 2) {
-      combos.push({ label: "1 & Under 2.5", recommended: goalProbs.under25 > 50 });
-    }
-  } else if (effectivePrediction === "2") {
-    if (goalProbs.over15 > 55) {
-      combos.push({ label: "2 & Over 1.5", recommended: true });
-    }
-    if (goalProbs.over25 > 55) {
-      combos.push({ label: "2 & Over 2.5", recommended: true });
-    } else if (combos.length < 2) {
-      combos.push({ label: "2 & Under 2.5", recommended: goalProbs.under25 > 50 });
-    }
-  } else {
-    // Draw combos
-    combos.push({ label: "X & Over 1.5", recommended: goalProbs.over15 > 55 });
-    if (goalProbs.over35 < 45) {
-      combos.push({ label: "X & Under 3.5", recommended: true });
-    } else {
-      combos.push({ label: "X & Over 2.5", recommended: goalProbs.over25 > 55 });
-    }
-  }
+  // Every Best/Value combo follows the actual normalized 1X2 favourite. Rank
+  // the goal legs by this match's Poisson probabilities, never by fixed labels.
+  const comboGoalCandidates = effectivePrediction === "X"
+    ? [
+        { label: "Under 3.5", probability: 100 - goalProbs.over35 },
+        { label: "Over 1.5", probability: goalProbs.over15 },
+        { label: "Over 2.5", probability: goalProbs.over25 },
+      ]
+    : [
+        { label: "Over 1.5", probability: goalProbs.over15 },
+        { label: "Over 2.5", probability: goalProbs.over25 },
+        { label: "Under 2.5", probability: goalProbs.under25 },
+      ];
 
-  // Limit to 2 combos
-  const limitedCombos = combos.slice(0, 2);
+  const limitedCombos = comboGoalCandidates
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, 2)
+    .map((goal) => ({
+      label: `${effectivePrediction} & ${goal.label}`,
+      recommended: goal.probability >= 50,
+    }));
 
   // AI Guidance
   const badge = getRiskBadge(prediction.risk_level, prediction.confidence);

@@ -98,13 +98,18 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     };
   };
 
-  const views: ComboView[] = markets.combos.map((combo, index) =>
-    buildCombo(
-      combo.label,
-      index === 0 ? "BEST PICK" : "VALUE PICK",
-      index === 0 ? "best" : "value",
-    ),
-  );
+  // Rank the generated combos by their real calculated probability. The first
+  // card can never be labelled Best Pick when a stronger combo sits below it.
+  const rankedCombos = markets.combos
+    .map((combo) => buildCombo(combo.label, "", "value"))
+    .sort((a, b) => b.prob - a.prob);
+
+  const views: ComboView[] = rankedCombos.map((combo, index) => ({
+    ...combo,
+    tag: index === 0 ? "BEST PICK" : "VALUE PICK",
+    kind: index === 0 ? "best" : "value",
+    strength: strengthFor(combo.prob),
+  }));
 
   // Risk combo from tagged key factor (e.g. "2 + Over 1.5")
   const taggedCombo = prediction.key_factors
