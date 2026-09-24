@@ -503,7 +503,7 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
   let doubleChanceOption: "1X" | "12" | "X2" = "1X";
   if (effectivePrediction === "1") {
     doubleChanceOption = "1X";
-  } else if (effectivePrediction === "X" || effectivePrediction === "draw") {
+  } else if (effectivePrediction === "X") {
     doubleChanceOption = "12";
   } else if (effectivePrediction === "2") {
     doubleChanceOption = "X2";
