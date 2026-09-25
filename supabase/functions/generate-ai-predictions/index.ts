@@ -52,6 +52,11 @@ const TIER_1_LEAGUE_IDS = new Set<number>([
   9,    // Copa America
   6,    // Africa Cup of Nations
   7,    // Asian Cup
+  32,   // World Cup Qualification — Europe
+  34,   // World Cup Qualification — South America
+  31,   // World Cup Qualification — CONCACAF
+  30,   // World Cup Qualification — Asia
+  29,   // World Cup Qualification — Africa
 ]);
 
 // Tier 2: secondary European leagues — included normally
