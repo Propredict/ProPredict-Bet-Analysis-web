@@ -220,7 +220,7 @@ export function LiveChatDock() {
 
         {open && (
           <>
-            <div className="h-64 space-y-2 overflow-y-auto p-3">
+            <div className="h-64 space-y-2 overflow-y-auto p-3 md:h-80">
               {loading ? (
                 <div className="flex items-center justify-center py-10 text-muted-foreground">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
