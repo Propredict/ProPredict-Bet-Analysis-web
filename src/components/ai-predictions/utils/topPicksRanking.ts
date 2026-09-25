@@ -135,6 +135,8 @@ const TIER1_FRAGMENTS = [
   "premier league", "la liga", "bundesliga", "serie a", "ligue 1",
   "champions league", "europa league", "conference league",
   "world cup", "euro championship", "copa america", "copa libertadores",
+  "nations league", "africa cup", "asian cup", "world cup - qualification",
+  "uefa qualification", "euro qualification",
 ];
 const TIER2_FRAGMENTS = [
   "primeira liga", "eredivisie", "super lig", "süper lig", "jupiler pro league",
