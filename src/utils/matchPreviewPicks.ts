@@ -100,3 +100,26 @@ export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
   const pick = getBestMarketPickWithLabel(pred);
   return makePick(pick.label, pick.pct);
 }
+
+export const TOP10_MIN_CONFIDENCE = 80;
+export const TOP10_MAX = 10;
+
+/**
+ * Strongest single market for a match from the unified model:
+ * 1, X, 2, Over/Under 2.5, BTTS Yes/No. Used by Top 10 (>=80% only).
+ */
+export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
+  const { hw, d, aw } = getNormalized1x2(pred);
+  const g = calculateGoalMarketProbs(pred);
+  const options: Array<[string, number]> = [
+    ["Home Win", hw],
+    ["Draw", d],
+    ["Away Win", aw],
+    ["Over 2.5", g.over25],
+    ["Under 2.5", g.under25],
+    ["BTTS Yes", g.bttsYes],
+    ["BTTS No", g.bttsNo],
+  ];
+  const [label, pct] = options.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+  return makePick(label, pct);
+}

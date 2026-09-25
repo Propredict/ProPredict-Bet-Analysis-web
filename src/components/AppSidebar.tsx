@@ -174,7 +174,7 @@ export function AppSidebar() {
                   activeClassName="bg-primary/20 text-primary"
                 >
                   <Eye className="h-5 w-5" />
-                  {!collapsed && <span>Top 30 AI Picks</span>}
+                  {!collapsed && <span>Top 10 AI Picks</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
