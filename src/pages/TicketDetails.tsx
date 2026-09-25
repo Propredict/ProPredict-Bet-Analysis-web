@@ -98,6 +98,16 @@ export default function TicketDetails() {
     openUrl(url);
   };
 
+  const handleWhatsAppShare = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+    openUrl(url);
+  };
+
+  const handleTelegramShare = () => {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    openUrl(url);
+  };
+
   const handleInstagramShare = async () => {
     // Try native share first (works on mobile - lets user pick Instagram)
     if (navigator.share) {
