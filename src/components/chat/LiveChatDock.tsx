@@ -19,11 +19,17 @@ interface ChatMessage {
 const MAX_LEN = 500;
 const OPEN_KEY = "propredict:live_chat_open";
 
+const isDesktop = () =>
+  typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
 export function LiveChatDock() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
+    // Desktop: show the chat box open by default so the frame is visible.
+    // Mobile: remember the user's last choice.
+    if (isDesktop()) return true;
     return localStorage.getItem(OPEN_KEY) === "1";
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
