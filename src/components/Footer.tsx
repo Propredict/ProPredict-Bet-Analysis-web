@@ -114,7 +114,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
               className="group relative block overflow-hidden rounded-2xl border border-[#0E7A3D]/50 shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#0E7A3D]/25"
             >
               <img
-                src={betwayBanner.url}
+                src={betwayBanner}
                 alt="Betway — Register now & get Premium access to exclusive AI picks"
                 className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transform-none"
                 loading="lazy"
