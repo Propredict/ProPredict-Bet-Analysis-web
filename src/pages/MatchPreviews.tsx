@@ -234,6 +234,9 @@ export default function MatchPreviews() {
         h2h_summary: pv?.h2h_summary ?? null,
         rank: i + 1,
         bestPick,
+        consensus_home: (p as any).consensus_home ?? null,
+        consensus_draw: (p as any).consensus_draw ?? null,
+        consensus_away: (p as any).consensus_away ?? null,
       };
     });
   }, [previews, predictions]);
