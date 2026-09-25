@@ -402,6 +402,9 @@ serve(async (req: Request) => {
             value_away: valueAway,
             is_value_bet: isValueBet,
             market_odds: marketOdds,
+            consensus_home: snap.consensus_home,
+            consensus_draw: snap.consensus_draw,
+            consensus_away: snap.consensus_away,
             updated_at: new Date().toISOString(),
           })
           .eq("id", p.id);
