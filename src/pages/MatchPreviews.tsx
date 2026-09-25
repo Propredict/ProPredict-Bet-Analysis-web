@@ -350,7 +350,17 @@ export default function MatchPreviews() {
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const pct = match.bestPick?.pct ?? match.confidence;
-              const fairOdds = (100 / Math.max(pct, 1)).toFixed(2);
+              // Real bookmaker consensus odds for 1X2 picks; fair odds from our
+              // model only for markets where bookmaker odds are not stored.
+              const pickLabel = match.bestPick?.label ?? "";
+              const realOdds =
+                pickLabel === "Home Win" ? match.consensus_home
+                : pickLabel === "Draw" ? match.consensus_draw
+                : pickLabel === "Away Win" ? match.consensus_away
+                : null;
+              const displayOdds = realOdds && realOdds > 1
+                ? realOdds.toFixed(2)
+                : (100 / Math.max(pct, 1)).toFixed(2);
 
               return (
                 <button
