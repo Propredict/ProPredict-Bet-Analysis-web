@@ -1,10 +1,9 @@
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import {
-  calculateGoalMarketProbs,
+  calculateComboProbability,
   deriveMarkets,
   getConsistentSafeCombo,
-  getNormalized1x2,
 } from "../utils/marketDerivation";
 import {
   BarChart3,
@@ -36,47 +35,14 @@ const strengthFor = (prob: number) =>
 
 const fairOdds = (prob: number) => (prob > 0 ? (100 / prob).toFixed(2) : "—");
 
-/** Parse a combo label like "1 & Over 1.5" into result leg + goals leg. */
-function parseComboLabel(label: string) {
-  const parts = label.split(/\s*(?:&|\+)\s*/).map((s) => s.trim());
-  const resultLeg = parts.find((p) => ["1", "2", "x"].includes(p.toLowerCase())) ?? "1";
-  const goalsLeg = parts.find((p) => !["1", "2", "x"].includes(p.toLowerCase())) ?? "Over 1.5";
-  return { resultLeg, goalsLeg };
-}
-
 export function CombosMarketTab({ prediction, hasAccess }: Props) {
   const markets = deriveMarkets(prediction);
-  const goalProbs = calculateGoalMarketProbs(prediction);
-
-  // Raw DB 1X2 values do not always sum to 100, so always use the normalized
-  // set (the same numbers shown on the card) or combos read far too low.
-  const norm = getNormalized1x2(prediction);
-
-  const resultProb = (leg: string) => {
-    switch (leg.toLowerCase()) {
-      case "1":
-        return norm.hw;
-      case "2":
-        return norm.aw;
-      default:
-        return norm.d;
-    }
-  };
-
-  const goalsProb = (leg: string) => {
-    const l = leg.toLowerCase().replace(" goals", "").trim();
-    if (l === "over 1.5") return goalProbs.over15;
-    if (l === "over 2.5") return goalProbs.over25;
-    if (l === "over 3.5") return goalProbs.over35;
-    if (l === "under 2.5") return goalProbs.under25;
-    if (l === "under 3.5") return 100 - goalProbs.over35;
-    return 50;
-  };
 
   const resultText = (leg: string) => {
     if (leg === "1") return `${prediction.home_team} to win`;
     if (leg === "2") return `${prediction.away_team} to win`;
-    return "Match ends in a draw";
+    if (leg.toLowerCase() === "x") return "Match ends in a draw";
+    return leg;
   };
 
   const buildCombo = (
@@ -84,13 +50,12 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     tag: string,
     kind: ComboView["kind"],
   ): ComboView => {
-    const { resultLeg, goalsLeg } = parseComboLabel(label);
-    // Joint probability estimate: independence of result and goals legs
-    const prob = Math.round((resultProb(resultLeg) * goalsProb(goalsLeg)) / 100);
+    const [resultLeg = "", goalsLeg = ""] = label.split(/\s*(?:&|\+)\s*/).map((s) => s.trim());
+    const prob = calculateComboProbability(prediction, label) ?? 0;
     return {
       tag,
       title: label.replace(" & ", " + "),
-      description: `${resultText(resultLeg)} + ${goalsLeg} goals`,
+      description: `${resultText(resultLeg)} + ${goalsLeg}${/^(over|under)/i.test(goalsLeg) ? " goals" : ""}`,
       prob,
       odds: fairOdds(prob),
       strength: kind === "risk" ? (prob >= 45 ? "Good" : "Higher Risk") : strengthFor(prob),
@@ -116,7 +81,7 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     ?.find((factor) => factor.startsWith("[TAG]SAFE_COMBO:"))
     ?.replace("[TAG]SAFE_COMBO:", "") ?? null;
   const riskComboLabel = getConsistentSafeCombo(prediction, taggedCombo);
-  const riskView = riskComboLabel
+  const riskView = riskComboLabel && calculateComboProbability(prediction, riskComboLabel) !== null
     ? buildCombo(riskComboLabel, "RISK COMBO", "risk")
     : null;
 
