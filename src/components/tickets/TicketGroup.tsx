@@ -46,10 +46,8 @@ export function TicketGroup({
   }
 
   return (
-    <section className="relative min-w-0">
-      <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-b from-primary/50 to-transparent opacity-50 blur-sm" />
-      <div className="relative h-full overflow-hidden rounded-2xl border border-primary/45 bg-secondary shadow-xl">
-        <header className="flex items-center justify-between gap-3 border-b border-primary/20 bg-card px-4 py-4 sm:px-6">
+    <section className="relative min-w-0 space-y-5">
+      <header className="flex items-center justify-between gap-3 rounded-2xl border border-primary/45 bg-card px-4 py-4 shadow-xl sm:px-6">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               {isPremium ? <Crown className="h-5 w-5 shrink-0 text-primary" /> : <TicketIcon className="h-5 w-5 shrink-0 text-primary" />}
@@ -60,11 +58,10 @@ export function TicketGroup({
           <span className="shrink-0 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase text-primary">
             {badge}
           </span>
-        </header>
+      </header>
 
-        <div className="space-y-7 p-2.5 sm:p-4">
-          {tickets.length === 0 ? (
-            <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-accent/25 px-5 text-center">
+      {tickets.length === 0 ? (
+            <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-sidebar-border bg-card px-5 text-center shadow-lg">
               <TicketIcon className="mb-3 h-10 w-10 text-sidebar-foreground/35" />
               <p className="font-semibold text-sidebar-foreground">No {title} available today</p>
               <p className="mt-1 text-sm text-sidebar-foreground/60">Check back later for today's ticket.</p>
@@ -79,15 +76,14 @@ export function TicketGroup({
               const visibleMatches = isLocked ? ticket.matches.slice(0, 3) : ticket.matches;
 
               return (
-                <div key={ticket.id} id={`ticket-${ticket.id}`} className="min-w-0">
-                  <div className="mb-2.5 flex items-center gap-2.5">
-                    <span className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-sm sm:text-xs">
-                      <TicketIcon className="h-3.5 w-3.5" />
-                      Ticket {ticketIndex + 1} / Tiket {ticketIndex + 1}
-                    </span>
-                    <span className="h-0.5 flex-1 rounded-full bg-primary/25" />
-                  </div>
-                  <article className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-lg">
+                  <div key={ticket.id} id={`ticket-${ticket.id}`} className="min-w-0">
+                    <div className="mb-2.5 flex items-center gap-2.5">
+                      <span className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-sm sm:text-xs">
+                        <TicketIcon className="h-3.5 w-3.5" />
+                        Ticket {ticketIndex + 1} / Tiket {ticketIndex + 1}
+                      </span>
+                    </div>
+                    <article className="overflow-hidden rounded-2xl border-2 border-primary/70 bg-card shadow-xl">
                   <Button
                     type="button"
                     variant="ghost"
@@ -202,8 +198,6 @@ export function TicketGroup({
               );
             })
           )}
-        </div>
-      </div>
     </section>
   );
 }
