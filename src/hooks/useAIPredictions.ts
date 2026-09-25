@@ -37,6 +37,7 @@ export interface AIPrediction {
   odds_movement_pct?: number | null;
   consensus_odds?: number | null;
   consensus_home?: number | null;
+  market_odds?: Record<string, number> | null;
   consensus_draw?: number | null;
   consensus_away?: number | null;
   bookmakers_count?: number | null;
