@@ -62,7 +62,7 @@ export function TicketGroup({
           </span>
         </header>
 
-        <div className="space-y-4 p-2.5 sm:p-4">
+        <div className="space-y-7 p-2.5 sm:p-4">
           {tickets.length === 0 ? (
             <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-sidebar-border bg-sidebar-accent/25 px-5 text-center">
               <TicketIcon className="mb-3 h-10 w-10 text-sidebar-foreground/35" />
@@ -73,13 +73,21 @@ export function TicketGroup({
               </Button>
             </div>
           ) : (
-            tickets.map((ticket) => {
+            tickets.map((ticket, ticketIndex) => {
               const unlockMethod = getUnlockMethod(tier, "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const visibleMatches = isLocked ? ticket.matches.slice(0, 3) : ticket.matches;
 
               return (
-                <article id={`ticket-${ticket.id}`} key={ticket.id} className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-lg">
+                <div key={ticket.id} id={`ticket-${ticket.id}`} className="min-w-0">
+                  <div className="mb-2.5 flex items-center gap-2.5">
+                    <span className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-primary-foreground shadow-sm sm:text-xs">
+                      <TicketIcon className="h-3.5 w-3.5" />
+                      Ticket {ticketIndex + 1} / Tiket {ticketIndex + 1}
+                    </span>
+                    <span className="h-0.5 flex-1 rounded-full bg-primary/25" />
+                  </div>
+                  <article className="overflow-hidden rounded-xl border-2 border-primary/70 bg-card shadow-lg">
                   <Button
                     type="button"
                     variant="ghost"
