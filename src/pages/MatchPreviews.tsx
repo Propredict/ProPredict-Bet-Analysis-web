@@ -376,71 +376,140 @@ export default function MatchPreviews() {
                   key={match.id}
                   type="button"
                   onClick={() => (isFreeUser ? navigate("/get-premium") : handleCardClick(match))}
-                  className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-primary/50 bg-card px-3 py-3 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 sm:gap-4 sm:px-5 sm:py-4"
+                  className="w-full rounded-2xl border-2 border-primary/50 bg-card text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10"
                 >
-                  {/* Rank */}
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-base font-black text-primary-foreground sm:h-11 sm:w-11 sm:text-lg">
-                    {match.rank}
-                  </div>
+                  {/* Mobile & app layout — match row on top, pick row below */}
+                  <div className="flex flex-col gap-3 px-3 py-3.5 sm:px-4 lg:hidden">
+                    <div className="flex w-full items-center gap-2.5">
+                      {/* Rank */}
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-black text-primary-foreground">
+                        {match.rank}
+                      </div>
 
-                  {/* League (desktop) */}
-                  <span className="hidden w-32 shrink-0 truncate text-sm font-bold text-muted-foreground lg:block">
-                    {match.league || ""}
-                  </span>
+                      {/* Home team */}
+                      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                        <span className="text-right text-sm font-black leading-tight text-foreground break-words">
+                          {match.home_team}
+                        </span>
+                        {homeLogo ? (
+                          <img src={homeLogo} alt={match.home_team} className="h-8 w-8 shrink-0 object-contain" loading="lazy" />
+                        ) : (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary">
+                            {getTeamInitials(match.home_team)}
+                          </span>
+                        )}
+                      </div>
 
-                  {/* Home team */}
-                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-                    <span className="text-right text-xs font-black leading-tight text-foreground break-words sm:text-base md:text-lg">
-                      {match.home_team}
-                    </span>
-                    {homeLogo ? (
-                      <img src={homeLogo} alt={match.home_team} className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9" loading="lazy" />
-                    ) : (
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary sm:h-9 sm:w-9">
-                        {getTeamInitials(match.home_team)}
-                      </span>
-                    )}
-                  </div>
+                      <span className="shrink-0 text-xs font-black text-muted-foreground">VS</span>
 
-                  <span className="shrink-0 text-[11px] font-black text-muted-foreground sm:text-sm">VS</span>
+                      {/* Away team */}
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        {awayLogo ? (
+                          <img src={awayLogo} alt={match.away_team} className="h-8 w-8 shrink-0 object-contain" loading="lazy" />
+                        ) : (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary">
+                            {getTeamInitials(match.away_team)}
+                          </span>
+                        )}
+                        <span className="text-sm font-black leading-tight text-foreground break-words">
+                          {match.away_team}
+                        </span>
+                      </div>
 
-                  {/* Away team */}
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    {awayLogo ? (
-                      <img src={awayLogo} alt={match.away_team} className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9" loading="lazy" />
-                    ) : (
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary sm:h-9 sm:w-9">
-                        {getTeamInitials(match.away_team)}
-                      </span>
-                    )}
-                    <span className="text-xs font-black leading-tight text-foreground break-words sm:text-base md:text-lg">
-                      {match.away_team}
-                    </span>
-                  </div>
+                      <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
+                    </div>
 
-                  {/* Pick */}
-                  <div className="flex w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:w-28 sm:px-3 sm:py-2.5">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground sm:text-[11px]">Pick</span>
-                    <span className="truncate text-xs font-black text-success sm:text-lg">
-                      {isFreeUser ? "🔒" : match.bestPick?.label}
-                    </span>
-                  </div>
+                    <div className="flex w-full items-center gap-3">
+                      {/* Pick */}
+                      <div className="flex flex-1 flex-col items-center justify-center rounded-xl bg-secondary/70 px-3 py-2.5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pick</span>
+                        <span className="text-center text-base font-black leading-tight text-success">
+                          {isFreeUser ? "🔒" : match.bestPick?.label}
+                        </span>
+                      </div>
 
-                  {/* Confidence */}
-                  <div className="w-16 shrink-0 sm:w-24">
-                    <div className="text-center text-sm font-black text-foreground sm:text-base">{pct}%</div>
-                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(pct, 100)}%` }} />
+                      {/* Confidence */}
+                      <div className="flex w-28 shrink-0 flex-col items-center">
+                        <div className="text-lg font-black text-foreground">{pct}%</div>
+                        <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                          <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(pct, 100)}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Real odds (mobile & app) */}
+                      <div className="flex w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
+                        <span className="text-sm font-black text-primary">{displayOdds}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Fair odds (desktop) */}
-                  <div className="hidden w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:flex">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                    <span className="text-base font-black text-primary">{displayOdds}</span>
-                  </div>
+                  {/* Desktop layout — single row with columns */}
+                  <div className="hidden w-full items-center gap-4 px-5 py-4 lg:flex">
+                    {/* Rank */}
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-black text-primary-foreground">
+                      {match.rank}
+                    </div>
 
-                  <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
+                    {/* League (desktop) */}
+                    <span className="hidden w-32 shrink-0 truncate text-sm font-bold text-muted-foreground lg:block">
+                      {match.league || ""}
+                    </span>
+
+                    {/* Home team */}
+                    <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                      <span className="text-right text-base font-black leading-tight text-foreground break-words md:text-lg">
+                        {match.home_team}
+                      </span>
+                      {homeLogo ? (
+                        <img src={homeLogo} alt={match.home_team} className="h-9 w-9 shrink-0 object-contain" loading="lazy" />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary">
+                          {getTeamInitials(match.home_team)}
+                        </span>
+                      )}
+                    </div>
+
+                    <span className="shrink-0 text-sm font-black text-muted-foreground">VS</span>
+
+                    {/* Away team */}
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      {awayLogo ? (
+                        <img src={awayLogo} alt={match.away_team} className="h-9 w-9 shrink-0 object-contain" loading="lazy" />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary">
+                          {getTeamInitials(match.away_team)}
+                        </span>
+                      )}
+                      <span className="text-base font-black leading-tight text-foreground break-words md:text-lg">
+                        {match.away_team}
+                      </span>
+                    </div>
+
+                    {/* Pick */}
+                    <div className="flex w-28 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-3 py-2.5">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Pick</span>
+                      <span className="truncate text-lg font-black text-success">
+                        {isFreeUser ? "🔒" : match.bestPick?.label}
+                      </span>
+                    </div>
+
+                    {/* Confidence */}
+                    <div className="w-24 shrink-0">
+                      <div className="text-center text-base font-black text-foreground">{pct}%</div>
+                      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(pct, 100)}%` }} />
+                      </div>
+                    </div>
+
+                    {/* Real odds (desktop) */}
+                    <div className="flex w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
+                      <span className="text-base font-black text-primary">{displayOdds}</span>
+                    </div>
+
+                    <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
+                  </div>
                 </button>
               );
             })}
