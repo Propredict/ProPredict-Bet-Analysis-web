@@ -22,8 +22,8 @@ const POPULAR_LEAGUES = [
 export function LeagueStandings() {
   const navigate = useNavigate();
   const [selectedLeague, setSelectedLeague] = useState(POPULAR_LEAGUES[0]);
-  // Use 2025 season to match League Statistics page
-  const { data, isLoading, error } = useLeagueStandings(selectedLeague.id, "2025");
+  // Current season (e.g. 2026 = 2026/27)
+  const { data, isLoading, error } = useLeagueStandings(selectedLeague.id);
 
   const standings = (data as StandingsResponse)?.standings ?? [];
   const displayedStandings = standings.slice(0, 5);
