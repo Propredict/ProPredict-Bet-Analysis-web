@@ -162,25 +162,18 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
 }
 
 export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
-  const { homeXg, awayXg } = getXgValues(prediction);
-
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
 
-  for (let h = 0; h <= 6; h++) {
-    for (let a = 0; a <= 6; a++) {
-      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
-      const total = h + a;
+  for (const { home, away, probability: p } of getScoreDistribution(prediction)) {
+      const total = home + away;
       if (total > 1) over15 += p;
       if (total > 2) over25 += p;
       if (total > 3) over35 += p;
-      if (h > 0 && a > 0) bttsYes += p;
-    }
+      if (home > 0 && away > 0) bttsYes += p;
   }
 
-  // These are the unmodified probabilities from the same Poisson distribution
-  // used for exact scores. Do not add manual floors: they make Goals, BTTS and
-  // Correct Score disagree even when their shared xG input is valid.
+  // All markets and exact scores use the same outcome-calibrated distribution.
   const o15 = clampProb(over15 * 100);
   const o25 = clampProb(over25 * 100);
   const o35 = clampProb(over35 * 100);
@@ -211,6 +204,57 @@ interface RankedCorrectScore extends CorrectScorePrediction {
   away: number;
 }
 
+interface ScoreOutcome { home: number; away: number; probability: number }
+
+/** Reconcile the goal model with the 1/X/2 probabilities shown in Main.
+ * Within each result group, retain the Poisson relative likelihoods; then
+ * scale the group's total to the displayed 1/X/2 probability. This produces
+ * one distribution for Main, Goals, BTTS, Combo and Correct Score.
+ */
+function getScoreDistribution(prediction: AIPrediction): ScoreOutcome[] {
+  const { homeXg, awayXg } = getXgValues(prediction);
+  const target = getNormalized1x2(prediction);
+  const rows: ScoreOutcome[] = [];
+  const totals = { hw: 0, d: 0, aw: 0 };
+  for (let home = 0; home <= 12; home++) {
+    for (let away = 0; away <= 12; away++) {
+      const probability = poissonProb(homeXg, home) * poissonProb(awayXg, away);
+      const result = home > away ? "hw" : away > home ? "aw" : "d";
+      totals[result] += probability;
+      rows.push({ home, away, probability });
+    }
+  }
+  return rows.map((row) => {
+    const result = row.home > row.away ? "hw" : row.away > row.home ? "aw" : "d";
+    return { ...row, probability: totals[result] > 0 ? row.probability * target[result] / (100 * totals[result]) : 0 };
+  });
+}
+
+/** Joint probability, not the product of two dependent market percentages. */
+export function calculateComboProbability(prediction: AIPrediction, label: string): number | null {
+  const legs = label.split(/\s*(?:\+|&)\s*/).map((leg) => leg.trim().toLowerCase().replace(/ goals$/, ""));
+  const checks = legs.map((leg): ((home: number, away: number) => boolean) | null => {
+    if (leg === "1") return (h, a) => h > a;
+    if (leg === "x") return (h, a) => h === a;
+    if (leg === "2") return (h, a) => a > h;
+    if (leg === "dc 1x" || leg === "1x") return (h, a) => h >= a;
+    if (leg === "dc x2" || leg === "x2") return (h, a) => a >= h;
+    if (leg === "dc 12" || leg === "12") return (h, a) => h !== a;
+    if (leg === "btts yes" || leg === "gg") return (h, a) => h > 0 && a > 0;
+    if (leg === "btts no" || leg === "ng") return (h, a) => h === 0 || a === 0;
+    const goals = /^(over|under) (\d+)\.5$/.exec(leg);
+    if (goals) {
+      const threshold = Number(goals[2]);
+      return goals[1] === "over" ? (h, a) => h + a > threshold : (h, a) => h + a <= threshold;
+    }
+    return null;
+  });
+  if (checks.length < 2 || checks.some((check) => check === null)) return null;
+  return clampProb(getScoreDistribution(prediction).reduce(
+    (sum, row) => sum + (checks.every((check) => check?.(row.home, row.away)) ? row.probability : 0), 0
+  ) * 100);
+}
+
 export interface ScoreConstraintOptions {
   marketType?: MarketType;
   /** Additional markets the scoreline must satisfy (e.g. 1X2 direction + best pick). */
@@ -223,15 +267,11 @@ export interface ScoreConstraintOptions {
 
 
 function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
-  const { homeXg, awayXg } = getXgValues(prediction);
-
-  const scores: RankedCorrectScore[] = [];
-  for (let h = 0; h <= 5; h++) {
-    for (let a = 0; a <= 5; a++) {
-      const p = poissonProb(homeXg, h) * poissonProb(awayXg, a);
-      scores.push({ score: `${h}-${a}`, probability: Math.round(p * 1000) / 10, home: h, away: a });
-    }
-  }
+  const scores: RankedCorrectScore[] = getScoreDistribution(prediction)
+    .filter(({ home, away }) => home <= 5 && away <= 5)
+    .map(({ home, away, probability }) => ({
+      score: `${home}-${away}`, probability: Math.round(probability * 1000) / 10, home, away,
+    }));
 
   scores.sort((a, b) => b.probability - a.probability);
   return scores;
