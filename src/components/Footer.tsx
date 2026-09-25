@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
-import betwayBanner from "@/assets/betway-banner.png.asset.json";
+import betwayBanner from "@/assets/betway-banner.jpg";
 import oneXbetCard from "@/assets/footer-1xbet.jpg";
 
 const BETWAY_URL = "https://betway.com/bwp/sports-welcome/?s=sp54043";
