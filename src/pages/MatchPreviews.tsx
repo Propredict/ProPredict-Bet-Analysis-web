@@ -237,6 +237,7 @@ export default function MatchPreviews() {
         consensus_home: (p as any).consensus_home ?? null,
         consensus_draw: (p as any).consensus_draw ?? null,
         consensus_away: (p as any).consensus_away ?? null,
+        market_odds: ((p as any).market_odds ?? {}) as Record<string, number>,
       };
     });
   }, [previews, predictions]);
@@ -360,10 +361,15 @@ export default function MatchPreviews() {
                 pickLabel === "Home Win" ? match.consensus_home
                 : pickLabel === "Draw" ? match.consensus_draw
                 : pickLabel === "Away Win" ? match.consensus_away
+                : pickLabel === "Over 2.5" ? match.market_odds?.over_2_5
+                : pickLabel === "Under 2.5" ? match.market_odds?.under_2_5
+                : pickLabel === "BTTS Yes" ? match.market_odds?.btts_yes
+                : pickLabel === "BTTS No" ? match.market_odds?.btts_no
                 : null;
-              const displayOdds = realOdds && realOdds > 1
-                ? realOdds.toFixed(2)
-                : (100 / Math.max(pct, 1)).toFixed(2);
+              // Only real bookmaker odds are shown — never model-derived values.
+              const displayOdds = realOdds && Number(realOdds) > 1
+                ? Number(realOdds).toFixed(2)
+                : "—";
 
               return (
                 <button
