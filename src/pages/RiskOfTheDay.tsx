@@ -73,7 +73,7 @@ export default function RiskOfTheDay() {
         <meta name="description" content="Daily high-risk, high-reward football predictions. Bold picks with maximum payout potential." />
       </Helmet>
       <div className="section-gap">
-        {/* Sponsored: Melbet affiliate banner at top */}
+        {/* Sponsored: Betway affiliate banner at top */}
         <div className="mb-4">
         </div>
 

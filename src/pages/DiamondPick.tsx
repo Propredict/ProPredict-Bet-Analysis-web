@@ -66,7 +66,7 @@ export default function DiamondPick() {
         <meta name="description" content="Hand-picked diamond football predictions. Our most confident, highest-quality selections. Premium only." />
       </Helmet>
       <div className="section-gap">
-        {/* Sponsored: Melbet affiliate banner at top */}
+        {/* Sponsored: Betway affiliate banner at top */}
         <div className="mb-4">
         </div>
 
