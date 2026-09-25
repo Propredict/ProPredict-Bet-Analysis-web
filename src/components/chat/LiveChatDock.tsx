@@ -19,11 +19,17 @@ interface ChatMessage {
 const MAX_LEN = 500;
 const OPEN_KEY = "propredict:live_chat_open";
 
+const isDesktop = () =>
+  typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
 export function LiveChatDock() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
+    // Desktop: show the chat box open by default so the frame is visible.
+    // Mobile: remember the user's last choice.
+    if (isDesktop()) return true;
     return localStorage.getItem(OPEN_KEY) === "1";
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -61,7 +67,8 @@ export function LiveChatDock() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(OPEN_KEY, open ? "1" : "0");
+    // Persist the open/closed choice only on mobile; desktop always opens by default.
+    if (!isDesktop()) localStorage.setItem(OPEN_KEY, open ? "1" : "0");
     if (open) {
       setUnread(0);
       setTimeout(scrollToBottom, 120);
@@ -165,8 +172,8 @@ export function LiveChatDock() {
             </span>
           )}
         </button>
-        {/* Desktop: full bar */}
-        <div className="fixed bottom-4 left-4 z-40 hidden w-[330px] md:block">
+        {/* Desktop: full box in the bottom-right corner */}
+        <div className="fixed bottom-4 right-4 z-40 hidden w-[330px] md:block">
           <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
             <button
               type="button"
@@ -194,7 +201,7 @@ export function LiveChatDock() {
   }
 
   return (
-    <div className="fixed bottom-24 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-4">
+    <div className="fixed bottom-24 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-auto md:right-4">
       <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
         <button
           type="button"
@@ -213,7 +220,7 @@ export function LiveChatDock() {
 
         {open && (
           <>
-            <div className="h-64 space-y-2 overflow-y-auto p-3">
+            <div className="h-64 space-y-2 overflow-y-auto p-3 md:h-80">
               {loading ? (
                 <div className="flex items-center justify-center py-10 text-muted-foreground">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
