@@ -13,7 +13,7 @@ interface LeagueStatsInjuriesTabProps {
 }
 
 export function LeagueStatsInjuriesTab({ leagueId, leagueName }: LeagueStatsInjuriesTabProps) {
-  const { data, isLoading } = useLeagueInjuries(leagueId, "2025");
+  const { data, isLoading } = useLeagueInjuries(leagueId);
   const [search, setSearch] = useState("");
 
   const injuries = useMemo(() => {
