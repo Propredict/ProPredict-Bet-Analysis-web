@@ -124,8 +124,6 @@ export default function MatchPreviewDetail() {
 
   const isPremiumUser = plan === "premium" || isAdmin;
   const isProUser = plan === "basic";
-  const isFreeUser = !isPremiumUser && !isProUser;
-
   const canUnlock = isPremiumUser || (isProUser && (!hasReachedLimit || isMatchUnlocked(matchId || "")));
 
   useEffect(() => {
