@@ -507,7 +507,7 @@ export default function TicketDetails() {
             <div className="flex items-center justify-between mb-3">
                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Share2 className="h-4 w-4" />
-                <span>Share this AI Combo</span>
+                <span>Share this AI Combo / Podeli ovaj tiket</span>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
