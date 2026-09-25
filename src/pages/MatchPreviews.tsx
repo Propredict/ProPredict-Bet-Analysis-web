@@ -428,7 +428,7 @@ export default function MatchPreviews() {
                   {/* Fair odds (desktop) */}
                   <div className="hidden w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:flex">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                    <span className="text-base font-black text-primary">{fairOdds}</span>
+                    <span className="text-base font-black text-primary">{displayOdds}</span>
                   </div>
 
                   <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
