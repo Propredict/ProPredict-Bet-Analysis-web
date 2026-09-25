@@ -16,13 +16,10 @@ import {
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
 import { MatchHistoryTabs } from "@/components/match-previews/MatchHistoryTabs";
-import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useMatchPreviewUnlocks } from "@/hooks/useMatchPreviewUnlocks";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
-import type { Match } from "@/hooks/useLiveScores";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
 import { getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
 
@@ -118,7 +115,6 @@ export default function MatchPreviewDetail() {
   const { plan } = useUserPlan();
   const { isAdmin } = useAdminAccess();
   const { matches: liveMatches } = useLiveScores({ dateMode: "today" });
-  const { isGenerating, analysis, generatedMatch, generateFromPrediction } = useMatchPreviewGenerator();
   const { remaining, hasReachedLimit, isMatchUnlocked, recordUnlock, limit } = useMatchPreviewUnlocks();
 
   const [prediction, setPrediction] = useState<any>(null);
@@ -166,34 +162,6 @@ export default function MatchPreviewDetail() {
 
     fetchPrediction();
   }, [matchId, predictionIdFromState]);
-
-  useEffect(() => {
-    if (!prediction || !unlocked || analysis || isGenerating || isFreeUser) return;
-
-    const liveMatchForLogos = liveMatches.find(
-      (match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team
-    );
-
-    const detailMatch: Match = {
-      id: prediction.match_id,
-      homeTeam: prediction.home_team,
-      awayTeam: prediction.away_team,
-      homeTeamId: liveMatchForLogos?.homeTeamId ?? 0,
-      awayTeamId: liveMatchForLogos?.awayTeamId ?? 0,
-      startTime: liveMatchForLogos?.startTime || prediction.match_time || "",
-      status: "upcoming",
-      league: prediction.league || "",
-      homeScore: null,
-      awayScore: null,
-      minute: null,
-      leagueCountry: liveMatchForLogos?.leagueCountry || "",
-      homeLogo: liveMatchForLogos?.homeLogo || null,
-      awayLogo: liveMatchForLogos?.awayLogo || null,
-      leagueLogo: liveMatchForLogos?.leagueLogo || null,
-    };
-
-    generateFromPrediction(detailMatch, prediction);
-  }, [prediction, unlocked, analysis, isGenerating, !isFreeUser, liveMatches, generateFromPrediction]);
 
   const liveMatch = prediction
     ? liveMatches.find((match) => match.homeTeam === prediction.home_team && match.awayTeam === prediction.away_team)
