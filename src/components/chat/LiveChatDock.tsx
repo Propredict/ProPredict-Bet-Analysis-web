@@ -67,7 +67,8 @@ export function LiveChatDock() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(OPEN_KEY, open ? "1" : "0");
+    // Persist the open/closed choice only on mobile; desktop always opens by default.
+    if (!isDesktop()) localStorage.setItem(OPEN_KEY, open ? "1" : "0");
     if (open) {
       setUnread(0);
       setTimeout(scrollToBottom, 120);
