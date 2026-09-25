@@ -371,13 +371,13 @@ export default function MatchPreviews() {
 
                   {/* Home team */}
                   <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-                    <span className="truncate text-right text-xs font-black text-foreground sm:text-sm md:text-base">
+                    <span className="text-right text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
                       {match.home_team}
                     </span>
                     {homeLogo ? (
-                      <img src={homeLogo} alt={match.home_team} className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                      <img src={homeLogo} alt={match.home_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
                     ) : (
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
                         {getTeamInitials(match.home_team)}
                       </span>
                     )}
@@ -388,13 +388,13 @@ export default function MatchPreviews() {
                   {/* Away team */}
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     {awayLogo ? (
-                      <img src={awayLogo} alt={match.away_team} className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                      <img src={awayLogo} alt={match.away_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
                     ) : (
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
                         {getTeamInitials(match.away_team)}
                       </span>
                     )}
-                    <span className="truncate text-xs font-black text-foreground sm:text-sm md:text-base">
+                    <span className="text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
                       {match.away_team}
                     </span>
                   </div>
