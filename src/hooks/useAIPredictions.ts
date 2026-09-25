@@ -36,6 +36,9 @@ export interface AIPrediction {
   market_trend_strength?: string | null;   // 'weak' | 'moderate' | 'strong'
   odds_movement_pct?: number | null;
   consensus_odds?: number | null;
+  consensus_home?: number | null;
+  consensus_draw?: number | null;
+  consensus_away?: number | null;
   bookmakers_count?: number | null;
   confidence_adjustment?: number | null;
   // High Value Insight engine (analytical edge vs market consensus)

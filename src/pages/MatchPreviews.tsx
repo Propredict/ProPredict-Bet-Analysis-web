@@ -234,6 +234,9 @@ export default function MatchPreviews() {
         h2h_summary: pv?.h2h_summary ?? null,
         rank: i + 1,
         bestPick,
+        consensus_home: (p as any).consensus_home ?? null,
+        consensus_draw: (p as any).consensus_draw ?? null,
+        consensus_away: (p as any).consensus_away ?? null,
       };
     });
   }, [previews, predictions]);
@@ -350,7 +353,17 @@ export default function MatchPreviews() {
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const pct = match.bestPick?.pct ?? match.confidence;
-              const fairOdds = (100 / Math.max(pct, 1)).toFixed(2);
+              // Real bookmaker consensus odds for 1X2 picks; fair odds from our
+              // model only for markets where bookmaker odds are not stored.
+              const pickLabel = match.bestPick?.label ?? "";
+              const realOdds =
+                pickLabel === "Home Win" ? match.consensus_home
+                : pickLabel === "Draw" ? match.consensus_draw
+                : pickLabel === "Away Win" ? match.consensus_away
+                : null;
+              const displayOdds = realOdds && realOdds > 1
+                ? realOdds.toFixed(2)
+                : (100 / Math.max(pct, 1)).toFixed(2);
 
               return (
                 <button
@@ -418,7 +431,7 @@ export default function MatchPreviews() {
                   {/* Fair odds (desktop) */}
                   <div className="hidden w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:flex">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                    <span className="text-base font-black text-primary">{fairOdds}</span>
+                    <span className="text-base font-black text-primary">{displayOdds}</span>
                   </div>
 
                   <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
