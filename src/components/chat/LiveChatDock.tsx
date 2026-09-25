@@ -201,7 +201,7 @@ export function LiveChatDock() {
   }
 
   return (
-    <div className="fixed bottom-24 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-4">
+    <div className="fixed bottom-24 left-3 z-40 w-[calc(100vw-1.5rem)] max-w-[330px] md:bottom-4 md:left-auto md:right-4">
       <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
         <button
           type="button"
