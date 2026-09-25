@@ -17,11 +17,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
-import melbetCard from "@/assets/footer-melbet.jpg";
+import betwayBanner from "@/assets/betway-banner.jpg";
 import oneXbetCard from "@/assets/footer-1xbet.jpg";
 
-const MELBET_URL =
-  "https://refpa3665.com/L?tag=d_5761363m_45415c_&site=5761363&ad=45415&r=Registration";
+const BETWAY_URL = "https://betway.com/bwp/sports-welcome/?s=sp54043";
 const ONEXBET_URL = "https://propredict.s.gy/1xbet-register";
 const TELEGRAM_URL = "https://t.me/propredictxx";
 
@@ -102,25 +101,25 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
           </div>
         </a>
 
-        {/* Affiliate cards — Melbet & 1xBet */}
+        {/* Affiliate cards — Betway & 1xBet */}
         {!isAndroidApp && (
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Melbet */}
+            {/* Betway */}
             <a
-              href={MELBET_URL}
+              href={BETWAY_URL}
               target="_blank"
               rel="noopener noreferrer sponsored"
-              onClick={openExternal(MELBET_URL)}
-              aria-label="Melbet exclusive bonus — Play now (sponsored)"
-              className="group relative block overflow-hidden rounded-2xl border border-[#C9A227]/50 shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#C9A227]/25"
+              onClick={openExternal(BETWAY_URL)}
+              aria-label="Betway — Register now & get Premium access (sponsored)"
+              className="group relative block overflow-hidden rounded-2xl border border-[#0E7A3D]/50 shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[#0E7A3D]/25"
             >
               <img
-                src={melbetCard}
-                alt="Melbet — Exclusive Bonus, welcome offer for new players"
+                src={betwayBanner}
+                alt="Betway — Register now & get Premium access to exclusive AI picks"
                 className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transform-none"
                 loading="lazy"
-                width={1408}
-                height={576}
+                width={1536}
+                height={1024}
               />
               <span className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/85 backdrop-blur">
                 Sponsored

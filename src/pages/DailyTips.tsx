@@ -129,7 +129,7 @@ export default function DailyTips() {
       <meta property="og:type" content="website" />
     </Helmet>
     <div className="section-gap">
-      {/* Sponsored: Melbet affiliate banner at top */}
+      {/* Sponsored: Betway affiliate banner at top */}
       <div className="mb-4">
       </div>
 
