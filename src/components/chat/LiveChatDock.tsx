@@ -172,8 +172,8 @@ export function LiveChatDock() {
             </span>
           )}
         </button>
-        {/* Desktop: full bar */}
-        <div className="fixed bottom-4 left-4 z-40 hidden w-[330px] md:block">
+        {/* Desktop: full box in the bottom-right corner */}
+        <div className="fixed bottom-4 right-4 z-40 hidden w-[330px] md:block">
           <div className="overflow-hidden rounded-xl border-2 border-primary/50 bg-card shadow-xl shadow-primary/20">
             <button
               type="button"
