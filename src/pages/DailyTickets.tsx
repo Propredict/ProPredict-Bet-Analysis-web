@@ -194,7 +194,7 @@ export default function DailyTickets() {
       </div>
 
       {/* Tickets Grid */}
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:mx-auto md:w-full md:max-w-xl">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:w-full md:grid-cols-2 md:items-start">
         {isLoading ? (
           <Card className="p-8 bg-card border-border">
             <div className="flex flex-col items-center justify-center text-muted-foreground">

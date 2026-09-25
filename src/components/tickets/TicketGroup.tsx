@@ -71,7 +71,7 @@ export function TicketGroup({
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-start">
-            tickets.map((ticket, ticketIndex) => {
+            {tickets.map((ticket, ticketIndex) => {
               const unlockMethod = getUnlockMethod(tier, "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
               const visibleMatches = isLocked ? ticket.matches.slice(0, 3) : ticket.matches;
@@ -197,7 +197,8 @@ export function TicketGroup({
                   </article>
                 </div>
               );
-            })
+            })}
+            </div>
           )}
     </section>
   );

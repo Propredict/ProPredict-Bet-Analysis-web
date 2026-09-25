@@ -83,7 +83,7 @@ export default function PremiumTickets() {
           </div>
           </div>
 
-          <div className="mt-4 md:mx-auto md:w-full md:max-w-xl">
+          <div className="mt-4 md:w-full">
             <TicketGroup title="Premium Ticket" subtitle="Premium members" badge="Exclusive" tickets={premiumTickets} tier="premium" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>
         </div>
