@@ -357,71 +357,71 @@ export default function MatchPreviews() {
                   key={match.id}
                   type="button"
                   onClick={() => (isFreeUser ? navigate("/get-premium") : handleCardClick(match))}
-                  className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-primary/50 bg-card px-3 py-3 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 sm:gap-3 sm:px-4"
+                  className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-primary/50 bg-card px-3 py-3 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 sm:gap-4 sm:px-5 sm:py-4"
                 >
                   {/* Rank */}
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground sm:h-9 sm:w-9">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-base font-black text-primary-foreground sm:h-11 sm:w-11 sm:text-lg">
                     {match.rank}
                   </div>
 
                   {/* League (desktop) */}
-                  <span className="hidden w-28 shrink-0 truncate text-xs font-bold text-muted-foreground lg:block">
+                  <span className="hidden w-32 shrink-0 truncate text-sm font-bold text-muted-foreground lg:block">
                     {match.league || ""}
                   </span>
 
                   {/* Home team */}
                   <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-                    <span className="text-right text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
+                    <span className="text-right text-xs font-black leading-tight text-foreground break-words sm:text-base md:text-lg">
                       {match.home_team}
                     </span>
                     {homeLogo ? (
-                      <img src={homeLogo} alt={match.home_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                      <img src={homeLogo} alt={match.home_team} className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9" loading="lazy" />
                     ) : (
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary sm:h-9 sm:w-9">
                         {getTeamInitials(match.home_team)}
                       </span>
                     )}
                   </div>
 
-                  <span className="shrink-0 text-[10px] font-black text-muted-foreground sm:text-xs">VS</span>
+                  <span className="shrink-0 text-[11px] font-black text-muted-foreground sm:text-sm">VS</span>
 
                   {/* Away team */}
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     {awayLogo ? (
-                      <img src={awayLogo} alt={match.away_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                      <img src={awayLogo} alt={match.away_team} className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9" loading="lazy" />
                     ) : (
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-black text-primary sm:h-9 sm:w-9">
                         {getTeamInitials(match.away_team)}
                       </span>
                     )}
-                    <span className="text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
+                    <span className="text-xs font-black leading-tight text-foreground break-words sm:text-base md:text-lg">
                       {match.away_team}
                     </span>
                   </div>
 
                   {/* Pick */}
-                  <div className="flex w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-1.5 py-1.5 sm:w-24 sm:px-2">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground sm:text-[9px]">Pick</span>
-                    <span className="truncate text-[11px] font-black text-success sm:text-sm">
+                  <div className="flex w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:w-28 sm:px-3 sm:py-2.5">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground sm:text-[11px]">Pick</span>
+                    <span className="truncate text-xs font-black text-success sm:text-lg">
                       {isFreeUser ? "🔒" : match.bestPick?.label}
                     </span>
                   </div>
 
                   {/* Confidence */}
-                  <div className="w-14 shrink-0 sm:w-20">
-                    <div className="text-center text-xs font-black text-foreground sm:text-sm">{pct}%</div>
-                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="w-16 shrink-0 sm:w-24">
+                    <div className="text-center text-sm font-black text-foreground sm:text-base">{pct}%</div>
+                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(pct, 100)}%` }} />
                     </div>
                   </div>
 
                   {/* Fair odds (desktop) */}
-                  <div className="hidden w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-1.5 sm:flex">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                    <span className="text-sm font-black text-primary">{fairOdds}</span>
+                  <div className="hidden w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2 sm:flex">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
+                    <span className="text-base font-black text-primary">{fairOdds}</span>
                   </div>
 
-                  <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+                  <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
                 </button>
               );
             })}
