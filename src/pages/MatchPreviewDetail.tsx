@@ -17,6 +17,7 @@ import { useLiveScores } from "@/hooks/useLiveScores";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchPreviewAnalysis } from "@/components/match-previews/MatchPreviewAnalysis";
+import { MatchHistoryTabs } from "@/components/match-previews/MatchHistoryTabs";
 import { useMatchPreviewGenerator } from "@/hooks/useMatchPreviewGenerator";
 import { useMatchPreviewUnlocks } from "@/hooks/useMatchPreviewUnlocks";
 import { cn } from "@/lib/utils";
@@ -711,22 +712,19 @@ export default function MatchPreviewDetail() {
           </div>
         )}
 
-        {/* ============ TABS: H2H / RESULTS (full generated analysis) ============ */}
+        {/* ============ TABS: H2H / RESULTS ============ */}
         {unlocked && (activeTab === "h2h" || activeTab === "results") && (
-          isGenerating || analysis ? (
-            generatedMatch && (
-              <MatchPreviewAnalysis
-                match={generatedMatch}
-                analysis={analysis}
-                isLoading={isGenerating}
-                prediction={prediction}
-              />
-            )
-          ) : (
-            <div className="rounded-2xl border border-[#1c3a5e] bg-[#0a1830]/90 p-8 text-center">
-              <p className="text-sm text-white/40">Detailed {activeTab === "h2h" ? "head-to-head" : "results"} data is not available for this match yet.</p>
-            </div>
-          )
+          <MatchHistoryTabs
+            tab={activeTab}
+            fixtureId={String(prediction.match_id)}
+            matchDate={String(prediction.match_date || "")}
+            homeTeam={prediction.home_team}
+            awayTeam={prediction.away_team}
+            homeId={liveMatch?.homeTeamId ?? null}
+            awayId={liveMatch?.awayTeamId ?? null}
+            homeLogo={homeLogo}
+            awayLogo={awayLogo}
+          />
         )}
 
         {/* ============ LOCKED SECTIONS FOR FREE USERS ============ */}
