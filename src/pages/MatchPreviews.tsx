@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy, Check, Crown, ShieldCheck, Users, Diamond } from "lucide-react";
+import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Check, Crown, Diamond } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
