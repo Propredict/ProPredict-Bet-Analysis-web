@@ -140,6 +140,14 @@
           return;
         }
 
+        // Only load on the production domain — the OneSignal SDK rejects
+        // other hosts and throws a cross-origin "Script error" otherwise.
+        var host = window.location.hostname || '';
+        if (host !== 'propredict.me' && host !== 'www.propredict.me') {
+          console.log('[OneSignal] Non-production host — skipping Web SDK');
+          return;
+        }
+
         // Load OneSignal Web SDK only for real browsers
         var s = document.createElement('script');
         s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
