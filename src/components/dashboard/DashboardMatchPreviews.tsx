@@ -6,6 +6,7 @@ import { useAIPredictions } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
+import { getStrongestMarketPick, TOP10_MIN_CONFIDENCE } from "@/utils/matchPreviewPicks";
 
 const QUALITY_LEAGUES: Record<string, number> = {
   "Premier League": 1, "Championship": 2, "La Liga": 3, "Bundesliga": 4,
@@ -29,7 +30,7 @@ function MiniBarChart() {
   );
 }
 
-/* Big header stat card — "TOP 30 AI PICKS" (image-2 top card) */
+/* Big header stat card — "TOP 10 AI PICKS" (image-2 top card) */
 function HeaderStatCard({ onClick }: { onClick: () => void }) {
   return (
     <button
@@ -41,10 +42,10 @@ function HeaderStatCard({ onClick }: { onClick: () => void }) {
       </span>
       <div className="min-w-0 flex-1">
         <h3 className="text-base font-black uppercase tracking-tight text-sidebar sm:text-xl">
-          Top 30 AI Picks
+          Top 10 AI Picks
         </h3>
         <p className="truncate text-[11px] text-muted-foreground sm:text-sm">
-          Best AI picks with highest confidence
+          Only 80%+ AI confidence / Samo 80%+ sigurnost
         </p>
         <span className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary sm:text-[11px]">
           <Star className="h-3 w-3 fill-current" /> Top rated matches
@@ -92,14 +93,13 @@ export function DashboardMatchPreviews() {
 
   const topMatches = useMemo(() => {
     if (!predictions.length) return [];
-    return [...predictions]
-      .filter(p => (p.confidence ?? 0) >= 75)
+    return predictions
       .filter(p => !(p.confidence === 50 && (p.analysis || "").toLowerCase().includes("pending")))
+      .map(p => ({ ...p, top: getStrongestMarketPick(p as any) }))
+      .filter(p => p.top.confidence >= TOP10_MIN_CONFIDENCE)
       .sort((a, b) => {
-        const pa = QUALITY_LEAGUES[a.league || ""] ?? 99;
-        const pb = QUALITY_LEAGUES[b.league || ""] ?? 99;
-        if (pa !== pb) return pa - pb;
-        return (b.confidence ?? 0) - (a.confidence ?? 0);
+        if (b.top.confidence !== a.top.confidence) return b.top.confidence - a.top.confidence;
+        return (QUALITY_LEAGUES[a.league || ""] ?? 99) - (QUALITY_LEAGUES[b.league || ""] ?? 99);
       })
       .slice(0, 4);
   }, [predictions]);
@@ -119,7 +119,7 @@ export function DashboardMatchPreviews() {
               <Trophy className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <h3 className="truncate text-base font-black text-sidebar sm:text-lg">Top 30 AI Picks</h3>
+              <h3 className="truncate text-base font-black text-sidebar sm:text-lg">Top 10 AI Picks</h3>
               <p className="truncate text-[11px] text-muted-foreground">
                 Highest confidence picks · Updated daily
               </p>
@@ -135,10 +135,9 @@ export function DashboardMatchPreviews() {
 
         {/* Rows */}
         {topMatches.map((match) => {
-          const hw = match.home_win ?? 0;
-          const aw = match.away_win ?? 0;
-          const favored = hw >= aw ? match.home_team : match.away_team;
-          const favoredPct = Math.max(hw, aw);
+          const lbl = match.top.label;
+          const favored = lbl === "Home Win" ? match.home_team : lbl === "Away Win" ? match.away_team : lbl;
+          const favoredPct = match.top.confidence;
 
           return (
             <div
@@ -188,7 +187,7 @@ export function DashboardMatchPreviews() {
             onClick={() => navigate("/match-previews")}
           >
             <Eye className="mr-1.5 h-4 w-4" />
-            <span className="truncate">See all Top 30 Picks / Pogledaj sve Top 30 AI Picks</span>
+            <span className="truncate">See all Top 30 Picks / Pogledaj sve Top 10 AI Picks</span>
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         </div>

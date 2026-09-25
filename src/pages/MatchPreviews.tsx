@@ -11,7 +11,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
-import { getTopMatchPreviewPick } from "@/utils/matchPreviewPicks";
+import { getStrongestMarketPick as getTopMatchPreviewPick, TOP10_MIN_CONFIDENCE, TOP10_MAX } from "@/utils/matchPreviewPicks";
 import { cn } from "@/lib/utils";
 import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
@@ -20,7 +20,7 @@ import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
 const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
-const MAX_MATCHES = 30;
+const MAX_MATCHES = TOP10_MAX;
 
 // Tier 1 = elite top-flight leagues + UEFA competitions (always shown first)
 // Tier 2 = strong second-tier / mid-strength leagues
@@ -187,16 +187,16 @@ export default function MatchPreviews() {
     // Same quality gate as the AI Predictions page: only verified picks
     // (best market strength >= 65%) are eligible. Fewer than 30 cards is fine.
     const enriched = valid
-      .filter(p => Math.max(p.confidence ?? 0, getTopMatchPreviewPick(p as any).confidence) >= 65)
+      .filter(p => getTopMatchPreviewPick(p as any).confidence >= TOP10_MIN_CONFIDENCE)
       .map(p => ({
         p,
         bestPct: getTopMatchPreviewPick(p as any).confidence,
         tier: getLeagueTier(p.league),
       }))
       .sort((a, b) => {
-        if (a.tier !== b.tier) return a.tier - b.tier;
         const pctDiff = b.bestPct - a.bestPct;
         if (pctDiff !== 0) return pctDiff;
+        if (a.tier !== b.tier) return a.tier - b.tier;
         const confDiff = (b.p.confidence ?? 0) - (a.p.confidence ?? 0);
         if (confDiff !== 0) return confDiff;
         return getLeaguePriority(a.p.league) - getLeaguePriority(b.p.league);
@@ -251,15 +251,15 @@ export default function MatchPreviews() {
   return (
     <>
       <Helmet>
-        <title>Top 30 AI Picks – Safest Football Predictions | ProPredict</title>
-        <meta name="description" content="The Top 30 AI Picks of the day — AI-curated safest football matches with 75%+ confidence." />
+        <title>Top 10 AI Picks – Safest Football Predictions | ProPredict</title>
+        <meta name="description" content="The Top 10 AI Picks of the day — only matches where our AI model is 80%+ confident in a pick." />
       </Helmet>
 
       <div className="page-content space-y-4">
         {/* Page Header */}
         <PageHero
-          title="Top 30 AI Picks"
-          subtitle="Only the safest AI picks — 75%+ confidence"
+          title="Top 10 AI Picks"
+          subtitle="Only picks with 80%+ AI confidence / Samo tipovi sa 80%+ sigurnosti"
           icon={Trophy}
           badge={
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/30 bg-primary-foreground/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
@@ -282,7 +282,7 @@ export default function MatchPreviews() {
                   <Check className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-sm text-foreground/90">
-                  Our AI selects only the safest matches (<span className="text-primary font-bold">75%+ confidence</span>) from today's fixtures.
+                  Only matches where our AI is <span className="text-primary font-bold">80%+ confident</span> in any pick (1, X, 2, Over/Under 2.5, BTTS). / Samo utakmice gde je naš AI 80%+ siguran u bilo koji tip.
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -345,7 +345,7 @@ export default function MatchPreviews() {
         ) : topMatches.length === 0 ? (
           <Card className="p-6 text-center">
             <Eye className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No matches available today</p>
+            <p className="text-sm text-muted-foreground">No picks with 80%+ confidence today / Danas nema tipova sa 80%+ sigurnosti</p>
           </Card>
         ) : (
           <div className="space-y-4">
