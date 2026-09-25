@@ -187,7 +187,7 @@ export function DashboardMatchPreviews() {
             onClick={() => navigate("/match-previews")}
           >
             <Eye className="mr-1.5 h-4 w-4" />
-            <span className="truncate">See all Top 30 Picks / Pogledaj sve Top 10 AI Picks</span>
+            <span className="truncate">See all Top 10 Picks / Pogledaj sve Top 10 AI Picks</span>
             <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         </div>
