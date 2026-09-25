@@ -11,8 +11,6 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import { getStrongestMarketPick as getTopMatchPreviewPick, TOP10_MIN_CONFIDENCE, TOP10_MAX } from "@/utils/matchPreviewPicks";
-import { cn } from "@/lib/utils";
-import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
 import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
