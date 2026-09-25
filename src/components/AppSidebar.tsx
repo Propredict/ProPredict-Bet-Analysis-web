@@ -154,34 +154,30 @@ export function AppSidebar() {
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {isAdmin && (
-              <>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to="/ai-predictions" 
-                      className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold transition-colors hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/20 text-primary"
-                    >
-                      <Brain className="h-5 w-5" />
-                      {!collapsed && <span>AI Predictions</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to="/match-previews" 
-                      className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold transition-colors hover:bg-sidebar-accent"
-                      activeClassName="bg-primary/20 text-primary"
-                    >
-                      <Eye className="h-5 w-5" />
-                      {!collapsed && <span>Top 30 AI Picks</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </>
-            )}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/ai-predictions" 
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Brain className="h-5 w-5" />
+                  {!collapsed && <span>AI Predictions</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/match-previews" 
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Eye className="h-5 w-5" />
+                  {!collapsed && <span>Top 30 AI Picks</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
           </SidebarMenu>
         </SidebarGroup>
