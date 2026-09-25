@@ -63,6 +63,16 @@ export default {
           foreground: "hsl(var(--warning-foreground))",
         },
         pending: "hsl(var(--pending))",
+        stadium: {
+          DEFAULT: "hsl(var(--stadium))",
+          raised: "hsl(var(--stadium-raised))",
+          line: "hsl(var(--stadium-line))",
+          foreground: "hsl(var(--stadium-foreground))",
+          muted: "hsl(var(--stadium-muted))",
+          green: "hsl(var(--stadium-green))",
+          blue: "hsl(var(--stadium-blue))",
+          red: "hsl(var(--stadium-red))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

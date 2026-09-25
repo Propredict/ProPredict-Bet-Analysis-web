@@ -38,6 +38,16 @@
     --success: 158 64% 40%;
     --pending: 38 92% 50%;
 
+    /* Match analysis stadium panels */
+    --stadium: 211 67% 10%;
+    --stadium-raised: 210 69% 15%;
+    --stadium-line: 205 75% 28%;
+    --stadium-foreground: 205 100% 96%;
+    --stadium-muted: 207 31% 69%;
+    --stadium-green: 156 70% 49%;
+    --stadium-blue: 199 100% 60%;
+    --stadium-red: 0 86% 66%;
+
     --radius: 0.625rem;
 
     --sidebar-background: 208 86% 17%;
