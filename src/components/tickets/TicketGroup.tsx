@@ -197,7 +197,8 @@ export function TicketGroup({
                       </Button>
                     )}
                   </div>
-                </article>
+                  </article>
+                </div>
               );
             })
           )}
