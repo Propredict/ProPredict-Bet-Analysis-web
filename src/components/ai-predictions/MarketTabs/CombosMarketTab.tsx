@@ -42,6 +42,8 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     if (leg === "1") return `${prediction.home_team} to win`;
     if (leg === "2") return `${prediction.away_team} to win`;
     if (leg.toLowerCase() === "x") return "Match ends in a draw";
+    if (leg.toLowerCase() === "btts yes") return "Both teams score";
+    if (leg.toLowerCase() === "btts no") return "At least one team fails to score";
     return leg;
   };
 
@@ -76,14 +78,18 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     strength: strengthFor(combo.prob),
   }));
 
-  // Risk combo from tagged key factor (e.g. "2 + Over 1.5")
-  const taggedCombo = prediction.key_factors
-    ?.find((factor) => factor.startsWith("[TAG]SAFE_COMBO:"))
-    ?.replace("[TAG]SAFE_COMBO:", "") ?? null;
-  const riskComboLabel = getConsistentSafeCombo(prediction, taggedCombo);
-  const riskView = riskComboLabel && calculateComboProbability(prediction, riskComboLabel) !== null
-    ? buildCombo(riskComboLabel, "RISK COMBO", "risk")
-    : null;
+  // Risk combo: goals-profile combo chosen by our model —
+  // "BTTS Yes + Over 2.5" (open game) or "BTTS No + Under 2.5" (tight game),
+  // whichever has the higher joint probability in the same score distribution.
+  const openProb = calculateComboProbability(prediction, "BTTS Yes + Over 2.5");
+  const tightProb = calculateComboProbability(prediction, "BTTS No + Under 2.5");
+  const riskComboLabel =
+    openProb === null && tightProb === null
+      ? null
+      : (openProb ?? -1) >= (tightProb ?? -1)
+        ? "BTTS Yes + Over 2.5"
+        : "BTTS No + Under 2.5";
+  const riskView = riskComboLabel ? buildCombo(riskComboLabel, "RISK COMBO", "risk") : null;
 
   const insight = (prediction.analysis || "").trim();
 
