@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Lock, Clock, Zap, Sparkles, ChevronRight, Trophy, Check, Crown, ShieldCheck, Users, Diamond } from "lucide-react";
+import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Check, Crown, Diamond } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
 import { useAIPredictions, type AIPrediction } from "@/hooks/useAIPredictions";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -12,8 +11,6 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useLiveScores } from "@/hooks/useLiveScores";
 import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/marketDerivation";
 import { getStrongestMarketPick as getTopMatchPreviewPick, TOP10_MIN_CONFIDENCE, TOP10_MAX } from "@/utils/matchPreviewPicks";
-import { cn } from "@/lib/utils";
-import { formatMatchTime } from "@/utils/formatMatchTime";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
 import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
@@ -348,194 +345,84 @@ export default function MatchPreviews() {
             <p className="text-sm text-muted-foreground">No picks with 80%+ confidence today / Danas nema tipova sa 80%+ sigurnosti</p>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {topMatches.map((match) => {
-              const rank = match.rank;
-              const risk = getRiskColor(match.bestPick?.pct ?? match.confidence);
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
-              const rankStyle = getRankStyle(rank);
-              const isTop3 = rank <= 3;
-
-              // Generate preview snippets
-              const snippets = getPreviewSnippets(match);
+              const pct = match.bestPick?.pct ?? match.confidence;
+              const fairOdds = (100 / Math.max(pct, 1)).toFixed(2);
 
               return (
-                <Card
+                <button
                   key={match.id}
-                  className={cn(
-                    "relative overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/10",
-                    isTop3
-                      ? "border-primary/40"
-                      : "border-border/60"
-                  )}
-                  onClick={() => handleCardClick(match)}
+                  type="button"
+                  onClick={() => (isFreeUser ? navigate("/get-premium") : handleCardClick(match))}
+                  className="flex w-full min-w-0 items-center gap-2 rounded-2xl border-2 border-primary/50 bg-card px-3 py-3 text-left transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 sm:gap-3 sm:px-4"
                 >
-                  {/* Stadium background */}
-                  <div className="absolute inset-0 z-0">
-                    <div className={cn(
-                      "absolute inset-0 opacity-40",
-                      "bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-transparent",
-                      "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent"
-                    )} />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-success/5 via-transparent to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+                  {/* Rank */}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground sm:h-9 sm:w-9">
+                    {match.rank}
                   </div>
 
-                  <div className="relative z-10 p-5 sm:p-6">
-                    {/* League Header */}
-                    <div className="flex flex-col items-center gap-2 mb-6">
-                      <div className="flex items-center gap-1.5">
-                        <div className={cn(
-                          "w-7 h-7 rounded-full flex items-center justify-center text-xs font-black",
-                          rank <= 3 ? rankStyle.bg : "bg-muted",
-                          rank <= 3 ? rankStyle.text : "text-muted-foreground"
-                        )}>
-                          {rank}
-                        </div>
-                        {isTop3 && (
-                          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs">
-                            <Trophy className="h-3 w-3" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[11px] font-black text-primary dark:text-primary uppercase tracking-[0.3em] text-center">
-                        {match.league || "Unknown"}
+                  {/* League (desktop) */}
+                  <span className="hidden w-28 shrink-0 truncate text-xs font-bold text-muted-foreground lg:block">
+                    {match.league || ""}
+                  </span>
+
+                  {/* Home team */}
+                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                    <span className="text-right text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
+                      {match.home_team}
+                    </span>
+                    {homeLogo ? (
+                      <img src={homeLogo} alt={match.home_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                    ) : (
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                        {getTeamInitials(match.home_team)}
                       </span>
-                    </div>
-
-                    {/* Teams */}
-                    <div className="flex items-center justify-between max-w-2xl mx-auto">
-                      {/* Home team */}
-                      <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
-                        <div className="relative p-1 rounded-full bg-gradient-to-br from-primary/20 to-transparent">
-                          <div className={cn(
-                            "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
-                            isTop3 ? "border-primary/50" : "border-border/50"
-                          )}>
-                            {homeLogo ? (
-                              <img src={homeLogo} alt={match.home_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
-                            ) : (
-                              <span className="text-sm sm:text-lg font-bold text-primary">{getTeamInitials(match.home_team)}</span>
-                            )}
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
-                        </div>
-                        <span className="text-sm sm:text-base font-black text-foreground text-center leading-tight max-w-[120px]">{match.home_team}</span>
-                      </div>
-
-                      {/* VS center */}
-                      <div className="flex flex-col items-center px-3 sm:px-8">
-                        <span className="text-[10px] font-bold text-muted-foreground mb-1 tracking-widest uppercase">{match.match_date || ""}</span>
-                        <div className="text-4xl sm:text-5xl font-black italic text-foreground/80 tracking-tighter">VS</div>
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/80 border border-border/50 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-[10px] font-black text-muted-foreground">
-                            {formatMatchTime((match as any).match_timestamp, match.match_time, match.match_date)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Away team */}
-                      <div className="flex flex-col items-center gap-3 flex-1 min-w-0 group">
-                        <div className="relative p-1 rounded-full bg-gradient-to-br from-primary/20 to-transparent">
-                          <div className={cn(
-                            "w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden border-4 bg-card shadow-2xl",
-                            isTop3 ? "border-primary/50" : "border-border/50"
-                          )}>
-                            {awayLogo ? (
-                              <img src={awayLogo} alt={match.away_team} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
-                            ) : (
-                              <span className="text-sm sm:text-lg font-bold text-primary">{getTeamInitials(match.away_team)}</span>
-                            )}
-                          </div>
-                          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-6 bg-foreground/5 blur-xl rounded-full -z-10" />
-                        </div>
-                        <span className="text-sm sm:text-base font-black text-foreground text-center leading-tight max-w-[120px]">{match.away_team}</span>
-                      </div>
-                    </div>
-
-                    {/* Confidence + Risk */}
-                    <div className="flex items-center justify-center gap-3 sm:gap-5 mt-8">
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-md">
-                        <ShieldCheck className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-bold text-muted-foreground">Confidence <span className="text-foreground ml-1">{match.bestPick?.pct ?? match.confidence}%</span></span>
-                      </div>
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-success/10 border border-success/20 backdrop-blur-md">
-                        <span className={cn("w-2 h-2 rounded-full animate-pulse", risk.dot)} />
-                        <span className={cn("text-xs font-black uppercase tracking-wide", risk.color)}>{risk.label}</span>
-                      </div>
-                    </div>
-
-                    {/* Locked badge */}
-                    {isFreeUser && match.bestPick && (
-                      <div className="flex justify-center mt-5">
-                        <div className="px-4 py-2 rounded-full border border-primary/40 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2">
-                          <Lock className="h-3.5 w-3.5" />
-                          AI Top Pick Locked
-                        </div>
-                      </div>
                     )}
-
-                    {/* Features grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-0.5 mt-6 bg-border/30 rounded-3xl overflow-hidden border border-border/40 backdrop-blur-md">
-                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0">
-                          <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-black text-foreground">Multiple AI picks</div>
-                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">Unlock all variations</div>
-                        </div>
-                      </div>
-
-                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3 border-l-0 sm:border-l border-border/30">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center text-success shrink-0">
-                          <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-black text-foreground">Correct score</div>
-                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">See exact results</div>
-                        </div>
-                      </div>
-
-                      <div className="bg-card/80 p-4 sm:p-5 flex items-center gap-3 border-l-0 sm:border-l border-border/30">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
-                          <Users className="h-5 w-5 sm:h-6 sm:w-6" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-black text-foreground">{getUnlockPercentage(match.match_id)}% of users</div>
-                          <div className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">unlocked this pick</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <Button
-                      className={cn(
-                        "w-full mt-5 h-auto py-4 sm:py-5 rounded-2xl font-black text-sm sm:text-base uppercase tracking-tight transition-all hover:scale-[1.01] active:scale-[0.99] shadow-[0_20px_40px_-10px_rgba(139,92,246,0.4)]",
-                        isFreeUser
-                          ? "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary animate-pulse"
-                          : "bg-gradient-to-r from-primary via-primary to-primary hover:from-primary hover:via-primary hover:to-primary"
-                      )}
-                      onClick={(e) => { e.stopPropagation(); isFreeUser ? navigate("/get-premium") : handleCardClick(match); }}
-                    >
-                      {isFreeUser ? (
-                        <>
-                          <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                          💎 Get This Winning Pick / Pogledaj Celosnu Analizu i Tip
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                          View Full Analysis & More Predictions
-                          <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
-                        </>
-                      )}
-                    </Button>
                   </div>
-                </Card>
+
+                  <span className="shrink-0 text-[10px] font-black text-muted-foreground sm:text-xs">VS</span>
+
+                  {/* Away team */}
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    {awayLogo ? (
+                      <img src={awayLogo} alt={match.away_team} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" loading="lazy" />
+                    ) : (
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary sm:h-8 sm:w-8">
+                        {getTeamInitials(match.away_team)}
+                      </span>
+                    )}
+                    <span className="text-[11px] font-black leading-tight text-foreground break-words sm:text-sm md:text-base">
+                      {match.away_team}
+                    </span>
+                  </div>
+
+                  {/* Pick */}
+                  <div className="flex w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-1.5 py-1.5 sm:w-24 sm:px-2">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground sm:text-[9px]">Pick</span>
+                    <span className="truncate text-[11px] font-black text-success sm:text-sm">
+                      {isFreeUser ? "🔒" : match.bestPick?.label}
+                    </span>
+                  </div>
+
+                  {/* Confidence */}
+                  <div className="w-14 shrink-0 sm:w-20">
+                    <div className="text-center text-xs font-black text-foreground sm:text-sm">{pct}%</div>
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Fair odds (desktop) */}
+                  <div className="hidden w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-1.5 sm:flex">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
+                    <span className="text-sm font-black text-primary">{fairOdds}</span>
+                  </div>
+
+                  <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+                </button>
               );
             })}
           </div>
