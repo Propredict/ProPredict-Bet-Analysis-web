@@ -167,9 +167,15 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Replace this date's rows (legacy rows were backed up before activation).
-    const { error: delErr } = await sb.from("ai_predictions").delete().eq("match_date", date);
-    if (delErr) return json({ error: "delete failed", details: delErr.message }, 500);
+    // Replace only rows this run actually regenerates. Existing picks for the
+    // date that v7 does not cover (e.g. today's already-published picks) stay
+    // untouched; overlapping ones are updated to the v7 result.
+    const newMatchIds = inserts.map((r) => r.match_id);
+    if (newMatchIds.length) {
+      const { error: delErr } = await sb.from("ai_predictions").delete()
+        .eq("match_date", date).in("match_id", newMatchIds);
+      if (delErr) return json({ error: "delete failed", details: delErr.message }, 500);
+    }
     if (inserts.length) {
       const { error: insErr } = await sb.from("ai_predictions").insert(inserts);
       if (insErr) return json({ error: "insert failed", details: insErr.message }, 500);
