@@ -57,6 +57,20 @@ export interface AIPrediction {
   variance_score?: number | null;
   // STEP 11 — Safe Pick flag (premium subset, conf≥85 + stable)
   is_safe_pick?: boolean | null;
+  // Engine v7 stored fields (null/absent on old-engine rows)
+  engine_version?: string | null;
+  market_probs?: {
+    raw?: Record<string, number> | null;          // market label -> probability 0-100
+    confidence?: Record<string, number> | null;   // market label -> final confidence
+    combos?: Record<string, number> | null;       // "A & B" -> probability 0-100
+    correct_scores?: { score: string; p: number }[] | null;
+  } | null;
+  main_market?: string | null;
+  main_probability?: number | null;
+  data_quality?: number | null;
+  data_quality_label?: string | null;
+  league_tier?: number | null;
+  publish_tier?: string | null;
 }
 
 export interface MissingPlayer {

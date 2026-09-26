@@ -86,6 +86,21 @@ function clampProb(n: number, min = 0, max = 100): number {
 }
 
 /**
+ * True when the row was produced by engine v7 and carries stored market
+ * probabilities. v7 rows must display the stored engine numbers verbatim —
+ * never re-derive them with the legacy Poisson fallback.
+ */
+export function isV7Prediction(prediction: AIPrediction): boolean {
+  const p = prediction as any;
+  return p.engine_version === "v7" && !!p.market_probs?.raw && typeof p.market_probs.raw === "object";
+}
+
+/** Stored v7 raw market probabilities, or null for old-engine rows. */
+function v7Raw(prediction: AIPrediction): Record<string, number> | null {
+  return isV7Prediction(prediction) ? ((prediction as any).market_probs.raw as Record<string, number>) : null;
+}
+
+/**
  * Get the xG values used for Poisson calculations, ensuring consistency
  * across all market derivations (goals, BTTS, correct scores, predicted score).
  */
