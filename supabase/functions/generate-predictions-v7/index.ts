@@ -59,6 +59,10 @@ Deno.serve(async (req) => {
     ? String(body.date) : isoDate(body.day === "today" ? 0 : 1);
   const phase = String(body.phase ?? "start");
   const force = body.force === true;
+  // Tomorrow-only: today or past dates are never (re)generated unless explicitly forced.
+  if (phase === "start" && date <= isoDate(0) && !force) {
+    return json({ skipped: true, reason: "v7 generates tomorrow only", date });
+  }
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   if (!token) return json({ error: "forbidden" }, 403);
