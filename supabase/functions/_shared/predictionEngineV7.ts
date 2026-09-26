@@ -17,6 +17,9 @@ export const CAPS = { premium: 10, pro: 10, free: 10 };
 const MAX_GOALS = 8;
 const DC_RHO = -0.08;
 export const BASE_RATE_WEIGHT = 0.8;
+// Minimum excess over base rate for a market to count as a real signal
+// (e.g. Over 1.5 needs ≥85%, Under 3.5 ≥83%, Over 2.5 ≥67%, Home Win 65%).
+export const MIN_SIGNAL_SCORE = 25;
 
 // ---------------- Input types ----------------
 export interface VenueStats { played: number; goalsFor: number; goalsAgainst: number } // totals
@@ -314,7 +317,7 @@ export function runEngine(f: FixtureInput): EngineResult {
   scores.sort((a, b) => b.p - a.p);
 
   const ranked = rankMarkets(m);
-  const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
+  const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE && r.score >= MIN_SIGNAL_SCORE);
   const top = eligible[0] ?? ranked[0];
   let main = top.market, mainP = top.p;
   // Correct score only with very strong data AND ≥65% (rare by design)
@@ -337,6 +340,7 @@ export function runEngine(f: FixtureInput): EngineResult {
     market_scores: ranked.slice(0, 5),
   };
   if (q.score < MIN_QUALITY_ANALYSE) result.rejected = "insufficient_data";
+  else if (!eligible.length && !main.startsWith("Correct Score")) result.rejected = "no_strong_signal";
   else if (home.n === 0 || away.n === 0) result.rejected = "no_team_data";
   return result;
 }
