@@ -268,6 +268,28 @@ function getScoreDistribution(prediction: AIPrediction): ScoreOutcome[] {
 /** Joint probability, not the product of two dependent market percentages. */
 export function calculateComboProbability(prediction: AIPrediction, label: string): number | null {
   const legs = label.split(/\s*(?:\+|&)\s*/).map((leg) => leg.trim().toLowerCase().replace(/ goals$/, ""));
+
+  // Engine v7: look up the stored joint probability computed from the engine
+  // grid. Keys look like "BTTS Yes & Over 2.5" — normalize the label to match.
+  if (isV7Prediction(prediction)) {
+    const stored = (prediction as any).market_probs?.combos as Record<string, number> | null | undefined;
+    if (stored && typeof stored === "object") {
+      const key = legs.map((leg) => {
+        if (leg === "1" || leg === "2") return leg.toUpperCase();
+        if (leg === "x") return "X";
+        if (leg === "dc 1x" || leg === "1x") return "1X";
+        if (leg === "dc x2" || leg === "x2") return "X2";
+        if (leg === "dc 12" || leg === "12") return "12";
+        if (leg === "btts yes" || leg === "gg") return "BTTS Yes";
+        if (leg === "btts no" || leg === "ng") return "BTTS No";
+        const g = /^(over|under) (\d+)\.5$/.exec(leg);
+        if (g) return `${g[1] === "over" ? "Over" : "Under"} ${g[2]}.5`;
+        return leg;
+      }).join(" & ");
+      if (typeof stored[key] === "number") return clampProb(stored[key]);
+    }
+  }
+
   const checks = legs.map((leg): ((home: number, away: number) => boolean) | null => {
     if (leg === "1") return (h, a) => h > a;
     if (leg === "x") return (h, a) => h === a;
