@@ -78,6 +78,19 @@ Deno.test("high probability with limited data is never Premium nor published", (
   assert(![...a.pro, ...a.free].some((x) => x.id === "lim"));
 });
 
+Deno.test("65–69 never published; Tier 3 never displaces Tier 1/2", () => {
+  const mk = (id: string, tier: 1 | 2 | 3, confidence: number, q: number): PoolItem => ({ id, tier, result: { confidence, data_quality: q } as any });
+  const pool: PoolItem[] = [mk("t1_68", 1, 68, 80), mk("t1_72", 1, 72, 65), mk("t3_84", 3, 84, 80)];
+  for (let i = 0; i < 9; i++) pool.push(mk(`t2_${i}`, 2, 75, 60));
+  const a = allocate(pool);
+  const pub = [...a.premium, ...a.pro, ...a.free].map((x) => x.id);
+  assert(!pub.includes("t1_68"));
+  assert(a.analysedOnly.some((x) => x.id === "t1_68"));
+  assert(a.pro.some((x) => x.id === "t1_72"));
+  assert(!a.pro.some((x) => x.id === "t3_84")); // Pro full with Tier 1/2
+  assertEquals(a.free[0].id, "t3_84");           // Tier 3 only in remaining capacity
+});
+
 Deno.test("league classification", () => {
   assertEquals(classifyLeague(39, "Premier League"), 1);
   assertEquals(classifyLeague(44, "FA WSL"), 3);

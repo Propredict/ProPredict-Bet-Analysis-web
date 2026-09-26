@@ -354,27 +354,34 @@ export function rankScore(i: PoolItem): number {
   return i.result.confidence + i.result.data_quality / 25 + bonus;
 }
 
-export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem[]; free: PoolItem[]; limitedHeld: PoolItem[]; unplaced: PoolItem[] } {
-  const qualified = pool
-    .filter((i) => !i.result.rejected && i.result.confidence >= MIN_PUBLISH_CONFIDENCE)
-    .sort((a, b) => rankScore(b) - rankScore(a));
+// Minimum user-facing confidence. 65–69 is analysed/stored only, never published.
+export const MIN_USER_CONFIDENCE = 70;
+
+/**
+ * Tier 1/2 always get publication slots before Tier 3 (Tier 3 = fallback only).
+ * Priority never changes confidence or thresholds — it only orders qualified items.
+ */
+export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem[]; free: PoolItem[]; limitedHeld: PoolItem[]; analysedOnly: PoolItem[]; unplaced: PoolItem[] } {
+  const notRejected = pool.filter((i) => !i.result.rejected);
+  const analysedOnly = notRejected.filter((i) => i.result.confidence >= MIN_PUBLISH_CONFIDENCE && i.result.confidence < MIN_USER_CONFIDENCE);
+  const byPriority = (a: PoolItem, b: PoolItem) => {
+    const pa = a.tier === 3 ? 1 : 0, pb = b.tier === 3 ? 1 : 0;
+    return pa - pb || rankScore(b) - rankScore(a);
+  };
+  const qualified = notRejected.filter((i) => i.result.confidence >= MIN_USER_CONFIDENCE).sort(byPriority);
   const limitedHeld = qualified.filter((i) => i.result.data_quality < QUALITY_MEDIUM);
   const publishable = qualified.filter((i) => i.result.data_quality >= QUALITY_MEDIUM);
   const used = new Set<string>();
 
-  const premiumCands = publishable.filter((i) => i.result.confidence >= PREMIUM_MIN_CONFIDENCE && i.result.data_quality >= QUALITY_HIGH);
-  const nonT3Premium = premiumCands.filter((i) => i.tier !== 3).length;
-  const premium: PoolItem[] = [];
-  let t3 = 0;
-  for (const i of premiumCands) {
-    if (premium.length >= CAPS.premium) break;
-    if (i.tier === 3 && nonT3Premium >= CAPS.premium - 2 && t3 >= 2) continue;
-    if (i.tier === 3) t3++;
-    premium.push(i); used.add(i.id);
-  }
+  // Premium: conf ≥85 AND HIGH quality, never lowered. Tier 1/2 first, Tier 3 only remaining capacity.
+  const premium = publishable
+    .filter((i) => i.result.confidence >= PREMIUM_MIN_CONFIDENCE && i.result.data_quality >= QUALITY_HIGH)
+    .slice(0, CAPS.premium);
+  premium.forEach((i) => used.add(i.id));
+
   const rest = publishable.filter((i) => !used.has(i.id));
   const pro = rest.slice(0, CAPS.pro);
   const free = rest.slice(CAPS.pro, CAPS.pro + CAPS.free);
   const unplaced = rest.slice(CAPS.pro + CAPS.free);
-  return { premium, pro, free, limitedHeld, unplaced };
+  return { premium, pro, free, limitedHeld, analysedOnly, unplaced };
 }
