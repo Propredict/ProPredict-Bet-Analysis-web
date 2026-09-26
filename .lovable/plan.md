@@ -43,17 +43,20 @@ New rejection rule: the fixture is rejected only when the data-quality score is 
 - **Tier 3:** everything else, including women's, youth/U-leagues, reserve and amateur leagues, and lower divisions.
 - Detection uses API-Football league IDs first, then name rules (`Women`, `W`, `U19/U21/U23`, `II`, `Reserves`, `Youth`) to force Tier 3.
 
-## D. Daily fixture pool
+## D. Daily fixture pool (strict tier queue)
 
 ```text
 All fixtures today/tomorrow (not started)
  -> classify tier
- -> order: Tier 1, Tier 2, Tier 3 (by kickoff inside each tier)
- -> analyse in that order in batches (time budget per run)
- -> Tier 3 analysed only if Tier 1+2 qualified picks < daily capacity (30) plus a buffer
+ -> Stage 1: analyse ALL Tier 1 fixtures (across as many batches/runs as needed)
+ -> Stage 2: Tier 2, only if qualified picks < capacity (30) + buffer (10)
+ -> Stage 3: Tier 3, only if still short after Tier 2 is fully processed
 ```
 
-Batch size, cron schedule and the API call budget stay the same. Tier 3 simply waits at the back of the queue.
+- The batch loop always takes the next batch from the lowest unfinished tier. A Tier 2/3 fixture is never picked while any Tier 1 fixture is still pending (not yet analysed and not rejected).
+- The stage state is kept per date, so a run that times out resumes at the same tier. Tier 3 can never jump ahead because of batch size.
+- Tier allocation (section I) runs only after the current stage is finished, so nothing is published from a partial pool.
+- Batch size, cron schedule and the API call budget stay the same.
 
 ## E. One engine for all markets
 
@@ -92,17 +95,22 @@ Each missing source removes its points from the quality score and its weight fro
 
 ## I. Premium / Pro / Free
 
-1. Build the complete qualified pool (confidence ≥ 65).
-2. Rank score = confidence + tier bonus (Tier 1 +6, Tier 2 +2, Tier 3 0) + quality/20.
-3. Premium: top by rank with confidence ≥ 85 and HIGH quality, up to 10.
+1. Build the complete qualified pool (final confidence ≥ 65).
+2. Rank by, in order:
+   1. Final confidence
+   2. Data quality
+   3. League tier
+   
+   League tier is a small tie-breaker only: rank score = confidence + quality/25 + tier bonus (Tier 1 +1.5, Tier 2 +0.5, Tier 3 0). The most the league can add is about 1.5 points, so a clearly stronger, well-supported Tier 2 pick (e.g. 84 vs 80) always beats a weaker Tier 1 pick. Close cases (within about 1–2 points) go to the major league.
+3. **Premium:** confidence ≥ 85 **and** HIGH data quality (≥ 75), no exceptions, up to 10. A 90% raw probability with limited data can never be Premium, because confidence is lowered and the quality check fails.
 4. Pro: the next 10.
 5. Free: the next 10.
 6. The rest stay stored but are not tier-published. Current caps are unchanged.
 
 ## J. Keeping lower leagues from displacing major fixtures
 
-- Queue order means Tier 3 is analysed only after Tier 1 and 2.
-- The rank bonus plus quality (Tier 3 has lower coverage points) means a Tier 3 match at 90% raw cannot beat a Tier 1 match at 82% unless its quality is also high.
+- The strict tier queue (D) means Tier 3 is only analysed after every Tier 1 and Tier 2 fixture is done, and only if capacity is still short.
+- Tier 3 gets fewer coverage points in data quality, so it rarely reaches HIGH quality, and therefore rarely reaches Premium.
 - Women's, youth and reserve competitions are forced to Tier 3.
 - A Premium safeguard: at most 2 Tier-3 picks in Premium when enough Tier 1/2 picks qualify.
 
@@ -114,12 +122,35 @@ Each missing source removes its points from the quality score and its weight fro
   - Strong favourite input gives Home Win above 75%
   - Missing H2H/odds/xG still produces a prediction with lower quality
   - Very thin data is rejected
-  - Tier ordering and allocation (a Tier 3 90% vs a Tier 1 82% case)
-- **Live dry run:** a `dryRun: true` flag on the function returns the pool without writing, for today's fixtures. Checks: tier mix, spread of main markets (not all Over 1.5), no repeated 75/12/13, confidence distribution.
-- **UI check** in the browser: AI Predictions, Top 10 and match analysis show the same pick and percentage.
+  - Strict tier queue: no Tier 3 analysed while Tier 1 is pending
+  - Ranking: a strong Tier 2 pick beats a weak Tier 1 pick; a 90% pick with limited data is not Premium
+- **Dry run before any production write.** A `dryRun: true` flag runs the whole pipeline without writing and returns a report:
+  - Tier 1 fixtures found vs analysed
+  - Number qualified at ≥ 65%
+  - Premium / Pro / Free candidates
+  - Rejected fixtures with reasons
+  - Tier distribution and main-market distribution (including the Over 1.5 share)
+  - Count of 75/12/13 patterns (should be 0)
+  - Important leagues with fixtures but no qualified pick
+  
+  I'll share this report with you. The new generation is not switched on in production until you approve it.
+- **UI check** in the browser: cards, tabs, Top 10 and match analysis show identical numbers.
+
+## L. Existing card UI unchanged, one source of truth
+
+- No redesign: the MAIN / GOALS / BTTS / COMBO / CORRECT tabs and card layouts stay exactly as they are. Only the data they read changes.
+- The engine stores one result per fixture (`market_probs`, `main_market`, `main_probability`, confidence, quality). Every place reads it:
+  - AI Prediction cards and the main prediction at the top: main market plus final confidence
+  - MAIN tab: 1X2 analysis from the same grid
+  - GOALS tab: Over/Under from the grid
+  - BTTS tab: BTTS Yes/No from the grid
+  - COMBO tab: combos (e.g. BTTS & Over 2.5, 1 & Over 1.5) computed from the same grid and stored with it
+  - CORRECT tab: top correct scores from the grid
+  - Top AI Picks and match analysis/details: the same stored result
+- The frontend no longer recalculates for v7 rows, so a card can never show "86% confidence" on top of a different market's 74%. The number shown next to the main pick is always that market's final confidence, and the probability is shown from the same stored result.
 
 ## Technical notes
 
-- Old rows keep their existing display (read-only fallback); this only applies to new generations.
-- Engine version is stored (`engine_version = 'v7'`) for rollback and comparison.
+- Old rows keep their existing display (read-only fallback); only new generations use `engine_version = 'v7'`.
+- Engine version is stored for rollback and comparison.
 - An optional later step: an LLM writes the explanation text from the stored numbers only.
