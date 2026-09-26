@@ -244,8 +244,11 @@ export function rankMarkets(markets: Record<MarketKey, number>): { market: strin
   return (Object.keys(BASE_RATES) as MarketKey[])
     .map((k) => {
       const p = markets[k], base = BASE_RATES[k];
-      const edge = (p - base) / (1 - base);
-      return { market: k, p: r1(p), score: Math.round((0.6 * p * 100 + 0.4 * edge * 100) * 10) / 10 };
+      // Lift over the market's natural base rate on the log-odds scale, so a
+      // 90% Over 1.5 (base 75%) ranks below a 78% Over 2.5 (base 52%).
+      const cp = Math.min(0.995, Math.max(0.005, p));
+      const lift = Math.log(cp / (1 - cp)) - Math.log(base / (1 - base));
+      return { market: k, p: r1(p), score: Math.round((100 * lift + 0.2 * p * 100) * 10) / 10 };
     })
     .sort((a, b) => b.score - a.score);
 }
