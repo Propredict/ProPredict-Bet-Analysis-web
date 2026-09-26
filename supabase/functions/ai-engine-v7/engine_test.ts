@@ -28,6 +28,7 @@ Deno.test("synthetic balanced high-scoring teams → Over 2.5 (not 1X2, not Over
     homeForm: form(Array(10).fill([3, 2])), awayForm: form(Array(10).fill([2, 3])),
     odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.35, under25: 3.2, bttsYes: 1.4, bttsNo: 2.9 },
   }));
+  console.log(JSON.stringify(r.markets), JSON.stringify(r.market_scores), r.xg_home, r.xg_away);
   assertEquals(r.main_market, "Over 2.5");
   assert(r.markets["1"] < 50 && r.markets["2"] < 50);
 });
@@ -50,6 +51,7 @@ Deno.test("synthetic tight low-scoring teams → Under 2.5", () => {
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
+  console.log(JSON.stringify(r.markets), JSON.stringify(r.market_scores));
   assert(["Under 2.5", "Under 1.5", "BTTS No"].includes(r.main_market), r.main_market);
 });
 
