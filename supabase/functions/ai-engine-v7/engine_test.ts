@@ -28,7 +28,7 @@ Deno.test("synthetic balanced high-scoring teams → Over 2.5 (not 1X2, not Over
     homeForm: form(Array(10).fill([2, 2])), awayForm: form(Array(10).fill([2, 2])),
     odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.45, under25: 2.8, bttsYes: 1.5, bttsNo: 2.6 },
   }));
-  assertEquals(r.main_market, "Over 2.5");
+  console.log("HI", JSON.stringify(r.markets)); assertEquals(r.main_market, "Over 2.5");
   assert(r.markets["1"] < 50 && r.markets["2"] < 50);
 });
 
@@ -50,7 +50,7 @@ Deno.test("synthetic tight low-scoring teams → Under 2.5", () => {
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
-  assert(["Under 2.5", "Under 1.5", "BTTS No"].includes(r.main_market), r.main_market);
+  console.log("LO", JSON.stringify(r.markets)); assert(["Under 2.5", "Under 1.5", "BTTS No"].includes(r.main_market), r.main_market);
 });
 
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
