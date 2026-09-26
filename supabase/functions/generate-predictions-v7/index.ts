@@ -59,8 +59,13 @@ Deno.serve(async (req) => {
     ? String(body.date) : isoDate(body.day === "today" ? 0 : 1);
   const phase = String(body.phase ?? "start");
   const force = body.force === true;
-  // Tomorrow-only: today or past dates are never (re)generated unless explicitly forced.
-  if (phase === "start" && date <= isoDate(0) && !force) {
+  // refresh=true (the 05:00 safety run): re-analyse the date with the latest
+  // data and UPDATE existing picks in place. Never deletes the day's picks,
+  // never touches matches v7 does not regenerate, never creates duplicates.
+  const refresh = body.refresh === true;
+  // Tomorrow-only: today or past dates are never (re)generated unless
+  // explicitly forced or this is a refresh run.
+  if (phase === "start" && date <= isoDate(0) && !force && !refresh) {
     return json({ skipped: true, reason: "v7 generates tomorrow only", date });
   }
 
@@ -73,11 +78,15 @@ Deno.serve(async (req) => {
   if (!key) return json({ error: "API key missing" }, 500);
 
   if (phase === "start") {
-    const { data: published } = await sb.from("ai_predictions").select("id").eq("match_date", date).eq("engine_version", ENGINE_VERSION).limit(1);
-    if (published?.length && !force) return json({ skipped: true, reason: "already published", date });
-    // Never replace a day that already has old-engine picks unless explicitly forced.
-    const { data: legacy } = await sb.from("ai_predictions").select("id").eq("match_date", date).is("engine_version", null).limit(1);
-    if (legacy?.length && !force) return json({ skipped: true, reason: "old-engine picks exist for this date", date });
+    // Refresh runs always proceed — their whole point is to re-analyse a date
+    // that already has picks.
+    if (!refresh) {
+      const { data: published } = await sb.from("ai_predictions").select("id").eq("match_date", date).eq("engine_version", ENGINE_VERSION).limit(1);
+      if (published?.length && !force) return json({ skipped: true, reason: "already published", date });
+      // Never replace a day that already has old-engine picks unless explicitly forced.
+      const { data: legacy } = await sb.from("ai_predictions").select("id").eq("match_date", date).is("engine_version", null).limit(1);
+      if (legacy?.length && !force) return json({ skipped: true, reason: "old-engine picks exist for this date", date });
+    }
 
     const all = await api(`/fixtures?date=${date}&timezone=UTC`, key);
     if (!all) return json({ error: "fixtures fetch failed" }, 502);
