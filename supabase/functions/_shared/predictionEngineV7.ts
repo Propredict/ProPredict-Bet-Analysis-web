@@ -255,23 +255,24 @@ export function rankMarkets(markets: Record<MarketKey, number>): { market: strin
     .sort((a, b) => b.score - a.score);
 }
 
-// ---------------- Market diversity tie-break ----------------
-// Preference only — never a rejection, never changes any probability.
-// If the strongest market is a "common" one (Over 1.5 / Under 3.5) and another
-// eligible market of the SAME fixture is similarly strong (within TIE_MARGIN pp)
-// and stays in the same publication band (>=85 / 70-84 / 65-69), the more
-// informative market (lower natural base rate) is preferred.
-export const COMMON_MARKETS = new Set(["Over 1.5", "Under 3.5"]);
-export const TIE_MARGIN = 5;
-function band(p: number): number { return p >= PREMIUM_MIN_CONFIDENCE ? 2 : p >= 70 ? 1 : 0; }
-export function diversityTieBreak<T extends { market: string; p: number }>(strongest: T, eligible: T[]): T {
-  if (!COMMON_MARKETS.has(strongest.market)) return strongest;
-  const alts = eligible.filter((r) =>
-    r !== strongest && !COMMON_MARKETS.has(r.market) &&
-    strongest.p - r.p <= TIE_MARGIN && band(r.p) === band(strongest.p));
-  if (!alts.length) return strongest;
-  alts.sort((a, b) => BASE_RATES[a.market as MarketKey] - BASE_RATES[b.market as MarketKey] || b.p - a.p);
-  return alts[0];
+// ---------------- Main market selection ----------------
+// Strongest raw probability wins, but among eligible markets within
+// PREFERENCE_MARGIN pp of the strongest, the more informative market is
+// preferred. Preference order (0 = most informative). Never changes any
+// probability, never picks a market more than the margin weaker.
+export const PREFERENCE_MARGIN = 5;
+export const MARKET_PREFERENCE: Record<string, number> = {
+  "Over 2.5": 0, "Under 2.5": 0,
+  "BTTS Yes": 1, "BTTS No": 1,
+  "1": 2, "X": 2, "2": 2,
+  "Over 3.5": 3, "Under 3.5": 3,
+  "Over 1.5": 4, "Under 1.5": 4,
+};
+export function selectMain<T extends { market: string; p: number }>(eligible: T[]): T {
+  const maxP = Math.max(...eligible.map((r) => r.p));
+  const near = eligible.filter((r) => maxP - r.p <= PREFERENCE_MARGIN);
+  near.sort((a, b) => (MARKET_PREFERENCE[a.market] ?? 9) - (MARKET_PREFERENCE[b.market] ?? 9) || b.p - a.p);
+  return near[0];
 }
 
 function predictedScoreFor(g: number[][], market: string): string {
@@ -336,11 +337,9 @@ export function runEngine(f: FixtureInput): EngineResult {
   scores.sort((a, b) => b.p - a.p);
 
   const ranked = rankMarkets(m);
-  // Eligible = probability >= 65. No extra "stronger than normal" check:
-  // a common market (Over 1.5, Under 3.5) may be the main pick if it is the strongest.
+  // Eligible = probability >= 65. Never rejected for being Over 1.5 / Under 3.5.
   const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
-  const strongest = eligible[0] ?? ranked[0];
-  const top = diversityTieBreak(strongest, eligible);
+  const top = eligible.length ? selectMain(eligible) : [...ranked].sort((a, b) => b.p - a.p)[0];
   let main = top.market, mainP = top.p;
   // Correct score only with very strong data AND ≥65% (rare by design)
   if (q.score >= QUALITY_HIGH && scores[0].p >= 65) { main = `Correct Score ${scores[0].score}`; mainP = scores[0].p; }
@@ -379,11 +378,6 @@ export function rankScore(i: PoolItem): number {
 // Minimum user-facing confidence. 65–69 is analysed/stored only, never published.
 export const MIN_USER_CONFIDENCE = 70;
 
-// Publication-level market diversity: within each priority group, a single
-// main market may fill at most this share of the Pro/Free slots before other
-// qualified markets are preferred. Deferred items still fill leftover slots,
-// so no qualified match is rejected and no slot stays empty because of it.
-export const MARKET_SHARE_CAP = 0.3;
 
 /**
  * Tier 1/2 always get publication slots before Tier 3 (Tier 3 = fallback only).
@@ -411,26 +405,8 @@ export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem
   const unusedPremium = CAPS.premium - premium.length;
   const proCap = CAPS.pro + unusedPremium;
   const slots = proCap + CAPS.free;
-  const perMarket = Math.max(1, Math.ceil(slots * MARKET_SHARE_CAP));
-
   const rest = publishable.filter((i) => !used.has(i.id));
-  const placed: PoolItem[] = [];
-  const count: Record<string, number> = {};
-  // Diversity pass per priority group (Tier 1/2, then Tier 3) — never crosses tiers.
-  for (const group of [rest.filter((i) => i.tier !== 3), rest.filter((i) => i.tier === 3)]) {
-    const deferred: PoolItem[] = [];
-    for (const i of group) {
-      if (placed.length >= slots) break;
-      const m = i.result.main_market;
-      if ((count[m] ?? 0) < perMarket) { placed.push(i); count[m] = (count[m] ?? 0) + 1; }
-      else deferred.push(i);
-    }
-    for (const i of deferred) {
-      if (placed.length >= slots) break;
-      placed.push(i); count[i.result.main_market] = (count[i.result.main_market] ?? 0) + 1;
-    }
-  }
-  placed.sort(byPriority);
+  const placed = rest.slice(0, slots); // already Tier 1/2 first, then rankScore
   const placedIds = new Set(placed.map((i) => i.id));
   const pro = placed.slice(0, proCap);
   const free = placed.slice(proCap);

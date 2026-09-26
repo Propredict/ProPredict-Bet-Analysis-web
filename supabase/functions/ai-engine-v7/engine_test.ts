@@ -103,13 +103,26 @@ Deno.test("league classification", () => {
   assert(!isWorldCup(39, "Premier League"));
 });
 
-import { diversityTieBreak } from "../_shared/predictionEngineV7.ts";
-Deno.test("diversity tie-break is preference only", () => {
-  const o15 = { market: "Over 1.5", p: 82 }, btts = { market: "BTTS Yes", p: 79 }, o25 = { market: "Over 2.5", p: 70 };
-  if (diversityTieBreak(o15, [o15, btts, o25]).market !== "BTTS Yes") throw new Error("should prefer BTTS");
-  if (diversityTieBreak(o15, [o15, o25]).market !== "Over 1.5") throw new Error("too far → keep strongest");
-  const h = { market: "1", p: 75 };
-  if (diversityTieBreak(h, [h, btts]).market !== "1") throw new Error("non-common unchanged");
-  const p86 = { market: "Under 3.5", p: 86 }, u25 = { market: "Under 2.5", p: 83 };
-  if (diversityTieBreak(p86, [p86, u25]).market !== "Under 3.5") throw new Error("band cross forbidden");
+import { selectMain } from "../_shared/predictionEngineV7.ts";
+const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p }));
+Deno.test("main selection: spec example 1 → U3.5 84", () => {
+  const r = selectMain(mk({ "Over 1.5": 88, "Under 3.5": 84, "BTTS Yes": 79, "1": 72 }));
+  assertEquals([r.market, r.p], ["Under 3.5", 84]);
+});
+Deno.test("main selection: spec example 2 → U2.5 89", () => {
+  const r = selectMain(mk({ "Over 2.5": 72, "Under 2.5": 89, "BTTS Yes": 76, "1": 73 }));
+  assertEquals([r.market, r.p], ["Under 2.5", 89]);
+});
+Deno.test("main selection: spec example 3 → O1.5 91 (never a weaker market for variety)", () => {
+  const r = selectMain(mk({ "Over 1.5": 91, "Under 3.5": 76, "Over 2.5": 72 }));
+  assertEquals([r.market, r.p], ["Over 1.5", 91]);
+});
+Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
+  const r = selectMain(mk({ "Over 1.5": 80 }));
+  assertEquals(r.market, "Over 1.5");
+});
+Deno.test("allocate: unused Premium slots roll down to Pro", () => {
+  const pool = Array.from({ length: 25 }, (_, i) => ({ id: "t" + i, tier: 1 as const, result: { ...runEngine(STRONG()), confidence: 75, data_quality: 80, rejected: undefined } }));
+  const a = allocate(pool as PoolItem[]);
+  assertEquals(a.premium.length, 0); assertEquals(a.pro.length, 20); assertEquals(a.free.length, 5);
 });
