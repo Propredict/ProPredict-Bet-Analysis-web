@@ -16,6 +16,7 @@ export const PREMIUM_MIN_CONFIDENCE = 85;
 export const CAPS = { premium: 10, pro: 10, free: 10 };
 const MAX_GOALS = 8;
 const DC_RHO = -0.08;
+export const BASE_RATE_WEIGHT = 0.8;
 
 // ---------------- Input types ----------------
 export interface VenueStats { played: number; goalsFor: number; goalsAgainst: number } // totals
@@ -244,11 +245,9 @@ export function rankMarkets(markets: Record<MarketKey, number>): { market: strin
   return (Object.keys(BASE_RATES) as MarketKey[])
     .map((k) => {
       const p = markets[k], base = BASE_RATES[k];
-      // Lift over the market's natural base rate on the log-odds scale, so a
-      // 90% Over 1.5 (base 75%) ranks below a 78% Over 2.5 (base 52%).
-      const cp = Math.min(0.95, Math.max(0.05, p)); // saturate near-certain markets
-      const lift = Math.log(cp / (1 - cp)) - Math.log(base / (1 - base));
-      return { market: k, p: r1(p), score: Math.round((100 * lift + 0.6 * p * 100) * 10) / 10 };
+      // Excess over the market's natural base rate: a 90% Over 1.5 (usually
+      // true 75% of the time) ranks below a 78% Over 2.5 (usually 52%).
+      return { market: k, p: r1(p), score: Math.round((p - BASE_RATE_WEIGHT * base) * 1000) / 10 };
     })
     .sort((a, b) => b.score - a.score);
 }
