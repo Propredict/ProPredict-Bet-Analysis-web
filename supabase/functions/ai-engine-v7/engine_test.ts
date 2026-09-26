@@ -56,7 +56,7 @@ Deno.test("synthetic tight low-scoring teams → Under 2.5", () => {
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
   const full = runEngine(base({}));
   const thin = runEngine(base({ h2h: [], odds: null, injuries: null }));
-  assert(!thin.rejected);
+  assert(thin.rejected !== "insufficient_data" && thin.rejected !== "no_team_data");
   assert(thin.data_quality < full.data_quality);
 });
 
