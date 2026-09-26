@@ -1,3 +1,5 @@
 - [x] Objediniti Daily Predictions, Premium Predictions, Risk of the Day i Diamond Pick u Single Tips stranicu bez promene pravila
 - [x] Sabiti Daily i Premium tiket u pregledan mobilni ticket-listić bez promene unlock pravila
-- [ ] AI prediction engine v7 (market-based, strict tier queue, one source of truth) — plan awaiting approval; dry run before production
+- [x] AI prediction engine v7: engine + league priority + tests + dry-run function
+- [ ] v7: decide Tier 3 allocation rule after dry-run review (waiting on user)
+- [ ] v7: DB columns + UI wiring to stored v7 result + switch production generation (waiting on user approval of dry run)

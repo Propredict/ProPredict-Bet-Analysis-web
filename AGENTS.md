@@ -1,0 +1,1 @@
+- Prediction engine v7 lives in `supabase/functions/_shared/predictionEngineV7.ts` + `leaguePriorityV7.ts` (pure TS, shared by generator and dry-run) — one engine is the single source of truth for all markets.
