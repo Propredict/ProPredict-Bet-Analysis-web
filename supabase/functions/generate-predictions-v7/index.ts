@@ -105,8 +105,8 @@ Deno.serve(async (req) => {
     }
     const worldCup = all.filter((f: any) => isWorldCup(f.league?.id, f.league?.name)).length;
     console.log(`[v7] start ${date}: fixtures=${all.length} staged=${rows.length} worldCupExcluded=${worldCup}`);
-    chain({ date, phase: "analyse", force });
-    return json({ started: true, date, staged: rows.length, worldCupExcluded: worldCup });
+    chain({ date, phase: "analyse", force, refresh });
+    return json({ started: true, date, staged: rows.length, worldCupExcluded: worldCup, refresh });
   }
 
   if (phase === "analyse") {
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       .select("id, fixture").eq("match_date", date).is("result", null).is("error", null)
       .order("league_tier").order("match_id").limit(BATCH);
     if (error) return json({ error: error.message }, 500);
-    if (!batch?.length) { chain({ date, phase: "publish", force }); return json({ analysed: 0, next: "publish" }); }
+    if (!batch?.length) { chain({ date, phase: "publish", force, refresh }); return json({ analysed: 0, next: "publish" }); }
     for (let i = 0; i < batch.length; i += CONC) {
       await Promise.all(batch.slice(i, i + CONC).map(async (row: any) => {
         try {
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         }
       }));
     }
-    chain({ date, phase: "analyse", force });
+    chain({ date, phase: "analyse", force, refresh });
     return json({ analysed: batch.length });
   }
 
