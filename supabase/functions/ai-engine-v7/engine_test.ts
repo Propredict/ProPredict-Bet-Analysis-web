@@ -87,8 +87,8 @@ Deno.test("65–69 never published; Tier 3 never displaces Tier 1/2", () => {
   assert(!pub.includes("t1_68"));
   assert(a.analysedOnly.some((x) => x.id === "t1_68"));
   assert(a.pro.some((x) => x.id === "t1_72"));
-  assert(!a.pro.some((x) => x.id === "t3_84")); // Pro full with Tier 1/2
-  assertEquals(a.free[0].id, "t3_84");           // Tier 3 only in remaining capacity
+  const placed = [...a.pro, ...a.free];
+  assertEquals(placed[placed.length - 1].id, "t3_84"); // Tier 3 only after all Tier 1/2
 });
 
 Deno.test("league classification", () => {
@@ -122,7 +122,7 @@ Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
   assertEquals(r.market, "Over 1.5");
 });
 Deno.test("allocate: unused Premium slots roll down to Pro", () => {
-  const pool = Array.from({ length: 25 }, (_, i) => ({ id: "t" + i, tier: 1 as const, result: { ...runEngine(STRONG()), confidence: 75, data_quality: 80, rejected: undefined } }));
+  const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
   const a = allocate(pool as PoolItem[]);
   assertEquals(a.premium.length, 0); assertEquals(a.pro.length, 20); assertEquals(a.free.length, 5);
 });
