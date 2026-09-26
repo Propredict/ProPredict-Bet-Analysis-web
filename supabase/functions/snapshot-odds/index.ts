@@ -221,6 +221,8 @@ serve(async (req: Request) => {
 
   try {
     const apiKey = Deno.env.get("API_FOOTBALL_KEY");
+    let force = false;
+    try { force = req.method === "POST" && (await req.clone().json())?.force === true; } catch { /* no body */ }
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     if (!apiKey) {
@@ -293,7 +295,7 @@ serve(async (req: Request) => {
         //   3–12h away  → at most every 2h
         //   < 3h away   → every run (30 min)
         const prevAt = (prev as any)?.captured_at ? new Date((prev as any).captured_at).getTime() : 0;
-        if (prevAt) {
+        if (prevAt && !force) {
           const hoursToKO = koMs ? (koMs - Date.now()) / 3600000 : 99;
           const minGapMin = hoursToKO > 12 ? 360 : hoursToKO > 3 ? 120 : 25;
           const ageMin = (Date.now() - prevAt) / 60000;
