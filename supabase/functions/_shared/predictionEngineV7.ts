@@ -320,7 +320,8 @@ export function runEngine(f: FixtureInput): EngineResult {
   // Eligible = probability >= 65. No extra "stronger than normal" check:
   // a common market (Over 1.5, Under 3.5) may be the main pick if it is the strongest.
   const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
-  const top = eligible[0] ?? ranked[0];
+  const strongest = eligible[0] ?? ranked[0];
+  const top = diversityTieBreak(strongest, eligible);
   let main = top.market, mainP = top.p;
   // Correct score only with very strong data AND ≥65% (rare by design)
   if (q.score >= QUALITY_HIGH && scores[0].p >= 65) { main = `Correct Score ${scores[0].score}`; mainP = scores[0].p; }
