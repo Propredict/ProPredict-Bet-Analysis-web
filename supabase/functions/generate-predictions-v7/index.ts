@@ -13,7 +13,9 @@ import { classifyLeague, isWorldCup } from "../_shared/leaguePriorityV7.ts";
 import { api, analyseFixture } from "../_shared/v7Fixture.ts";
 import { allocate, finalConfidence, ENGINE_VERSION, type PoolItem } from "../_shared/predictionEngineV7.ts";
 
-const RUN_TOKEN = "v7-prod-3b9e61c0f4";
+// The run token lives only in Supabase Vault (name 'v7_cron_token').
+// It is verified server-side via the service-role-only RPC v7_verify_token.
+let RUN_TOKEN = "";
 const BATCH = 32;
 const CONC = 4;
 
@@ -52,19 +54,26 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   let body: any = {};
   try { body = await req.json(); } catch { /* empty */ }
-  if (body?.token !== RUN_TOKEN) return json({ error: "forbidden" }, 403);
+  const token = String(req.headers.get("x-v7-token") ?? body?.token ?? "");
   const date = /^\d{4}-\d{2}-\d{2}$/.test(String(body.date ?? ""))
     ? String(body.date) : isoDate(body.day === "today" ? 0 : 1);
   const phase = String(body.phase ?? "start");
   const force = body.force === true;
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  if (!token) return json({ error: "forbidden" }, 403);
+  const { data: ok, error: tokErr } = await sb.rpc("v7_verify_token", { p_token: token });
+  if (tokErr || ok !== true) return json({ error: "forbidden" }, 403);
+  RUN_TOKEN = token;
   const key = Deno.env.get("API_FOOTBALL_KEY");
   if (!key) return json({ error: "API key missing" }, 500);
 
   if (phase === "start") {
     const { data: published } = await sb.from("ai_predictions").select("id").eq("match_date", date).eq("engine_version", ENGINE_VERSION).limit(1);
     if (published?.length && !force) return json({ skipped: true, reason: "already published", date });
+    // Never replace a day that already has old-engine picks unless explicitly forced.
+    const { data: legacy } = await sb.from("ai_predictions").select("id").eq("match_date", date).is("engine_version", null).limit(1);
+    if (legacy?.length && !force) return json({ skipped: true, reason: "old-engine picks exist for this date", date });
 
     const all = await api(`/fixtures?date=${date}&timezone=UTC`, key);
     if (!all) return json({ error: "fixtures fetch failed" }, 502);
