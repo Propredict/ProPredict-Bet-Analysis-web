@@ -51,8 +51,10 @@ Deno.test("synthetic tight low-scoring teams → low-goals market", () => {
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
-  // U3.5 98.5 vs U2.5 93.2: gap 5.3 > margin → strongest stays main
-  assertEquals(r.main_market, "Under 3.5");
+  // U3.5 98.5 vs U2.5 93.2: raw gap 5.3, but the 5pp margin applies to FINAL
+  // CONFIDENCE (shrunk toward 50), so U2.5 is within the margin and wins as
+  // the more informative market.
+  assertEquals(r.main_market, "Under 2.5");
 });
 
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
