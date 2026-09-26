@@ -32,7 +32,7 @@ Kept:
 - Missing team IDs → skip
 - Final confidence below 65 → not published
 - Dedupe by match
-- World Cup excluded from the main list
+- World Cup handling (existing product rule, unchanged): World Cup fixtures **are analysed by the new engine** as Tier 1 and get full v7 results. They're shown on the dedicated World Cup AI Picks page (existing portal, with its own rules such as the 3h freeze and the 70% confidence floor), and only kept out of the main club AI Predictions list, Top 10 and the club Premium/Pro/Free caps, exactly as today. No valid World Cup fixture is dropped from analysis.
 
 New rejection rule: the fixture is rejected only when the data-quality score is below 30 (roughly fewer than 3 real recent matches per team and no season stats). A fixture is never rejected just because H2H, xG, odds or injuries are missing.
 
@@ -103,9 +103,10 @@ Each missing source removes its points from the quality score and its weight fro
    
    League tier is a small tie-breaker only: rank score = confidence + quality/25 + tier bonus (Tier 1 +1.5, Tier 2 +0.5, Tier 3 0). The most the league can add is about 1.5 points, so a clearly stronger, well-supported Tier 2 pick (e.g. 84 vs 80) always beats a weaker Tier 1 pick. Close cases (within about 1–2 points) go to the major league.
 3. **Premium:** confidence ≥ 85 **and** HIGH data quality (≥ 75), no exceptions, up to 10. A 90% raw probability with limited data can never be Premium, because confidence is lowered and the quality check fails.
-4. Pro: the next 10.
-5. Free: the next 10.
-6. The rest stay stored but are not tier-published. Current caps are unchanged.
+4. **Pro:** confidence ≥ 65 **and** quality at least MEDIUM (≥ 50), next 10 by rank.
+5. **Free:** confidence ≥ 65 **and** quality at least MEDIUM (≥ 50), next 10 by rank. MEDIUM/HIGH picks always fill Free first.
+6. **LIMITED quality (< 50)** is stored and logged (visible in the dry-run report) but **not published** in Premium, Pro or Free, however high the probability. If there aren't enough qualified picks, the system expands to the next league tier (D) looking for MEDIUM/HIGH picks, rather than publishing LIMITED ones. A Free slot may stay empty instead of being filled with limited data.
+7. The rest stay stored but are not tier-published. Current caps are unchanged.
 
 ## J. Keeping lower leagues from displacing major fixtures
 
@@ -118,7 +119,8 @@ Each missing source removes its points from the quality score and its weight fro
 
 - **Deno unit tests** (`predictionEngine_test.ts`):
   - Grid sums to 1; markets are consistent (Over 2.5 ≤ Over 1.5, BTTS vs scores)
-  - Liverpool–Arsenal-like input picks Over 2.5, not 1X2 or Over 1.5
+  - Synthetic, unnamed "Team A vs Team B" input (balanced sides, both high-scoring and conceding, so 1X2 is flat and Over 2.5 has the highest market score): the engine must select Over 2.5, not 1X2 or Over 1.5. It checks the logic only; no real team has a preset outcome
+  - Further synthetic sets where the data clearly favours Home Win, Under 2.5 and BTTS No, each checking the expected market
   - Strong favourite input gives Home Win above 75%
   - Missing H2H/odds/xG still produces a prediction with lower quality
   - Very thin data is rejected
