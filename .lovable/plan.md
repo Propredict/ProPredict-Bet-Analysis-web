@@ -28,17 +28,17 @@ Removed:
 - Hard "5 matches (8 for lower leagues)" rule, replaced by the data-quality score
 
 Kept:
-- Live/finished fixtures skipped; World Cup 3h freeze
+- Live/finished fixtures skipped
 - Missing team IDs → skip
 - Final confidence below 65 → not published
 - Dedupe by match
-- World Cup handling (existing product rule, unchanged): World Cup fixtures **are analysed by the new engine** as Tier 1 and get full v7 results. They're shown on the dedicated World Cup AI Picks page (existing portal, with its own rules such as the 3h freeze and the 70% confidence floor), and only kept out of the main club AI Predictions list, Top 10 and the club Premium/Pro/Free caps, exactly as today. No valid World Cup fixture is dropped from analysis.
+- **World Cup is excluded from ProPredict** (existing rule, unchanged). Any fixture whose league is a World Cup competition (World Cup and World Cup qualifiers) is filtered out before the queue: it is never analysed, stored or published. No Tier 1 status, no special freeze and no World Cup-specific logic in the new engine.
 
 New rejection rule: the fixture is rejected only when the data-quality score is below 30 (roughly fewer than 3 real recent matches per team and no season stats). A fixture is never rejected just because H2H, xG, odds or injuries are missing.
 
 ## C. League priority
 
-- **Tier 1:** England PL/Championship/L1/L2, Serie A/B, Bundesliga/2. BL, La Liga/Segunda, Ligue 1/2, Eredivisie, Primeira, Belgium, Scotland, Turkey, Greece, Austria, Switzerland top divisions, UCL/UEL/UECL, Nations League, World Cup and Euro qualifiers, Euro, Copa America, AFCON.
+- **Tier 1:** England PL/Championship/L1/L2, Serie A/B, Bundesliga/2. BL, La Liga/Segunda, Ligue 1/2, Eredivisie, Primeira, Belgium, Scotland, Turkey, Greece, Austria, Switzerland top divisions, UCL/UEL/UECL, Nations League, Euro qualifiers, Euro, Copa America, AFCON. (No World Cup competitions — see B.)
 - **Tier 2:** other established professional leagues (e.g. Denmark, Norway, Sweden, Poland, Czech Republic, Croatia, Serbia, MLS, Brazil, Argentina, Mexico, Saudi Arabia, Japan J1, Korea K1), second tiers of Tier-2 nations, and domestic cups of Tier-1 nations.
 - **Tier 3:** everything else, including women's, youth/U-leagues, reserve and amateur leagues, and lower divisions.
 - Detection uses API-Football league IDs first, then name rules (`Women`, `W`, `U19/U21/U23`, `II`, `Reserves`, `Youth`) to force Tier 3.
