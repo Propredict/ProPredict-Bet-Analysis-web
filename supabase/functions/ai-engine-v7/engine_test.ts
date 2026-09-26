@@ -51,8 +51,10 @@ Deno.test("synthetic tight low-scoring teams → low-goals market", () => {
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
-  // U3.5 98.5 vs U2.5 93.2: gap 5.3 > margin → strongest stays main
-  assertEquals(r.main_market, "Under 3.5");
+  // U3.5 98.5 vs U2.5 93.2: raw gap 5.3, but the 5pp margin applies to FINAL
+  // CONFIDENCE (shrunk toward 50), so U2.5 is within the margin and wins as
+  // the more informative market.
+  assertEquals(r.main_market, "Under 2.5");
 });
 
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
@@ -106,7 +108,7 @@ Deno.test("league classification", () => {
 });
 
 import { selectMain } from "../_shared/predictionEngineV7.ts";
-const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p }));
+const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p, c: p }));
 Deno.test("main selection: spec example 1 → U3.5 84", () => {
   const r = selectMain(mk({ "Over 1.5": 88, "Under 3.5": 84, "BTTS Yes": 79, "1": 72 }));
   assertEquals([r.market, r.p], ["Under 3.5", 84]);
@@ -122,6 +124,26 @@ Deno.test("main selection: spec example 3 → O1.5 91 (never a weaker market for
 Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
   const r = selectMain(mk({ "Over 1.5": 80 }));
   assertEquals(r.market, "Over 1.5");
+});
+Deno.test("MAIN selection uses final confidence, not raw probability", () => {
+  // Spec example: O1.5 raw 99% but final confidence 68%, Home raw 58% but
+  // final confidence 76% → MAIN must be Home Win despite the lower raw p.
+  const r = selectMain([
+    { market: "Over 1.5", p: 99, c: 68 },
+    { market: "1", p: 58, c: 76 },
+  ]);
+  assertEquals([r.market, r.p, r.c], ["1", 58, 76]);
+});
+Deno.test("engine MAIN is the market with the highest final confidence", () => {
+  const r = runEngine(base({}));
+  if (!r.main_market.startsWith("Correct Score")) {
+    const confs = Object.entries(r.markets).map(([k, p]) => ({ k, c: finalConfidence(p, r.data_quality) }));
+    const best = confs.sort((a, b) => b.c - a.c)[0];
+    // main must be within the 5pp preference margin of the best final confidence
+    assert(best.c - finalConfidence(r.main_probability, r.data_quality) <= 5,
+      `main ${r.main_market} conf ${finalConfidence(r.main_probability, r.data_quality)} vs best ${best.k} ${best.c}`);
+    assertEquals(r.confidence, finalConfidence(r.main_probability, r.data_quality));
+  }
 });
 Deno.test("allocate: unused Premium slots roll down to Pro", () => {
   const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
