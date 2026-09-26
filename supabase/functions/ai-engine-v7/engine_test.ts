@@ -81,7 +81,7 @@ Deno.test("high probability with limited data is never Premium nor published", (
 Deno.test("65–69 never published; Tier 3 never displaces Tier 1/2", () => {
   const mk = (id: string, tier: 1 | 2 | 3, confidence: number, q: number): PoolItem => ({ id, tier, result: { confidence, data_quality: q } as any });
   const pool: PoolItem[] = [mk("t1_68", 1, 68, 80), mk("t1_72", 1, 72, 65), mk("t3_84", 3, 84, 80)];
-  for (let i = 0; i < 10; i++) pool.push(mk(`t2_${i}`, 2, 75, 60));
+  for (let i = 0; i < 9; i++) pool.push(mk(`t2_${i}`, 2, 75, 60));
   const a = allocate(pool);
   const pub = [...a.premium, ...a.pro, ...a.free].map((x) => x.id);
   assert(!pub.includes("t1_68"));
