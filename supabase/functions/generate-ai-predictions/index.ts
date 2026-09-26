@@ -6804,6 +6804,46 @@ async function assignTiers(
       .in("id", Array.from(premiumIds));
   }
 
+  // Ensure Pro & Free are unlocked
+  const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
+  if (visibleNonPremium.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: false, is_premium: false })
+      .in("id", visibleNonPremium);
+  }
+
+  // Lock overflow (couldn't fit any tier cap)
+  const toLock = [...overflowIds, ...allPredictions.filter((p: any) => (p.confidence ?? 0) < MIN_DISPLAY_CONFIDENCE).map((p: any) => p.id)];
+  if (toLock.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: true, is_premium: false })
+      .in("id", toLock);
+  }
+
+  // === STEPS 5b–7: Safe Pick, Diamond Pick, Diamond Combo ===
+  const specials = await applySpecials(supabase, todayStr, tomorrowStr, premiumPicks);
+
+  return {
+    free: freePicks.length,
+    pro: proCandidates.length,
+    premium: premiumPicks.length,
+    diamond: specials.diamond,
+  };
+}
+
+/**
+ * Safe Pick + Diamond Pick + Diamond Combo tips. Shared by the full old-engine
+ * regenerate and by `specialsOnly` mode (08:00/13:00 crons after v7 owns
+ * prediction generation and tiering). Never inserts predictions or changes tiers.
+ */
+async function applySpecials(
+  supabase: any,
+  todayStr: string,
+  tomorrowStr: string,
+  premiumPicks: any[]
+): Promise<{ safe: number; diamond: number }> {
   // Mark Safe Picks (Premium subset with confidence >= 85 AND stable variance)
   // First reset all is_safe_pick for both dates (idempotent)
   await supabase
@@ -6826,24 +6866,6 @@ async function assignTiers(
     console.log(`[SAFE PICK] Marked ${safePickIds.length} matches as Safe Pick (conf≥85 + stable)`);
   } else {
     console.log(`[SAFE PICK] No qualifying matches today (need conf≥85 + variance_stable=true)`);
-  }
-
-  // Ensure Pro & Free are unlocked
-  const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
-  if (visibleNonPremium.length > 0) {
-    await supabase
-      .from("ai_predictions")
-      .update({ is_locked: false, is_premium: false })
-      .in("id", visibleNonPremium);
-  }
-
-  // Lock overflow (couldn't fit any tier cap)
-  const toLock = [...overflowIds, ...allPredictions.filter((p: any) => (p.confidence ?? 0) < MIN_DISPLAY_CONFIDENCE).map((p: any) => p.id)];
-  if (toLock.length > 0) {
-    await supabase
-      .from("ai_predictions")
-      .update({ is_locked: true, is_premium: false })
-      .in("id", toLock);
   }
 
   // === STEP 6 — DIAMOND PICK (max 1 per day) ===
@@ -7211,12 +7233,7 @@ async function assignTiers(
     console.error("[STEP 7] Diamond combo tips error:", e);
   }
 
-  return {
-    free: freePicks.length,
-    pro: proCandidates.length,
-    premium: premiumPicks.length,
-    diamond: diamond ? 1 : 0,
-  };
+  return { safe: safePickIds.length, diamond: diamond ? 1 : 0 };
 }
 
 async function markPredictionLocked(
