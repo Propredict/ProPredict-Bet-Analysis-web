@@ -123,6 +123,26 @@ Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
   const r = selectMain(mk({ "Over 1.5": 80 }));
   assertEquals(r.market, "Over 1.5");
 });
+Deno.test("MAIN selection uses final confidence, not raw probability", () => {
+  // Spec example: O1.5 raw 99% but final confidence 68%, Home raw 58% but
+  // final confidence 76% → MAIN must be Home Win despite the lower raw p.
+  const r = selectMain([
+    { market: "Over 1.5", p: 99, c: 68 },
+    { market: "1", p: 58, c: 76 },
+  ]);
+  assertEquals([r.market, r.p, r.c], ["1", 58, 76]);
+});
+Deno.test("engine MAIN is the market with the highest final confidence", () => {
+  const r = runEngine(base({}));
+  if (!r.main_market.startsWith("Correct Score")) {
+    const confs = Object.entries(r.markets).map(([k, p]) => ({ k, c: finalConfidence(p, r.data_quality) }));
+    const best = confs.sort((a, b) => b.c - a.c)[0];
+    // main must be within the 5pp preference margin of the best final confidence
+    assert(best.c - finalConfidence(r.main_probability, r.data_quality) <= 5,
+      `main ${r.main_market} conf ${finalConfidence(r.main_probability, r.data_quality)} vs best ${best.k} ${best.c}`);
+    assertEquals(r.confidence, finalConfidence(r.main_probability, r.data_quality));
+  }
+});
 Deno.test("allocate: unused Premium slots roll down to Pro", () => {
   const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
   const a = allocate(pool as PoolItem[]);
