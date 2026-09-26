@@ -59,8 +59,13 @@ Deno.serve(async (req) => {
     ? String(body.date) : isoDate(body.day === "today" ? 0 : 1);
   const phase = String(body.phase ?? "start");
   const force = body.force === true;
-  // Tomorrow-only: today or past dates are never (re)generated unless explicitly forced.
-  if (phase === "start" && date <= isoDate(0) && !force) {
+  // refresh=true (the 05:00 safety run): re-analyse the date with the latest
+  // data and UPDATE existing picks in place. Never deletes the day's picks,
+  // never touches matches v7 does not regenerate, never creates duplicates.
+  const refresh = body.refresh === true;
+  // Tomorrow-only: today or past dates are never (re)generated unless
+  // explicitly forced or this is a refresh run.
+  if (phase === "start" && date <= isoDate(0) && !force && !refresh) {
     return json({ skipped: true, reason: "v7 generates tomorrow only", date });
   }
 
@@ -73,11 +78,15 @@ Deno.serve(async (req) => {
   if (!key) return json({ error: "API key missing" }, 500);
 
   if (phase === "start") {
-    const { data: published } = await sb.from("ai_predictions").select("id").eq("match_date", date).eq("engine_version", ENGINE_VERSION).limit(1);
-    if (published?.length && !force) return json({ skipped: true, reason: "already published", date });
-    // Never replace a day that already has old-engine picks unless explicitly forced.
-    const { data: legacy } = await sb.from("ai_predictions").select("id").eq("match_date", date).is("engine_version", null).limit(1);
-    if (legacy?.length && !force) return json({ skipped: true, reason: "old-engine picks exist for this date", date });
+    // Refresh runs always proceed — their whole point is to re-analyse a date
+    // that already has picks.
+    if (!refresh) {
+      const { data: published } = await sb.from("ai_predictions").select("id").eq("match_date", date).eq("engine_version", ENGINE_VERSION).limit(1);
+      if (published?.length && !force) return json({ skipped: true, reason: "already published", date });
+      // Never replace a day that already has old-engine picks unless explicitly forced.
+      const { data: legacy } = await sb.from("ai_predictions").select("id").eq("match_date", date).is("engine_version", null).limit(1);
+      if (legacy?.length && !force) return json({ skipped: true, reason: "old-engine picks exist for this date", date });
+    }
 
     const all = await api(`/fixtures?date=${date}&timezone=UTC`, key);
     if (!all) return json({ error: "fixtures fetch failed" }, 502);
@@ -96,8 +105,8 @@ Deno.serve(async (req) => {
     }
     const worldCup = all.filter((f: any) => isWorldCup(f.league?.id, f.league?.name)).length;
     console.log(`[v7] start ${date}: fixtures=${all.length} staged=${rows.length} worldCupExcluded=${worldCup}`);
-    chain({ date, phase: "analyse", force });
-    return json({ started: true, date, staged: rows.length, worldCupExcluded: worldCup });
+    chain({ date, phase: "analyse", force, refresh });
+    return json({ started: true, date, staged: rows.length, worldCupExcluded: worldCup, refresh });
   }
 
   if (phase === "analyse") {
@@ -105,7 +114,7 @@ Deno.serve(async (req) => {
       .select("id, fixture").eq("match_date", date).is("result", null).is("error", null)
       .order("league_tier").order("match_id").limit(BATCH);
     if (error) return json({ error: error.message }, 500);
-    if (!batch?.length) { chain({ date, phase: "publish", force }); return json({ analysed: 0, next: "publish" }); }
+    if (!batch?.length) { chain({ date, phase: "publish", force, refresh }); return json({ analysed: 0, next: "publish" }); }
     for (let i = 0; i < batch.length; i += CONC) {
       await Promise.all(batch.slice(i, i + CONC).map(async (row: any) => {
         try {
@@ -116,7 +125,7 @@ Deno.serve(async (req) => {
         }
       }));
     }
-    chain({ date, phase: "analyse", force });
+    chain({ date, phase: "analyse", force, refresh });
     return json({ analysed: batch.length });
   }
 
@@ -167,21 +176,50 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Replace only rows this run actually regenerates. Existing picks for the
-    // date that v7 does not cover (e.g. today's already-published picks) stay
-    // untouched; overlapping ones are updated to the v7 result.
-    const newMatchIds = inserts.map((r) => r.match_id);
-    if (newMatchIds.length) {
-      const { error: delErr } = await sb.from("ai_predictions").delete()
-        .eq("match_date", date).in("match_id", newMatchIds);
-      if (delErr) return json({ error: "delete failed", details: delErr.message }, 500);
-    }
-    if (inserts.length) {
-      const { error: insErr } = await sb.from("ai_predictions").insert(inserts);
-      if (insErr) return json({ error: "insert failed", details: insErr.message }, 500);
+    let updated = 0, inserted = 0;
+    if (refresh) {
+      // Refresh mode: update regenerated matches IN PLACE, insert only new
+      // qualifying matches. Never delete anything — existing picks for matches
+      // v7 did not regenerate stay exactly as they are, and already-settled
+      // fields (result_status, push_sent_at) are preserved on update.
+      for (const row of inserts) {
+        const { data: existing } = await sb.from("ai_predictions").select("id, result_status, push_sent_at")
+          .eq("match_date", date).eq("match_id", row.match_id).limit(1).maybeSingle();
+        if (existing) {
+          const patch: Record<string, unknown> = { ...row };
+          delete patch.result_status;   // keep settlement state
+          delete patch.match_day;       // keep original day label
+          if (existing.result_status && existing.result_status !== "pending") {
+            delete patch.prediction; delete patch.confidence;
+          }
+          const { error: upErr } = await sb.from("ai_predictions").update(patch).eq("id", existing.id);
+          if (upErr) return json({ error: "update failed", details: upErr.message }, 500);
+          updated++;
+        } else {
+          const { error: insErr } = await sb.from("ai_predictions").insert(row);
+          if (insErr) return json({ error: "insert failed", details: insErr.message }, 500);
+          inserted++;
+        }
+      }
+    } else {
+      // Initial generation: replace only rows this run actually regenerates.
+      // Existing picks for the date that v7 does not cover stay untouched;
+      // overlapping ones are updated to the v7 result.
+      const newMatchIds = inserts.map((r) => r.match_id);
+      if (newMatchIds.length) {
+        const { error: delErr } = await sb.from("ai_predictions").delete()
+          .eq("match_date", date).in("match_id", newMatchIds);
+        if (delErr) return json({ error: "delete failed", details: delErr.message }, 500);
+      }
+      if (inserts.length) {
+        const { error: insErr } = await sb.from("ai_predictions").insert(inserts);
+        if (insErr) return json({ error: "insert failed", details: insErr.message }, 500);
+      }
+      inserted = inserts.length;
     }
     const summary = {
       date, engine: ENGINE_VERSION, analysed: rows.length, published: inserts.length,
+      updated, inserted, refresh,
       premium: a.premium.length, pro: a.pro.length, free: a.free.length,
       storedOnly6569: a.analysedOnly.length, limitedHeld: a.limitedHeld.length, unplaced: a.unplaced.length,
     };
