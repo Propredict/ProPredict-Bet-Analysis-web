@@ -23,10 +23,10 @@ Deno.test("grid sums to 1 and markets are consistent", () => {
 
 Deno.test("synthetic balanced high-scoring teams → Over 2.5 (not 1X2, not Over 1.5)", () => {
   const r = runEngine(base({
-    homeSeasonVenue: { played: 8, goalsFor: 22, goalsAgainst: 18 }, awaySeasonVenue: { played: 8, goalsFor: 20, goalsAgainst: 20 },
-    homeSeasonAll: { played: 16, goalsFor: 42, goalsAgainst: 36 }, awaySeasonAll: { played: 16, goalsFor: 40, goalsAgainst: 38 },
-    homeForm: form(Array(10).fill([3, 2])), awayForm: form(Array(10).fill([2, 3])),
-    odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.35, under25: 3.2, bttsYes: 1.4, bttsNo: 2.9 },
+    homeSeasonVenue: { played: 8, goalsFor: 16, goalsAgainst: 14 }, awaySeasonVenue: { played: 8, goalsFor: 14, goalsAgainst: 16 },
+    homeSeasonAll: { played: 16, goalsFor: 31, goalsAgainst: 29 }, awaySeasonAll: { played: 16, goalsFor: 29, goalsAgainst: 31 },
+    homeForm: form(Array(10).fill([2, 2])), awayForm: form(Array(10).fill([2, 2])),
+    odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.45, under25: 2.8, bttsYes: 1.5, bttsNo: 2.6 },
   }));
   console.log(JSON.stringify(r.markets), JSON.stringify(r.market_scores), r.xg_home, r.xg_away);
   assertEquals(r.main_market, "Over 2.5");
