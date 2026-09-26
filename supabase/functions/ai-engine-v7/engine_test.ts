@@ -102,3 +102,14 @@ Deno.test("league classification", () => {
   assert(isWorldCup(32, "World Cup - Qualification Europe"));
   assert(!isWorldCup(39, "Premier League"));
 });
+
+import { diversityTieBreak } from "../_shared/predictionEngineV7.ts";
+Deno.test("diversity tie-break is preference only", () => {
+  const o15 = { market: "Over 1.5", p: 82 }, btts = { market: "BTTS Yes", p: 79 }, o25 = { market: "Over 2.5", p: 70 };
+  if (diversityTieBreak(o15, [o15, btts, o25]).market !== "BTTS Yes") throw new Error("should prefer BTTS");
+  if (diversityTieBreak(o15, [o15, o25]).market !== "Over 1.5") throw new Error("too far → keep strongest");
+  const h = { market: "1", p: 75 };
+  if (diversityTieBreak(h, [h, btts]).market !== "1") throw new Error("non-common unchanged");
+  const p86 = { market: "Under 3.5", p: 86 }, u25 = { market: "Under 2.5", p: 83 };
+  if (diversityTieBreak(p86, [p86, u25]).market !== "Under 3.5") throw new Error("band cross forbidden");
+});
