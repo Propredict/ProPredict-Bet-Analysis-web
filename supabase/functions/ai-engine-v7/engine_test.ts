@@ -21,14 +21,15 @@ Deno.test("grid sums to 1 and markets are consistent", () => {
   assert(Math.abs(m["1"] + m["X"] + m["2"] - 1) < 1e-9);
 });
 
-Deno.test("synthetic balanced high-scoring teams → Over 2.5 (not 1X2, not Over 1.5)", () => {
+Deno.test("synthetic balanced high-scoring teams → goals market, never 1X2", () => {
   const r = runEngine(base({
     homeSeasonVenue: { played: 8, goalsFor: 16, goalsAgainst: 14 }, awaySeasonVenue: { played: 8, goalsFor: 14, goalsAgainst: 16 },
     homeSeasonAll: { played: 16, goalsFor: 31, goalsAgainst: 29 }, awaySeasonAll: { played: 16, goalsFor: 29, goalsAgainst: 31 },
     homeForm: form(Array(10).fill([2, 2])), awayForm: form(Array(10).fill([2, 2])),
     odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.45, under25: 2.8, bttsYes: 1.5, bttsNo: 2.6 },
   }));
-  assertEquals(r.main_market, "Over 2.5");
+  // O1.5 92.6 vs O2.5 78.7: gap > margin → strongest (O1.5) stays main (spec example 3)
+  assertEquals(r.main_market, "Over 1.5");
   assert(r.markets["1"] < 50 && r.markets["2"] < 50);
 });
 
@@ -43,14 +44,15 @@ Deno.test("synthetic dominant home side → Home Win, can exceed 75%", () => {
   assert(["1", "BTTS No"].includes(r.main_market), r.main_market);
 });
 
-Deno.test("synthetic tight low-scoring teams → Under 2.5", () => {
+Deno.test("synthetic tight low-scoring teams → low-goals market", () => {
   const r = runEngine(base({
     homeSeasonVenue: { played: 8, goalsFor: 5, goalsAgainst: 4 }, awaySeasonVenue: { played: 8, goalsFor: 4, goalsAgainst: 5 },
     homeSeasonAll: { played: 16, goalsFor: 10, goalsAgainst: 9 }, awaySeasonAll: { played: 16, goalsFor: 9, goalsAgainst: 10 },
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
-  assert(["Under 2.5", "Under 1.5", "BTTS No"].includes(r.main_market), r.main_market);
+  // U3.5 98.5 vs U2.5 93.2: gap 5.3 > margin → strongest stays main
+  assertEquals(r.main_market, "Under 3.5");
 });
 
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
@@ -87,8 +89,8 @@ Deno.test("65–69 never published; Tier 3 never displaces Tier 1/2", () => {
   assert(!pub.includes("t1_68"));
   assert(a.analysedOnly.some((x) => x.id === "t1_68"));
   assert(a.pro.some((x) => x.id === "t1_72"));
-  assert(!a.pro.some((x) => x.id === "t3_84")); // Pro full with Tier 1/2
-  assertEquals(a.free[0].id, "t3_84");           // Tier 3 only in remaining capacity
+  const placed = [...a.pro, ...a.free];
+  assertEquals(placed[placed.length - 1].id, "t3_84"); // Tier 3 only after all Tier 1/2
 });
 
 Deno.test("league classification", () => {
@@ -103,13 +105,26 @@ Deno.test("league classification", () => {
   assert(!isWorldCup(39, "Premier League"));
 });
 
-import { diversityTieBreak } from "../_shared/predictionEngineV7.ts";
-Deno.test("diversity tie-break is preference only", () => {
-  const o15 = { market: "Over 1.5", p: 82 }, btts = { market: "BTTS Yes", p: 79 }, o25 = { market: "Over 2.5", p: 70 };
-  if (diversityTieBreak(o15, [o15, btts, o25]).market !== "BTTS Yes") throw new Error("should prefer BTTS");
-  if (diversityTieBreak(o15, [o15, o25]).market !== "Over 1.5") throw new Error("too far → keep strongest");
-  const h = { market: "1", p: 75 };
-  if (diversityTieBreak(h, [h, btts]).market !== "1") throw new Error("non-common unchanged");
-  const p86 = { market: "Under 3.5", p: 86 }, u25 = { market: "Under 2.5", p: 83 };
-  if (diversityTieBreak(p86, [p86, u25]).market !== "Under 3.5") throw new Error("band cross forbidden");
+import { selectMain } from "../_shared/predictionEngineV7.ts";
+const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p }));
+Deno.test("main selection: spec example 1 → U3.5 84", () => {
+  const r = selectMain(mk({ "Over 1.5": 88, "Under 3.5": 84, "BTTS Yes": 79, "1": 72 }));
+  assertEquals([r.market, r.p], ["Under 3.5", 84]);
+});
+Deno.test("main selection: spec example 2 → U2.5 89", () => {
+  const r = selectMain(mk({ "Over 2.5": 72, "Under 2.5": 89, "BTTS Yes": 76, "1": 73 }));
+  assertEquals([r.market, r.p], ["Under 2.5", 89]);
+});
+Deno.test("main selection: spec example 3 → O1.5 91 (never a weaker market for variety)", () => {
+  const r = selectMain(mk({ "Over 1.5": 91, "Under 3.5": 76, "Over 2.5": 72 }));
+  assertEquals([r.market, r.p], ["Over 1.5", 91]);
+});
+Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
+  const r = selectMain(mk({ "Over 1.5": 80 }));
+  assertEquals(r.market, "Over 1.5");
+});
+Deno.test("allocate: unused Premium slots roll down to Pro", () => {
+  const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
+  const a = allocate(pool as PoolItem[]);
+  assertEquals(a.premium.length, 0); assertEquals(a.pro.length, 20); assertEquals(a.free.length, 5);
 });
