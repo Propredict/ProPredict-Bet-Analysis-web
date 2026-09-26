@@ -86,6 +86,21 @@ function clampProb(n: number, min = 0, max = 100): number {
 }
 
 /**
+ * True when the row was produced by engine v7 and carries stored market
+ * probabilities. v7 rows must display the stored engine numbers verbatim —
+ * never re-derive them with the legacy Poisson fallback.
+ */
+export function isV7Prediction(prediction: AIPrediction): boolean {
+  const p = prediction as any;
+  return p.engine_version === "v7" && !!p.market_probs?.raw && typeof p.market_probs.raw === "object";
+}
+
+/** Stored v7 raw market probabilities, or null for old-engine rows. */
+function v7Raw(prediction: AIPrediction): Record<string, number> | null {
+  return isV7Prediction(prediction) ? ((prediction as any).market_probs.raw as Record<string, number>) : null;
+}
+
+/**
  * Get the xG values used for Poisson calculations, ensuring consistency
  * across all market derivations (goals, BTTS, correct scores, predicted score).
  */
@@ -162,6 +177,26 @@ function getXgValues(prediction: AIPrediction): { homeXg: number; awayXg: number
 }
 
 export function calculateGoalMarketProbs(prediction: AIPrediction): GoalMarketProbs {
+  // Engine v7: use the stored market probabilities exactly as the engine
+  // computed them — they are the single source of truth for this match.
+  const raw = v7Raw(prediction);
+  if (raw) {
+    const o15 = clampProb(raw["Over 1.5"] ?? 0);
+    const o25 = clampProb(raw["Over 2.5"] ?? 0);
+    const o35 = clampProb(raw["Over 3.5"] ?? 0);
+    const by = clampProb(raw["BTTS Yes"] ?? 0);
+    return {
+      over15: o15,
+      over25: o25,
+      over35: o35,
+      under15: clampProb(raw["Under 1.5"] ?? 100 - o15),
+      under25: clampProb(raw["Under 2.5"] ?? 100 - o25),
+      under35: clampProb(raw["Under 3.5"] ?? 100 - o35),
+      bttsYes: by,
+      bttsNo: clampProb(raw["BTTS No"] ?? 100 - by),
+    };
+  }
+
   let over15 = 0, over25 = 0, over35 = 0;
   let bttsYes = 0;
 
@@ -233,6 +268,28 @@ function getScoreDistribution(prediction: AIPrediction): ScoreOutcome[] {
 /** Joint probability, not the product of two dependent market percentages. */
 export function calculateComboProbability(prediction: AIPrediction, label: string): number | null {
   const legs = label.split(/\s*(?:\+|&)\s*/).map((leg) => leg.trim().toLowerCase().replace(/ goals$/, ""));
+
+  // Engine v7: look up the stored joint probability computed from the engine
+  // grid. Keys look like "BTTS Yes & Over 2.5" — normalize the label to match.
+  if (isV7Prediction(prediction)) {
+    const stored = (prediction as any).market_probs?.combos as Record<string, number> | null | undefined;
+    if (stored && typeof stored === "object") {
+      const key = legs.map((leg) => {
+        if (leg === "1" || leg === "2") return leg.toUpperCase();
+        if (leg === "x") return "X";
+        if (leg === "dc 1x" || leg === "1x") return "1X";
+        if (leg === "dc x2" || leg === "x2") return "X2";
+        if (leg === "dc 12" || leg === "12") return "12";
+        if (leg === "btts yes" || leg === "gg") return "BTTS Yes";
+        if (leg === "btts no" || leg === "ng") return "BTTS No";
+        const g = /^(over|under) (\d+)\.5$/.exec(leg);
+        if (g) return `${g[1] === "over" ? "Over" : "Under"} ${g[2]}.5`;
+        return leg;
+      }).join(" & ");
+      if (typeof stored[key] === "number") return clampProb(stored[key]);
+    }
+  }
+
   const checks = legs.map((leg): ((home: number, away: number) => boolean) | null => {
     if (leg === "1") return (h, a) => h > a;
     if (leg === "x") return (h, a) => h === a;
@@ -267,6 +324,23 @@ export interface ScoreConstraintOptions {
 
 
 function calculateRankedCorrectScores(prediction: AIPrediction): RankedCorrectScore[] {
+  // Engine v7: use the stored top correct scores from the engine grid.
+  if (isV7Prediction(prediction)) {
+    const stored = (prediction as any).market_probs?.correct_scores;
+    if (Array.isArray(stored) && stored.length > 0) {
+      const scores: RankedCorrectScore[] = [];
+      for (const entry of stored) {
+        const parsed = parseScore(entry?.score ?? null);
+        if (!parsed || typeof entry?.p !== "number") continue;
+        scores.push({ score: entry.score, probability: Math.round(entry.p * 10) / 10, home: parsed.home, away: parsed.away });
+      }
+      if (scores.length > 0) {
+        scores.sort((a, b) => b.probability - a.probability);
+        return scores;
+      }
+    }
+  }
+
   const scores: RankedCorrectScore[] = getScoreDistribution(prediction)
     .filter(({ home, away }) => home <= 5 && away <= 5)
     .map(({ home, away, probability }) => ({
