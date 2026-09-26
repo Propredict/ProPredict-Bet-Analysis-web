@@ -256,7 +256,8 @@ export function rankMarkets(markets: Record<MarketKey, number>): { market: strin
 }
 
 // ---------------- Main market selection ----------------
-// Strongest raw probability wins, but among eligible markets within
+// MAIN is chosen by FINAL CONFIDENCE (c), never by raw probability (p).
+// Strongest final confidence wins, but among eligible markets within
 // PREFERENCE_MARGIN pp of the strongest, the more informative market is
 // preferred. Preference order (0 = most informative). Never changes any
 // probability, never picks a market more than the margin weaker.
@@ -268,10 +269,10 @@ export const MARKET_PREFERENCE: Record<string, number> = {
   "Over 3.5": 3, "Under 3.5": 3,
   "Over 1.5": 4, "Under 1.5": 4,
 };
-export function selectMain<T extends { market: string; p: number }>(eligible: T[]): T {
-  const maxP = Math.max(...eligible.map((r) => r.p));
-  const near = eligible.filter((r) => maxP - r.p <= PREFERENCE_MARGIN);
-  near.sort((a, b) => (MARKET_PREFERENCE[a.market] ?? 9) - (MARKET_PREFERENCE[b.market] ?? 9) || b.p - a.p);
+export function selectMain<T extends { market: string; p: number; c: number }>(eligible: T[]): T {
+  const maxC = Math.max(...eligible.map((r) => r.c));
+  const near = eligible.filter((r) => maxC - r.c <= PREFERENCE_MARGIN);
+  near.sort((a, b) => (MARKET_PREFERENCE[a.market] ?? 9) - (MARKET_PREFERENCE[b.market] ?? 9) || b.c - a.c);
   return near[0];
 }
 
@@ -338,11 +339,17 @@ export function runEngine(f: FixtureInput): EngineResult {
 
   const ranked = rankMarkets(m);
   // Eligible = probability >= 65. Never rejected for being Over 1.5 / Under 3.5.
-  const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
-  const top = eligible.length ? selectMain(eligible) : [...ranked].sort((a, b) => b.p - a.p)[0];
-  let main = top.market, mainP = top.p;
+  // MAIN is selected on FINAL CONFIDENCE (c = finalConfidence(p, quality)),
+  // not on the raw market probability shown in the market cards.
+  const withConf = ranked.map((r) => ({ ...r, c: finalConfidence(r.p, q.score) }));
+  const eligible = withConf.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
+  const top = eligible.length ? selectMain(eligible) : [...withConf].sort((a, b) => b.c - a.c)[0];
+  let main = top.market, mainP = top.p, mainConf = top.c;
   // Correct score only with very strong data AND ≥65% (rare by design)
-  if (q.score >= QUALITY_HIGH && scores[0].p >= 65) { main = `Correct Score ${scores[0].score}`; mainP = scores[0].p; }
+  if (q.score >= QUALITY_HIGH && scores[0].p >= 65) {
+    main = `Correct Score ${scores[0].score}`; mainP = scores[0].p;
+    mainConf = finalConfidence(mainP, q.score);
+  }
 
   const result: EngineResult = {
     engine_version: ENGINE_VERSION,
