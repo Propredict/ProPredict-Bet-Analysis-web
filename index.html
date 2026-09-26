@@ -22,6 +22,7 @@
           s.src = 'https://consent.cookiebot.com/uc.js';
           s.setAttribute('data-cbid', '76c0ca30-7ac2-4399-a9dd-dc3842a6569a');
           s.setAttribute('data-blockingmode', 'auto');
+          s.onerror = function() { console.warn('[Cookiebot] failed to load — continuing without consent banner'); };
           document.head.appendChild(s);
         }
       })();

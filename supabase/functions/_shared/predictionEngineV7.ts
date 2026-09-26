@@ -317,7 +317,9 @@ export function runEngine(f: FixtureInput): EngineResult {
   scores.sort((a, b) => b.p - a.p);
 
   const ranked = rankMarkets(m);
-  const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE && r.score >= MIN_SIGNAL_SCORE);
+  // Eligible = probability >= 65. No extra "stronger than normal" check:
+  // a common market (Over 1.5, Under 3.5) may be the main pick if it is the strongest.
+  const eligible = ranked.filter((r) => r.p >= MIN_PUBLISH_CONFIDENCE);
   const top = eligible[0] ?? ranked[0];
   let main = top.market, mainP = top.p;
   // Correct score only with very strong data AND ≥65% (rare by design)
