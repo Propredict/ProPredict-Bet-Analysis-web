@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_engine_v7_analysis: {
+        Row: {
+          created_at: string
+          error: string | null
+          fixture: Json | null
+          id: string
+          league_tier: number
+          match_date: string
+          match_id: string
+          result: Json | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          fixture?: Json | null
+          id?: string
+          league_tier?: number
+          match_date: string
+          match_id: string
+          result?: Json | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          fixture?: Json | null
+          id?: string
+          league_tier?: number
+          match_date?: string
+          match_id?: string
+          result?: Json | null
+        }
+        Relationships: []
+      }
       ai_predictions: {
         Row: {
           analysis: string | null
@@ -27,7 +60,10 @@ export type Database = {
           consensus_home: number | null
           consensus_odds: number | null
           created_at: string | null
+          data_quality: number | null
+          data_quality_label: string | null
           draw: number
+          engine_version: string | null
           home_team: string
           home_win: number
           id: string
@@ -43,7 +79,11 @@ export type Database = {
           last_away_goals: number | null
           last_home_goals: number | null
           league: string | null
+          league_tier: number | null
           lineup_confirmed: boolean | null
+          main_market: string | null
+          main_probability: number | null
+          market_probs: Json | null
           market_trend: string | null
           market_trend_strength: string | null
           market_type: string | null
@@ -57,6 +97,7 @@ export type Database = {
           odds_movement_pct: number | null
           predicted_score: string | null
           prediction: string
+          publish_tier: string | null
           push_sent_at: string | null
           result_status: string | null
           risk_level: string | null
@@ -84,7 +125,10 @@ export type Database = {
           consensus_home?: number | null
           consensus_odds?: number | null
           created_at?: string | null
+          data_quality?: number | null
+          data_quality_label?: string | null
           draw: number
+          engine_version?: string | null
           home_team: string
           home_win: number
           id?: string
@@ -100,7 +144,11 @@ export type Database = {
           last_away_goals?: number | null
           last_home_goals?: number | null
           league?: string | null
+          league_tier?: number | null
           lineup_confirmed?: boolean | null
+          main_market?: string | null
+          main_probability?: number | null
+          market_probs?: Json | null
           market_trend?: string | null
           market_trend_strength?: string | null
           market_type?: string | null
@@ -114,6 +162,7 @@ export type Database = {
           odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction: string
+          publish_tier?: string | null
           push_sent_at?: string | null
           result_status?: string | null
           risk_level?: string | null
@@ -141,7 +190,10 @@ export type Database = {
           consensus_home?: number | null
           consensus_odds?: number | null
           created_at?: string | null
+          data_quality?: number | null
+          data_quality_label?: string | null
           draw?: number
+          engine_version?: string | null
           home_team?: string
           home_win?: number
           id?: string
@@ -157,7 +209,11 @@ export type Database = {
           last_away_goals?: number | null
           last_home_goals?: number | null
           league?: string | null
+          league_tier?: number | null
           lineup_confirmed?: boolean | null
+          main_market?: string | null
+          main_probability?: number | null
+          market_probs?: Json | null
           market_trend?: string | null
           market_trend_strength?: string | null
           market_type?: string | null
@@ -171,6 +227,181 @@ export type Database = {
           odds_movement_pct?: number | null
           predicted_score?: string | null
           prediction?: string
+          publish_tier?: string | null
+          push_sent_at?: string | null
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+          value_away?: number | null
+          value_draw?: number | null
+          value_home?: number | null
+          variance_score?: number | null
+          variance_stable?: boolean | null
+          xg_away?: number | null
+          xg_diff?: number | null
+          xg_home?: number | null
+          xg_source?: string | null
+          xg_total?: number | null
+        }
+        Relationships: []
+      }
+      ai_predictions_backup_pre_v7: {
+        Row: {
+          analysis: string | null
+          away_team: string | null
+          away_win: number | null
+          bookmakers_count: number | null
+          confidence: number | null
+          confidence_adjustment: number | null
+          consensus_away: number | null
+          consensus_draw: number | null
+          consensus_home: number | null
+          consensus_odds: number | null
+          created_at: string | null
+          draw: number | null
+          home_team: string | null
+          home_win: number | null
+          id: string | null
+          injury_impact_away: number | null
+          injury_impact_home: number | null
+          is_diamond: boolean | null
+          is_live: boolean | null
+          is_locked: boolean | null
+          is_premium: boolean | null
+          is_safe_pick: boolean | null
+          is_value_bet: boolean | null
+          key_factors: string[] | null
+          last_away_goals: number | null
+          last_home_goals: number | null
+          league: string | null
+          lineup_confirmed: boolean | null
+          market_trend: string | null
+          market_trend_strength: string | null
+          market_type: string | null
+          match_date: string | null
+          match_day: string | null
+          match_id: string | null
+          match_time: string | null
+          match_timestamp: string | null
+          missing_away_players: Json | null
+          missing_home_players: Json | null
+          odds_movement_pct: number | null
+          predicted_score: string | null
+          prediction: string | null
+          push_sent_at: string | null
+          result_status: string | null
+          risk_level: string | null
+          updated_at: string | null
+          value_away: number | null
+          value_draw: number | null
+          value_home: number | null
+          variance_score: number | null
+          variance_stable: boolean | null
+          xg_away: number | null
+          xg_diff: number | null
+          xg_home: number | null
+          xg_source: string | null
+          xg_total: number | null
+        }
+        Insert: {
+          analysis?: string | null
+          away_team?: string | null
+          away_win?: number | null
+          bookmakers_count?: number | null
+          confidence?: number | null
+          confidence_adjustment?: number | null
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
+          consensus_odds?: number | null
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          injury_impact_away?: number | null
+          injury_impact_home?: number | null
+          is_diamond?: boolean | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          is_safe_pick?: boolean | null
+          is_value_bet?: boolean | null
+          key_factors?: string[] | null
+          last_away_goals?: number | null
+          last_home_goals?: number | null
+          league?: string | null
+          lineup_confirmed?: boolean | null
+          market_trend?: string | null
+          market_trend_strength?: string | null
+          market_type?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          missing_away_players?: Json | null
+          missing_home_players?: Json | null
+          odds_movement_pct?: number | null
+          predicted_score?: string | null
+          prediction?: string | null
+          push_sent_at?: string | null
+          result_status?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+          value_away?: number | null
+          value_draw?: number | null
+          value_home?: number | null
+          variance_score?: number | null
+          variance_stable?: boolean | null
+          xg_away?: number | null
+          xg_diff?: number | null
+          xg_home?: number | null
+          xg_source?: string | null
+          xg_total?: number | null
+        }
+        Update: {
+          analysis?: string | null
+          away_team?: string | null
+          away_win?: number | null
+          bookmakers_count?: number | null
+          confidence?: number | null
+          confidence_adjustment?: number | null
+          consensus_away?: number | null
+          consensus_draw?: number | null
+          consensus_home?: number | null
+          consensus_odds?: number | null
+          created_at?: string | null
+          draw?: number | null
+          home_team?: string | null
+          home_win?: number | null
+          id?: string | null
+          injury_impact_away?: number | null
+          injury_impact_home?: number | null
+          is_diamond?: boolean | null
+          is_live?: boolean | null
+          is_locked?: boolean | null
+          is_premium?: boolean | null
+          is_safe_pick?: boolean | null
+          is_value_bet?: boolean | null
+          key_factors?: string[] | null
+          last_away_goals?: number | null
+          last_home_goals?: number | null
+          league?: string | null
+          lineup_confirmed?: boolean | null
+          market_trend?: string | null
+          market_trend_strength?: string | null
+          market_type?: string | null
+          match_date?: string | null
+          match_day?: string | null
+          match_id?: string | null
+          match_time?: string | null
+          match_timestamp?: string | null
+          missing_away_players?: Json | null
+          missing_home_players?: Json | null
+          odds_movement_pct?: number | null
+          predicted_score?: string | null
+          prediction?: string | null
           push_sent_at?: string | null
           result_status?: string | null
           risk_level?: string | null
@@ -416,6 +647,33 @@ export type Database = {
           display_name?: string | null
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      cron_jobs_snapshot_pre_v7: {
+        Row: {
+          active: boolean | null
+          captured_at: string | null
+          command: string | null
+          jobid: number | null
+          jobname: string | null
+          schedule: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          captured_at?: string | null
+          command?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          schedule?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          captured_at?: string | null
+          command?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          schedule?: string | null
         }
         Relationships: []
       }
@@ -1664,6 +1922,7 @@ export type Database = {
         Returns: Json
       }
       user_has_min_plan: { Args: { required_plan: string }; Returns: boolean }
+      v7_verify_token: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
