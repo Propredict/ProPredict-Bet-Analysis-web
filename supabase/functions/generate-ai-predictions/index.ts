@@ -6804,6 +6804,46 @@ async function assignTiers(
       .in("id", Array.from(premiumIds));
   }
 
+  // Ensure Pro & Free are unlocked
+  const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
+  if (visibleNonPremium.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: false, is_premium: false })
+      .in("id", visibleNonPremium);
+  }
+
+  // Lock overflow (couldn't fit any tier cap)
+  const toLock = [...overflowIds, ...allPredictions.filter((p: any) => (p.confidence ?? 0) < MIN_DISPLAY_CONFIDENCE).map((p: any) => p.id)];
+  if (toLock.length > 0) {
+    await supabase
+      .from("ai_predictions")
+      .update({ is_locked: true, is_premium: false })
+      .in("id", toLock);
+  }
+
+  // === STEPS 5b–7: Safe Pick, Diamond Pick, Diamond Combo ===
+  const specials = await applySpecials(supabase, todayStr, tomorrowStr, premiumPicks);
+
+  return {
+    free: freePicks.length,
+    pro: proCandidates.length,
+    premium: premiumPicks.length,
+    diamond: specials.diamond,
+  };
+}
+
+/**
+ * Safe Pick + Diamond Pick + Diamond Combo tips. Shared by the full old-engine
+ * regenerate and by `specialsOnly` mode (08:00/13:00 crons after v7 owns
+ * prediction generation and tiering). Never inserts predictions or changes tiers.
+ */
+async function applySpecials(
+  supabase: any,
+  todayStr: string,
+  tomorrowStr: string,
+  premiumPicks: any[]
+): Promise<{ safe: number; diamond: number }> {
   // Mark Safe Picks (Premium subset with confidence >= 85 AND stable variance)
   // First reset all is_safe_pick for both dates (idempotent)
   await supabase
@@ -6826,24 +6866,6 @@ async function assignTiers(
     console.log(`[SAFE PICK] Marked ${safePickIds.length} matches as Safe Pick (conf≥85 + stable)`);
   } else {
     console.log(`[SAFE PICK] No qualifying matches today (need conf≥85 + variance_stable=true)`);
-  }
-
-  // Ensure Pro & Free are unlocked
-  const visibleNonPremium = [...Array.from(proIds), ...Array.from(freeIds)];
-  if (visibleNonPremium.length > 0) {
-    await supabase
-      .from("ai_predictions")
-      .update({ is_locked: false, is_premium: false })
-      .in("id", visibleNonPremium);
-  }
-
-  // Lock overflow (couldn't fit any tier cap)
-  const toLock = [...overflowIds, ...allPredictions.filter((p: any) => (p.confidence ?? 0) < MIN_DISPLAY_CONFIDENCE).map((p: any) => p.id)];
-  if (toLock.length > 0) {
-    await supabase
-      .from("ai_predictions")
-      .update({ is_locked: true, is_premium: false })
-      .in("id", toLock);
   }
 
   // === STEP 6 — DIAMOND PICK (max 1 per day) ===
@@ -7211,12 +7233,7 @@ async function assignTiers(
     console.error("[STEP 7] Diamond combo tips error:", e);
   }
 
-  return {
-    free: freePicks.length,
-    pro: proCandidates.length,
-    premium: premiumPicks.length,
-    diamond: diamond ? 1 : 0,
-  };
+  return { safe: safePickIds.length, diamond: diamond ? 1 : 0 };
 }
 
 async function markPredictionLocked(
@@ -9069,6 +9086,49 @@ async function handleBatchRegenerate(
 /**
  * Entry point for full regeneration (triggers batches for today + tomorrow)
  */
+async function handleSpecialsOnly(): Promise<Response> {
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const today = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const todayStr = today.toISOString().split("T")[0];
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("ai_predictions")
+    .select("id, home_team, away_team, confidence, result_status, prediction, league, analysis, key_factors, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away, engine_version")
+    .in("match_date", [todayStr, tomorrowStr])
+    .eq("is_premium", true)
+    .eq("is_locked", false)
+    .order("confidence", { ascending: false });
+
+  if (error) {
+    return new Response(JSON.stringify({ ok: false, mode: "specialsOnly", error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
+  // Normalise v7 rows so the existing Diamond/Combo gates can read them:
+  // v7 Premium already requires confidence ≥85 AND HIGH data quality, which is
+  // the v7 equivalent of the legacy "variance_stable" flag; its xG lives in
+  // xg_home/xg_away instead of the legacy "step2_xg:" key factor tag.
+  const premiumPicks = (data ?? [])
+    .filter((p: any) => p.result_status == null || p.result_status === "pending")
+    .map((p: any) => {
+      if (p.engine_version !== "v7") return p;
+      const factors: string[] = Array.isArray(p.key_factors) ? [...p.key_factors] : [];
+      if (!factors.some((f) => typeof f === "string" && f.startsWith("step2_xg:")) && p.xg_home != null && p.xg_away != null) {
+        const h = Number(p.xg_home), a = Number(p.xg_away);
+        factors.push(`step2_xg:${h}|${a}|${Math.round((h - a) * 100) / 100}`);
+      }
+      return { ...p, key_factors: factors, variance_stable: true };
+    });
+
+  const result = await applySpecials(supabase, todayStr, tomorrowStr, premiumPicks);
+  console.log(`[SPECIALS ONLY] premium pool=${premiumPicks.length} safe=${result.safe} diamond=${result.diamond}`);
+  return new Response(
+    JSON.stringify({ ok: true, mode: "specialsOnly", todayStr, tomorrowStr, premiumPool: premiumPicks.length, ...result }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+  );
+}
+
 async function handleRegenerate(apiKey: string): Promise<Response> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -9337,6 +9397,14 @@ serve(async (req: Request) => {
     }
 
     // Full regenerate mode - triggers batch chains for today + tomorrow
+    // Specials-only mode (08:00 / 13:00 crons after v7 activation).
+    // Does NOT fetch fixtures, insert predictions, or change Free/Pro/Premium tiers.
+    // Only refreshes Safe Pick, Diamond Pick and Diamond Combo tips from the
+    // Premium rows that already exist (v7 or legacy) for today + tomorrow.
+    if (body.specialsOnly === true) {
+      return handleSpecialsOnly();
+    }
+
     if (body.regenerate === true) {
       return handleRegenerate(apiKey);
     }
