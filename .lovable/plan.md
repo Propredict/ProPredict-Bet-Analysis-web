@@ -41,7 +41,11 @@ New rejection rule: the fixture is rejected only when the data-quality score is 
 - **Tier 1:** England PL/Championship/L1/L2, Serie A/B, Bundesliga/2. BL, La Liga/Segunda, Ligue 1/2, Eredivisie, Primeira, Belgium, Scotland, Turkey, Greece, Austria, Switzerland top divisions, UCL/UEL/UECL, Nations League, Euro qualifiers, Euro, Copa America, AFCON. (No World Cup competitions — see B.)
 - **Tier 2:** other established professional leagues (e.g. Denmark, Norway, Sweden, Poland, Czech Republic, Croatia, Serbia, MLS, Brazil, Argentina, Mexico, Saudi Arabia, Japan J1, Korea K1), second tiers of Tier-2 nations, and domestic cups of Tier-1 nations.
 - **Tier 3:** everything else, including women's, youth/U-leagues, reserve and amateur leagues, and lower divisions.
-- Detection uses API-Football league IDs first, then name rules (`Women`, `W`, `U19/U21/U23`, `II`, `Reserves`, `Youth`) to force Tier 3.
+- Detection uses API-Football league IDs first (including a list of known women's league IDs), then whole-word name rules to force Tier 3:
+  - Women's: `Women`, `Women's`, `Female`, `Feminine`/`Femenina`/`Frauen`/`Féminine` (no single-letter "W" match)
+  - Youth: `U19`, `U21`, `U23`, `Youth`
+  - Reserves: `II`, `Reserves`
+- World Cup and World Cup qualifiers stay completely excluded (see B).
 
 ## D. Daily fixture pool (strict tier queue)
 
