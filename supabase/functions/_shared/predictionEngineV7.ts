@@ -379,9 +379,16 @@ export function rankScore(i: PoolItem): number {
 // Minimum user-facing confidence. 65–69 is analysed/stored only, never published.
 export const MIN_USER_CONFIDENCE = 70;
 
+// Publication-level market diversity: within each priority group, a single
+// main market may fill at most this share of the Pro/Free slots before other
+// qualified markets are preferred. Deferred items still fill leftover slots,
+// so no qualified match is rejected and no slot stays empty because of it.
+export const MARKET_SHARE_CAP = 0.3;
+
 /**
  * Tier 1/2 always get publication slots before Tier 3 (Tier 3 = fallback only).
  * Priority never changes confidence or thresholds — it only orders qualified items.
+ * Unused Premium slots roll down to Pro (then Free); Premium criteria are never lowered.
  */
 export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem[]; free: PoolItem[]; limitedHeld: PoolItem[]; analysedOnly: PoolItem[]; unplaced: PoolItem[] } {
   const notRejected = pool.filter((i) => !i.result.rejected);
@@ -401,9 +408,32 @@ export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem
     .slice(0, CAPS.premium);
   premium.forEach((i) => used.add(i.id));
 
+  const unusedPremium = CAPS.premium - premium.length;
+  const proCap = CAPS.pro + unusedPremium;
+  const slots = proCap + CAPS.free;
+  const perMarket = Math.max(1, Math.ceil(slots * MARKET_SHARE_CAP));
+
   const rest = publishable.filter((i) => !used.has(i.id));
-  const pro = rest.slice(0, CAPS.pro);
-  const free = rest.slice(CAPS.pro, CAPS.pro + CAPS.free);
-  const unplaced = rest.slice(CAPS.pro + CAPS.free);
+  const placed: PoolItem[] = [];
+  const count: Record<string, number> = {};
+  // Diversity pass per priority group (Tier 1/2, then Tier 3) — never crosses tiers.
+  for (const group of [rest.filter((i) => i.tier !== 3), rest.filter((i) => i.tier === 3)]) {
+    const deferred: PoolItem[] = [];
+    for (const i of group) {
+      if (placed.length >= slots) break;
+      const m = i.result.main_market;
+      if ((count[m] ?? 0) < perMarket) { placed.push(i); count[m] = (count[m] ?? 0) + 1; }
+      else deferred.push(i);
+    }
+    for (const i of deferred) {
+      if (placed.length >= slots) break;
+      placed.push(i); count[i.result.main_market] = (count[i.result.main_market] ?? 0) + 1;
+    }
+  }
+  placed.sort(byPriority);
+  const placedIds = new Set(placed.map((i) => i.id));
+  const pro = placed.slice(0, proCap);
+  const free = placed.slice(proCap);
+  const unplaced = rest.filter((i) => !placedIds.has(i.id));
   return { premium, pro, free, limitedHeld, analysedOnly, unplaced };
 }
