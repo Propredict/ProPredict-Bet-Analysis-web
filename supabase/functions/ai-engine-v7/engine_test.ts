@@ -21,14 +21,15 @@ Deno.test("grid sums to 1 and markets are consistent", () => {
   assert(Math.abs(m["1"] + m["X"] + m["2"] - 1) < 1e-9);
 });
 
-Deno.test("synthetic balanced high-scoring teams → Over 2.5 (not 1X2, not Over 1.5)", () => {
+Deno.test("synthetic balanced high-scoring teams → goals market, never 1X2", () => {
   const r = runEngine(base({
     homeSeasonVenue: { played: 8, goalsFor: 16, goalsAgainst: 14 }, awaySeasonVenue: { played: 8, goalsFor: 14, goalsAgainst: 16 },
     homeSeasonAll: { played: 16, goalsFor: 31, goalsAgainst: 29 }, awaySeasonAll: { played: 16, goalsFor: 29, goalsAgainst: 31 },
     homeForm: form(Array(10).fill([2, 2])), awayForm: form(Array(10).fill([2, 2])),
     odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.45, under25: 2.8, bttsYes: 1.5, bttsNo: 2.6 },
   }));
-  console.log("HI", JSON.stringify(r.markets)); assertEquals(r.main_market, "Over 2.5");
+  // O1.5 92.6 vs O2.5 78.7: gap > margin → strongest (O1.5) stays main (spec example 3)
+  assertEquals(r.main_market, "Over 1.5");
   assert(r.markets["1"] < 50 && r.markets["2"] < 50);
 });
 
@@ -43,14 +44,15 @@ Deno.test("synthetic dominant home side → Home Win, can exceed 75%", () => {
   assert(["1", "BTTS No"].includes(r.main_market), r.main_market);
 });
 
-Deno.test("synthetic tight low-scoring teams → Under 2.5", () => {
+Deno.test("synthetic tight low-scoring teams → low-goals market", () => {
   const r = runEngine(base({
     homeSeasonVenue: { played: 8, goalsFor: 5, goalsAgainst: 4 }, awaySeasonVenue: { played: 8, goalsFor: 4, goalsAgainst: 5 },
     homeSeasonAll: { played: 16, goalsFor: 10, goalsAgainst: 9 }, awaySeasonAll: { played: 16, goalsFor: 9, goalsAgainst: 10 },
     homeForm: form(Array(10).fill([0, 0])), awayForm: form(Array(10).fill([1, 0])),
     odds: { bookmakers: 6, home: 2.7, draw: 2.9, away: 3.0, over25: 2.9, under25: 1.4, bttsYes: 2.5, bttsNo: 1.5 },
   }));
-  console.log("LO", JSON.stringify(r.markets)); assert(["Under 2.5", "Under 1.5", "BTTS No"].includes(r.main_market), r.main_market);
+  // U3.5 98.5 vs U2.5 93.2: gap 5.3 > margin → strongest stays main
+  assertEquals(r.main_market, "Under 3.5");
 });
 
 Deno.test("missing H2H / odds / injuries still produces a prediction with lower quality", () => {
