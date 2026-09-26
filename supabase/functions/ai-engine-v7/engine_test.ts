@@ -106,7 +106,7 @@ Deno.test("league classification", () => {
 });
 
 import { selectMain } from "../_shared/predictionEngineV7.ts";
-const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p }));
+const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p, c: p }));
 Deno.test("main selection: spec example 1 → U3.5 84", () => {
   const r = selectMain(mk({ "Over 1.5": 88, "Under 3.5": 84, "BTTS Yes": 79, "1": 72 }));
   assertEquals([r.market, r.p], ["Under 3.5", 84]);

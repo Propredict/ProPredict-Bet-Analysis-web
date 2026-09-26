@@ -359,7 +359,7 @@ export function runEngine(f: FixtureInput): EngineResult {
     correct_scores: scores.slice(0, 5),
     main_market: main,
     main_probability: mainP,
-    confidence: finalConfidence(mainP, q.score),
+    confidence: mainConf,
     data_quality: q.score,
     data_quality_label: qualityLabel(q.score),
     quality_breakdown: q.breakdown,
