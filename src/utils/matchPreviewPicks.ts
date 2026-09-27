@@ -140,7 +140,16 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     else if (p.includes("under 2.5")) mainLabel = "Under 2.5";
     else if (p.includes("btts") && p.includes("yes")) mainLabel = "BTTS Yes";
     else if (p.includes("btts") && p.includes("no")) mainLabel = "BTTS No";
-    if (mainLabel) primary.push([mainLabel, aiConf]);
+    if (mainLabel) {
+      primary.push([mainLabel, aiConf]);
+    } else {
+      // MAIN is a fallback market (e.g. "Over 1.5"): the AI confidence still
+      // describes the match favourite, so attach it to the strongest 1X2
+      // outcome — Germany "Over 1.5" MAIN with 87% shows as Home Win 87%.
+      const best1x2: Array<[string, number]> = [["Home Win", hw], ["Draw", d], ["Away Win", aw]];
+      const [bLabel] = best1x2.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+      primary.push([bLabel, aiConf]);
+    }
   }
 
   let [label, pct] = primary.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
