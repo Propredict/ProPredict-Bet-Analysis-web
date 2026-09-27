@@ -590,10 +590,24 @@ export default function GetPremium() {
 
               <div className="text-center space-y-2 pt-2">
                 <h3 className="text-sm font-semibold text-foreground">{plan.name}</h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-2xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-xs text-muted-foreground">{plan.period}</span>
-                </div>
+                {isPremium && !isAndroidApp && billingPeriod === "monthly" && Date.now() < Date.parse("2026-10-28T23:00:00Z") ? (
+                  <div className="space-y-1">
+                    <Badge className="bg-warning/20 text-warning border-0 text-[9px] px-2">
+                      SPECIAL PROMO — THIS MONTH ONLY
+                    </Badge>
+                    <div className="flex items-baseline justify-center gap-1.5">
+                      <span className="text-sm text-muted-foreground line-through">€14.99</span>
+                      <span className="text-2xl font-bold text-foreground">€9.99</span>
+                      <span className="text-xs text-muted-foreground">/ 1st month</span>
+                    </div>
+                    <p className="text-[10px] text-primary font-medium">First month €9.99, then €14.99/month.</p>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-xs text-muted-foreground">{plan.period}</span>
+                  </div>
+                )}
                 {'savings' in plan && typeof plan.savings === 'string' && (
                   <p className="text-[10px] text-primary font-medium">{plan.savings}</p>
                 )}
