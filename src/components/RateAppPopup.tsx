@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown, Gift } from "lucide-react";
+import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,7 +40,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
       }
     } catch {}
     const result = await onSubmit(selectedStars);
-    if (result?.success && result?.rewarded) {
+    if (result?.success) {
       setStep("thanks");
     } else {
       onClose();

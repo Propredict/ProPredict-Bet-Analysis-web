@@ -74,7 +74,7 @@ export function RateAppCard({ onRate }: { onRate: () => void }) {
             Enjoying ProPredict? 
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            Your rating means a lot to us! Earn <span className="font-bold text-primary">+50 points</span> ⭐
+            Your rating means a lot to us! It takes just a few seconds ⭐
           </p>
 
           {/* Mini star preview */}
