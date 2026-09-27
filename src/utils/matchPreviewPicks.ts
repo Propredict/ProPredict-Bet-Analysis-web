@@ -121,5 +121,19 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     ["BTTS No", g.bttsNo],
   ];
   const [label, pct] = options.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+
+  // Use the same AI confidence shown on the AI Predictions card when it is
+  // higher than the raw market probability, so Top 10 matches that page.
+  const aiConf = Number(pred.confidence ?? 0);
+  if (aiConf > pct && pred.prediction) {
+    const p = String(pred.prediction).toLowerCase();
+    const home = String(pred.home_team ?? "").toLowerCase();
+    const away = String(pred.away_team ?? "").toLowerCase();
+    let mainLabel = String(pred.prediction);
+    if (p === "1" || (home && p.includes(home) && p.includes("win"))) mainLabel = "Home Win";
+    else if (p === "2" || (away && p.includes(away) && p.includes("win"))) mainLabel = "Away Win";
+    else if (p === "x" || p === "draw") mainLabel = "Draw";
+    return makePick(mainLabel, aiConf);
+  }
   return makePick(label, pct);
 }
