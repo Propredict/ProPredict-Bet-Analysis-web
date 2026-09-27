@@ -125,6 +125,24 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     ["BTTS Yes", g.bttsYes],
     ["BTTS No", g.bttsNo],
   ];
+  // AI main confidence counts only when its MAIN is a primary market
+  // (1X2 / Over-Under 2.5 / BTTS). A MAIN like "Over 1.5" never wins here.
+  const aiConf = Number(pred.confidence ?? 0);
+  if (pred.prediction && aiConf > 0) {
+    const p = String(pred.prediction).toLowerCase().trim();
+    const home = String(pred.home_team ?? "").toLowerCase();
+    const away = String(pred.away_team ?? "").toLowerCase();
+    let mainLabel: string | null = null;
+    if (p === "1" || p === "home win" || (home && p.includes(home) && p.includes("win"))) mainLabel = "Home Win";
+    else if (p === "2" || p === "away win" || (away && p.includes(away) && p.includes("win"))) mainLabel = "Away Win";
+    else if (p === "x" || p === "draw") mainLabel = "Draw";
+    else if (p.includes("over 2.5")) mainLabel = "Over 2.5";
+    else if (p.includes("under 2.5")) mainLabel = "Under 2.5";
+    else if (p.includes("btts") && p.includes("yes")) mainLabel = "BTTS Yes";
+    else if (p.includes("btts") && p.includes("no")) mainLabel = "BTTS No";
+    if (mainLabel) primary.push([mainLabel, aiConf]);
+  }
+
   let [label, pct] = primary.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
 
   // Fallback: only when no primary market reaches the Top 10 threshold
@@ -140,18 +158,5 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     }
   }
 
-  // Use the same AI confidence shown on the AI Predictions card when it is
-  // higher than the raw market probability, so Top 10 matches that page.
-  const aiConf = Number(pred.confidence ?? 0);
-  if (aiConf > pct && pred.prediction) {
-    const p = String(pred.prediction).toLowerCase();
-    const home = String(pred.home_team ?? "").toLowerCase();
-    const away = String(pred.away_team ?? "").toLowerCase();
-    let mainLabel = String(pred.prediction);
-    if (p === "1" || (home && p.includes(home) && p.includes("win"))) mainLabel = "Home Win";
-    else if (p === "2" || (away && p.includes(away) && p.includes("win"))) mainLabel = "Away Win";
-    else if (p === "x" || p === "draw") mainLabel = "Draw";
-    return makePick(mainLabel, aiConf);
-  }
   return makePick(label, pct);
 }
