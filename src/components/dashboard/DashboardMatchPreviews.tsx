@@ -98,6 +98,12 @@ export function DashboardMatchPreviews() {
       .map(p => ({ ...p, top: getStrongestMarketPick(p as any) }))
       .filter(p => p.top.confidence >= TOP10_MIN_CONFIDENCE)
       .sort((a, b) => {
+        // Top leagues first (Tier 1/2), then strongest market %
+        const tierA = (a as any).league_tier ?? ((QUALITY_LEAGUES[a.league || ""] ?? 99) <= 8 ? 1 : 3);
+        const tierB = (b as any).league_tier ?? ((QUALITY_LEAGUES[b.league || ""] ?? 99) <= 8 ? 1 : 3);
+        const groupA = tierA <= 2 ? 0 : 1;
+        const groupB = tierB <= 2 ? 0 : 1;
+        if (groupA !== groupB) return groupA - groupB;
         if (b.top.confidence !== a.top.confidence) return b.top.confidence - a.top.confidence;
         return (QUALITY_LEAGUES[a.league || ""] ?? 99) - (QUALITY_LEAGUES[b.league || ""] ?? 99);
       })
