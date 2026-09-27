@@ -33,6 +33,9 @@ const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/Dashboa
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
 
+// Stripe monthly promo (€9.99 first month) valid until Oct 28, 2026
+const PROMO_ACTIVE = Date.now() < new Date("2026-10-28T23:59:59Z").getTime();
+
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const isAndroid = getIsAndroidApp();
