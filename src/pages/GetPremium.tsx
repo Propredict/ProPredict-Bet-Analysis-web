@@ -661,6 +661,8 @@ export default function GetPremium() {
                   ? "Current Plan / Trenutni plan"
                   : isFree
                   ? (currentPlan === "free" ? "Current Plan / Trenutni plan" : "Free Plan / Besplatan plan")
+                  : isPremium
+                  ? "Get Premium Now → / Kupi Premium sada"
                   : plan.buttonText
                 }
               </Button>
@@ -744,54 +746,72 @@ export default function GetPremium() {
 
       {/* App Download CTA - Website only */}
       {!isAndroidApp && (
-        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 shadow-lg overflow-hidden">
-          <div className="text-center space-y-2">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">📲 Download the App / Preuzmi aplikaciju</h2>
-            <p className="text-xs text-muted-foreground">Get the full ProPredict experience on mobile / Doživi pun ProPredict doživljaj na mobilnom</p>
-          </div>
-
-          {/* App Banner Image */}
-          <div className="rounded-xl overflow-hidden border border-border/30 shadow-md">
-            <img
-              src={appBannerImg}
-              alt="ProPredict App - AI-Powered Sports Analysis with Live Scores, AI Predictions and League Stats"
-              className="w-full h-auto object-cover"
-              loading="lazy"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { emoji: "⚡", title: "Faster predictions / Brže predikcije", desc: "Instant push notifications / Trenutna push obaveštenja" },
-              { emoji: "📊", title: "Full match insights / Puni uvidi utakmica", desc: "Live stats & analysis / Uživo statistika i analiza" },
-              { emoji: "🔒", title: "Exclusive PRO tips / Ekskluzivni PRO tipovi", desc: "Daily & Premium access / Dnevni i Premium pristup" },
-            ].map((f) => (
-              <div key={f.title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-xl mt-0.5">{f.emoji}</span>
-                <div>
-                  <p className="text-xs font-semibold text-foreground">{f.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{f.desc}</p>
-                </div>
+        <div className="relative rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-gradient-to-r from-[#0a1628] via-[#0d1f3c] to-[#0a2a4a]">
+          <div className="flex flex-col md:flex-row items-stretch">
+            {/* Left: text + store badges */}
+            <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                  Download the App
+                </h2>
+                <p className="text-xs sm:text-sm text-white/75 leading-relaxed max-w-sm">
+                  Get the full ProPredict experience on mobile. Live scores, AI predictions, tips and more. / Doživi pun ProPredict doživljaj na mobilnom — rezultati uživo, AI predikcije, tipovi i još mnogo toga.
+                </p>
               </div>
-            ))}
-          </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 text-warning fill-warning" />
-              ))}
-              <span className="text-xs text-muted-foreground ml-1.5">Trusted by 1,000+ users / Poverenje 1,000+ korisnika</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black/80 border border-white/20 hover:border-white/40 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
+                    <path fill="#EA4335" d="M3.6 1.8 13.7 12 3.6 22.2c-.4-.3-.6-.8-.6-1.4V3.2c0-.6.2-1.1.6-1.4Z"/>
+                    <path fill="#FBBC04" d="m17.4 8.3-3.7 3.7L3.6 1.8c.4-.3.9-.4 1.4-.1l12.4 6.6Z"/>
+                    <path fill="#4285F4" d="m17.4 15.7-12.4 6.6c-.5.3-1 .2-1.4-.1l10.1-10.2 3.7 3.7Z"/>
+                    <path fill="#34A853" d="M20.9 10.5c.8.5.8 1.5 0 2l-3.5 1.9-4-4 4-4 3.5 4.1Z" opacity="0"/>
+                    <path fill="#34A853" d="m17.4 8.3 3.5 2c.8.5.8 1.4 0 1.9l-3.5 2-3.7-3.7 3.7-4.2Z"/>
+                  </svg>
+                  <span className="text-left leading-tight">
+                    <span className="block text-[8px] uppercase tracking-wider text-white/70">Get it on</span>
+                    <span className="block text-sm font-semibold text-white">Google Play</span>
+                  </span>
+                </a>
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.propredict.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-black/80 border border-white/20 hover:border-white/40 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white" aria-hidden="true">
+                    <path d="M17.05 12.54c-.03-2.89 2.36-4.27 2.47-4.34-1.35-1.97-3.44-2.24-4.18-2.27-1.78-.18-3.47 1.05-4.37 1.05-.9 0-2.29-1.02-3.77-1-1.94.03-3.72 1.13-4.72 2.86-2.01 3.49-.51 8.66 1.45 11.5.96 1.39 2.1 2.95 3.6 2.89 1.45-.06 2-.93 3.75-.93s2.25.93 3.77.9c1.56-.03 2.55-1.41 3.5-2.8 1.1-1.61 1.55-3.17 1.58-3.25-.04-.02-3.03-1.16-3.08-4.61ZM14.16 4.06c.8-.97 1.34-2.32 1.19-3.66-1.15.05-2.55.77-3.38 1.74-.74.86-1.39 2.23-1.22 3.55 1.29.1 2.6-.65 3.41-1.63Z"/>
+                  </svg>
+                  <span className="text-left leading-tight">
+                    <span className="block text-[8px] uppercase tracking-wider text-white/70">Download on the</span>
+                    <span className="block text-sm font-semibold text-white">App Store</span>
+                  </span>
+                </a>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-3.5 w-3.5 text-warning fill-warning" />
+                ))}
+                <span className="text-[11px] text-white/70 ml-1">Trusted by 1,000+ users / Poverenje 1,000+ korisnika</span>
+              </div>
             </div>
 
-            <a
-              href="https://play.google.com/store/apps/details?id=com.propredict.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm transition-opacity shadow-lg shadow-violet-500/20"
-            >
-              👉 Download Now / Preuzmi odmah
-            </a>
+            {/* Right: app banner image */}
+            <div className="md:w-[46%] flex-shrink-0 relative min-h-[180px]">
+              <img
+                src={appBannerImg}
+                alt="ProPredict App - AI-Powered Sports Analysis with Live Scores, AI Predictions and League Stats"
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0d1f3c] via-transparent to-transparent hidden md:block" />
+            </div>
           </div>
         </div>
       )}
