@@ -79,7 +79,24 @@ serve(async (req) => {
       };
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    // Promo: €5 off first month, Premium Monthly only, until end of Oct 28 2026 (Belgrade)
+    const PREMIUM_MONTHLY_PRICE = "price_1U7aifL8E849h6yxdv1QWtqC";
+    const PROMO_COUPON = "AbGvMCvw";
+    const PROMO_END = Date.parse("2026-10-28T23:00:00Z");
+    const applyPromo = mode === "subscription" && priceId === PREMIUM_MONTHLY_PRICE && Date.now() < PROMO_END;
+
+    let session;
+    if (applyPromo) {
+      try {
+        session = await stripe.checkout.sessions.create({ ...sessionParams, discounts: [{ coupon: PROMO_COUPON }] });
+      } catch (e) {
+        // Coupon expired/invalid in Stripe -> regular price, never block checkout
+        console.warn("Promo coupon not applied:", e instanceof Error ? e.message : e);
+        session = await stripe.checkout.sessions.create(sessionParams);
+      }
+    } else {
+      session = await stripe.checkout.sessions.create(sessionParams);
+    }
 
     return new Response(
       JSON.stringify({ url: session.url }),
