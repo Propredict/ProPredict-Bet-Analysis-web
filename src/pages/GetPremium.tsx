@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import appBannerImg from "@/assets/google-play-banner.jfif";
+import premiumHeroImg from "@/assets/premium-hero-stadium.jpg";
+import premiumCrownImg from "@/assets/premium-crown.png";
 import { Helmet } from "react-helmet-async";
 import {
   Check,
@@ -252,6 +254,8 @@ const faqs = [
   { question: "Can I cancel anytime? / Mogu li otkazati u bilo kom trenutku?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period. / Da, možeš otkazati pretplatu u bilo kom trenutku. Pristup ostaje do kraja obračunskog perioda." },
   { question: "How do Premium AI Predictions work? / Kako rade Premium AI predikcije?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics. / Naši AI modeli pružaju pažljivo odabrane predikcije sa detaljnom analizom za dublje razumevanje utakmica." },
   { question: "Can I change my plan anytime? / Mogu li promeniti plan u bilo kom trenutku?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly. / Da, možeš nadograditi ili sniziti plan u bilo kom trenutku. Promene stupaju na snagu odmah." },
+  { question: "How do payments and refunds work? / Kako funkcionišu plaćanja i povraćaj novca?", answer: "Payments are processed securely via Stripe on the website or Google Play in the Android app. You can manage or cancel your subscription anytime in your account settings. Refund requests are handled according to the store's policy — contact us and we will help. / Plaćanja se bezbedno obrađuju preko Stripe-a na sajtu ili Google Play-a u Android aplikaciji. Pretplatom upravljaš ili je otkažeš u bilo kom trenutku u podešavanjima naloga. Zahtevi za povraćaj novca se rešavaju prema pravilima prodavnice — kontaktiraj nas i pomoći ćemo." },
+  { question: "How can I contact support? / Kako da kontaktiram podršku?", answer: "You can reach us anytime via the Live Chat in the app or by email at propredictsupp@gmail.com. Premium users get priority support with faster responses. / Možeš nas kontaktirati u bilo kom trenutku preko Live Chat-a u aplikaciji ili emailom na propredictsupp@gmail.com. Premium korisnici imaju prioritetnu podršku sa bržim odgovorima." },
 ];
 
 function TestimonialsSlider() {
@@ -450,13 +454,27 @@ export default function GetPremium() {
       <div className="mb-4">
       </div>
 
-      {/* Header */}
-      <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Crown className="h-6 w-6 text-warning" />
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade to Premium / Nadogradi na Premium</h1>
+      {/* Hero — stadium banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 shadow-lg">
+        <img
+          src={premiumHeroImg}
+          alt="Football stadium at night under floodlights"
+          className="absolute inset-0 h-full w-full object-cover"
+          width={1920}
+          height={768}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-sidebar/70 via-sidebar/50 to-background" />
+        <div className="relative px-4 py-10 sm:py-14 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2.5">
+            <Crown className="h-7 w-7 sm:h-9 sm:w-9 text-warning drop-shadow" />
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white drop-shadow-lg tracking-tight">
+              Upgrade to Premium
+            </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">Choose Premium Plan / Izaberi Premium plan</p>
+          <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto leading-relaxed">
+            Get full access to all features and take your football predictions to the next level. / Otključaj sve funkcije i podigni svoje predikcije na viši nivo.
+          </p>
+        </div>
       </div>
 
       {/* Cross-platform subscription protection banners */}
@@ -538,12 +556,12 @@ export default function GetPremium() {
 
       {/* Billing Toggle - Both Web and Android */}
       <div className="flex justify-center">
-        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card border border-border shadow-sm">
           <button
             onClick={() => setBillingPeriod("monthly")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`px-5 py-2 text-xs font-semibold rounded-full transition-all ${
               billingPeriod === "monthly"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                ? "bg-primary text-primary-foreground shadow"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -551,60 +569,72 @@ export default function GetPremium() {
           </button>
           <button
             onClick={() => setBillingPeriod("annual")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+            className={`px-5 py-2 text-xs font-semibold rounded-full transition-all flex items-center gap-1.5 ${
               billingPeriod === "annual"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                ? "bg-primary text-primary-foreground shadow"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Annual / Godišnje
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33% / Uštedi 33%</Badge>
+            <Badge className="bg-primary/15 text-primary border-0 text-[9px] px-1.5">Save 33%</Badge>
           </button>
         </div>
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
         {currentPlans.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
           const isFree = plan.id === "free";
+          const showPromo = isPremium && !isAndroidApp && billingPeriod === "monthly" && Date.now() < Date.parse("2026-10-28T23:00:00Z");
 
           return (
             <Card
               key={plan.id}
-              className={`relative p-4 transition-all ${
+              className={`relative p-5 transition-all overflow-hidden ${
                 isPremium
-                  ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
+                  ? "border-2 border-violet-500/70 bg-gradient-to-b from-violet-500/10 via-card to-card shadow-[0_0_30px_rgba(139,92,246,0.25)] ring-1 ring-violet-400/30"
                   : isFree
-                  ? "bg-gradient-to-b from-primary/15 via-card to-card border-primary/30"
+                  ? "bg-card border-border"
                   : "bg-card border-border"
               }`}
             >
               {isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
-                  <Crown className="h-2.5 w-2.5 mr-1" />
-                  Best Value / Najbolja vrednost
-                </Badge>
+                <>
+                  <Badge className="absolute -top-0 right-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0 text-[9px] px-2.5 py-1 rounded-b-lg rounded-t-none shadow">
+                    <Crown className="h-2.5 w-2.5 mr-1" />
+                    Best Value / Najbolja vrednost
+                  </Badge>
+                  <img
+                    src={premiumCrownImg}
+                    alt=""
+                    loading="lazy"
+                    className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-28 sm:h-28 object-contain opacity-90 pointer-events-none select-none"
+                  />
+                </>
               )}
 
-              <div className="text-center space-y-2 pt-2">
-                <h3 className="text-sm font-semibold text-foreground">{plan.name}</h3>
-                {isPremium && !isAndroidApp && billingPeriod === "monthly" && Date.now() < Date.parse("2026-10-28T23:00:00Z") ? (
-                  <div className="space-y-1">
-                    <Badge className="bg-warning/20 text-warning border-0 text-[9px] px-2">
-                      SPECIAL PROMO — THIS MONTH ONLY
+              <div className="text-center space-y-2 pt-3">
+                <h3 className={`text-base font-bold ${isPremium ? "text-foreground flex items-center justify-center gap-1.5" : "text-foreground"}`}>
+                  {isPremium && <Crown className="h-4 w-4 text-warning" />}
+                  {plan.name}
+                </h3>
+                {showPromo ? (
+                  <div className="space-y-1.5">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] px-2.5 font-bold tracking-wide">
+                      1 MONTH DISCOUNT OFFER
                     </Badge>
-                    <div className="flex items-baseline justify-center gap-1.5">
+                    <div className="flex items-baseline justify-center gap-2">
                       <span className="text-sm text-muted-foreground line-through">€14.99</span>
-                      <span className="text-2xl font-bold text-foreground">€9.99</span>
-                      <span className="text-xs text-muted-foreground">/ 1st month</span>
+                      <span className="text-3xl font-extrabold text-primary">€9.99</span>
+                      <span className="text-xs text-muted-foreground">/ first month</span>
                     </div>
-                    <p className="text-[10px] text-primary font-medium">First month €9.99, then €14.99/month.</p>
+                    <p className="text-[10px] text-muted-foreground">Then €14.99/month. Cancel anytime. / Zatim €14.99 mesečno. Otkaži kada želiš.</p>
                   </div>
                 ) : (
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
                     <span className="text-xs text-muted-foreground">{plan.period}</span>
                   </div>
                 )}
@@ -615,9 +645,9 @@ export default function GetPremium() {
               </div>
 
               <Button
-                className={`w-full mt-4 h-8 text-xs ${
+                className={`w-full mt-4 h-9 text-xs font-semibold ${
                   isPremium && !isCurrentPlan
-                    ? "bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 hover:opacity-90 text-white border-0"
+                    ? "bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 hover:opacity-90 text-white border-0 shadow-lg shadow-violet-500/30"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
@@ -634,11 +664,11 @@ export default function GetPremium() {
                 }
               </Button>
 
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-2 relative">
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-[11px]">
                     {f.included ? (
-                      <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      <Check className={`h-3.5 w-3.5 flex-shrink-0 ${isPremium ? "text-violet-400" : "text-primary"}`} />
                     ) : (
                       <X className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
                     )}
