@@ -116,13 +116,13 @@ const Index = () => {
             </div>
             <Link
               to="/get-premium"
-              className="mt-1 inline-flex w-fit items-center gap-2 self-center rounded-full bg-gradient-to-r from-primary to-blue-600 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-primary-foreground shadow-md transition-all hover:opacity-95 sm:self-start"
+              className="animate-cta-blink mt-1 inline-flex w-fit items-center gap-2 self-center rounded-full bg-gradient-to-r from-primary to-blue-600 px-5 py-2.5 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-md transition-all hover:opacity-95 sm:self-start"
               aria-label="Become Premium and unlock all tips and predictions for one month / Postani Premium korisnik i otključaj sve predikcije na mesec dana"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 text-yellow-300" fill="currentColor" aria-hidden="true">
                 <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
               </svg>
-              Be Premium — Unlock All Tips for 1 Month
+              Become Premium / Postani Premium
             </Link>
           </div>
             {/* Center Premium Access block (desktop) — centered over the hero image on wide screens */}
