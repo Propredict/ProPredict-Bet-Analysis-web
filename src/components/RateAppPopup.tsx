@@ -248,11 +248,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               One last step 🙌
             </DialogTitle>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              ⭐ Leave a 5-star rating on Google Play and add a short comment to get your reward 🎁
+              ⭐ Leave a 5-star rating on Google Play — it helps us grow! 💚
             </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-xs font-extrabold text-primary">🎁 +50 points waiting for you!</span>
-            </div>
             <button
               onClick={handleGoToPlayStore}
               disabled={submitting}
