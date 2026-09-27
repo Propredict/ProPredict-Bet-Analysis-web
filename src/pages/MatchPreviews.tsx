@@ -188,9 +188,13 @@ export default function MatchPreviews() {
       .map(p => ({
         p,
         bestPct: getTopMatchPreviewPick(p as any).confidence,
-        tier: getLeagueTier(p.league),
+        tier: (p as any).league_tier ?? getLeagueTier(p.league),
       }))
       .sort((a, b) => {
+        // Top leagues first (Tier 1/2 before Tier 3/4), then strongest market %
+        const groupA = a.tier <= 2 ? 0 : 1;
+        const groupB = b.tier <= 2 ? 0 : 1;
+        if (groupA !== groupB) return groupA - groupB;
         const pctDiff = b.bestPct - a.bestPct;
         if (pctDiff !== 0) return pctDiff;
         if (a.tier !== b.tier) return a.tier - b.tier;
