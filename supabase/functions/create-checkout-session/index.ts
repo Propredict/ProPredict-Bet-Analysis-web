@@ -86,12 +86,16 @@ serve(async (req) => {
     const applyPromo = mode === "subscription" && priceId === PREMIUM_MONTHLY_PRICE && Date.now() < PROMO_END;
 
     let session;
+    let promoApplied = false;
+    let promoError: string | null = null;
     if (applyPromo) {
       try {
         session = await stripe.checkout.sessions.create({ ...sessionParams, discounts: [{ coupon: PROMO_COUPON }] });
+        promoApplied = true;
       } catch (e) {
         // Coupon expired/invalid in Stripe -> regular price, never block checkout
-        console.warn("Promo coupon not applied:", e instanceof Error ? e.message : e);
+        promoError = e instanceof Error ? e.message : String(e);
+        console.warn("Promo coupon not applied:", promoError);
         session = await stripe.checkout.sessions.create(sessionParams);
       }
     } else {
@@ -99,7 +103,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ url: session.url, promoApplied, promoError }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
