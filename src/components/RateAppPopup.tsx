@@ -202,7 +202,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                 Awesome! Rate us ⭐
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
-                Earn <span className="font-extrabold text-primary">+50 points</span> for rating!
+                Tap the stars to rate your experience
               </p>
             </div>
 
