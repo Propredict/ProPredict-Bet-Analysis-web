@@ -18,6 +18,7 @@ function NavigateWithSearch({ to }: { to: string }) {
   return <Navigate to={`${pathname}${search ? `?${search}` : ""}`} replace />;
 }
 import AppLayout from "@/layouts/AppLayout";
+import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import { PlayerProfileProvider } from "@/contexts/PlayerProfileContext";
