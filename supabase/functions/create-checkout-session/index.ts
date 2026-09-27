@@ -81,7 +81,7 @@ serve(async (req) => {
 
     // Promo: €5 off first month, Premium Monthly only, until end of Oct 28 2026 (Belgrade)
     const PREMIUM_MONTHLY_PRICE = "price_1U7aifL8E849h6yxdv1QWtqC";
-    const PROMO_COUPON = "AbGvMCvw";
+    const PROMO_COUPON = "AbGVMCww";
     const PROMO_END = Date.parse("2026-10-28T23:00:00Z");
     const applyPromo = mode === "subscription" && priceId === PREMIUM_MONTHLY_PRICE && Date.now() < PROMO_END;
 
