@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import appBannerImg from "@/assets/google-play-banner.jfif";
 import premiumHeroImg from "@/assets/premium-hero-stadium.jpg";
 import premiumCrownImg from "@/assets/premium-crown.png";
+import appPhonesImg from "@/assets/app-phones-stadium.jpg";
 import { Helmet } from "react-helmet-async";
 import {
   Check,
@@ -611,7 +612,7 @@ export default function GetPremium() {
                     src={premiumCrownImg}
                     alt=""
                     loading="lazy"
-                    className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-28 sm:h-28 object-contain opacity-90 pointer-events-none select-none"
+                    className="absolute bottom-6 right-2 w-32 h-32 sm:w-44 sm:h-44 object-contain drop-shadow-2xl pointer-events-none select-none"
                   />
                 </>
               )}
@@ -747,7 +748,9 @@ export default function GetPremium() {
       {/* App Download CTA - Website only */}
       {!isAndroidApp && (
         <div className="relative rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-gradient-to-r from-[#0a1628] via-[#0d1f3c] to-[#0a2a4a]">
-          <div className="flex flex-col md:flex-row items-stretch">
+          <img src={appPhonesImg} alt="ProPredict app on phones" width={1280} height={720} loading="lazy" className="absolute inset-0 h-full w-full object-cover object-right" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-[#0a1628]/80 to-transparent" />
+          <div className="relative flex flex-col md:flex-row items-stretch min-h-[240px] sm:min-h-[300px]">
             {/* Left: text + store badges */}
             <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center space-y-4">
               <div className="space-y-2">
@@ -802,16 +805,7 @@ export default function GetPremium() {
               </div>
             </div>
 
-            {/* Right: app banner image */}
-            <div className="md:w-[46%] flex-shrink-0 relative min-h-[180px]">
-              <img
-                src={appBannerImg}
-                alt="ProPredict App - AI-Powered Sports Analysis with Live Scores, AI Predictions and League Stats"
-                className="absolute inset-0 h-full w-full object-cover object-center"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0d1f3c] via-transparent to-transparent hidden md:block" />
-            </div>
+            <div className="md:w-[50%]" />
           </div>
         </div>
       )}
