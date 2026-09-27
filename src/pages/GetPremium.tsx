@@ -625,19 +625,21 @@ export default function GetPremium() {
                 </h3>
                 {showPromo ? (
                   <div className="space-y-1.5">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] px-2.5 font-bold tracking-wide">
-                      1 MONTH DISCOUNT OFFER
-                    </Badge>
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      <span className="text-xl sm:text-2xl font-extrabold text-foreground/70 line-through decoration-red-500 decoration-[3px]">€14.99</span>
+                      <Badge className="bg-red-500 text-white border-0 text-[10px] px-3 py-1 font-extrabold tracking-wide shadow-md">
+                        1 MONTH DISCOUNT OFFER
+                      </Badge>
+                    </div>
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-sm text-muted-foreground line-through">€14.99</span>
-                      <span className="text-3xl font-extrabold text-primary">€9.99</span>
+                      <span className="text-4xl sm:text-5xl font-extrabold text-blue-600">€9.99</span>
                       <span className="text-xs text-muted-foreground">/ first month</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Then €14.99/month. Cancel anytime. / Zatim €14.99 mesečno. Otkaži kada želiš.</p>
                   </div>
                 ) : (
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
+                    <span className="text-4xl sm:text-5xl font-extrabold text-foreground">{plan.price}</span>
                     <span className="text-xs text-muted-foreground">{plan.period}</span>
                   </div>
                 )}
@@ -648,9 +650,11 @@ export default function GetPremium() {
               </div>
 
               <Button
-                className={`w-full mt-4 h-9 text-xs font-semibold ${
+                className={`w-full mt-4 h-11 text-xs sm:text-sm font-semibold ${
                   isPremium && !isCurrentPlan
                     ? "bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 hover:opacity-90 text-white border-0 shadow-lg shadow-violet-500/30"
+                    : isFree
+                    ? "bg-muted text-muted-foreground border-border"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
@@ -664,7 +668,12 @@ export default function GetPremium() {
                   : isFree
                   ? (currentPlan === "free" ? "Current Plan / Trenutni plan" : "Free Plan / Besplatan plan")
                   : isPremium
-                  ? "Get Premium Now → / Kupi Premium sada"
+                  ? (
+                    <>
+                      <Crown className="h-4 w-4 text-warning fill-warning mr-1.5" />
+                      Get Premium Now → / Kupi Premium sada
+                    </>
+                  )
                   : plan.buttonText
                 }
               </Button>
@@ -673,11 +682,11 @@ export default function GetPremium() {
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-[11px]">
                     {f.included ? (
-                      <Check className={`h-3.5 w-3.5 flex-shrink-0 ${isPremium ? "text-violet-400" : "text-primary"}`} />
+                      <Check className={`h-3.5 w-3.5 flex-shrink-0 font-bold ${isPremium ? "text-blue-600" : "text-green-500"}`} />
                     ) : (
                       <X className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
                     )}
-                    <span className={f.included ? "text-foreground" : "text-muted-foreground/50"}>
+                    <span className={f.included ? "text-foreground font-medium" : "text-muted-foreground/50"}>
                       {f.text}
                     </span>
                   </li>
@@ -695,16 +704,16 @@ export default function GetPremium() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {benefits.map((benefit, index) => (
-            <Card 
-              key={index} 
-              className="relative p-3 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent border border-primary/30 hover:border-primary/50 hover:from-primary/20 hover:via-primary/15 transition-all group overflow-hidden shadow-[0_0_10px_rgba(15,155,142,0.1)]"
+            <Card
+              key={index}
+              className="relative p-3 bg-card border border-border hover:border-primary/40 transition-all group overflow-hidden"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20 border border-primary/40 group-hover:bg-primary/30 transition-colors">
-                  <benefit.icon className="h-4 w-4 text-primary" />
+                <div className={`p-2.5 rounded-full border flex-shrink-0 transition-transform group-hover:scale-110 ${benefit.circle}`}>
+                  <benefit.icon className={`h-4 w-4 ${benefit.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-semibold text-foreground">{benefit.title}</h4>
+                  <h4 className="text-xs font-bold text-foreground">{benefit.title}</h4>
                   <p className="text-[10px] text-muted-foreground leading-snug">
                     {benefit.description}
                   </p>
