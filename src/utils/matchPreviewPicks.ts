@@ -106,9 +106,11 @@ export const TOP10_MAX = 10;
 
 /**
  * Strongest single market for a match from the unified model:
- * 1, X, 2, Double Chance, Over/Under 1.5/2.5/3.5, BTTS Yes/No.
- * Used by Top 10 (>=80% only) — a match enters via ANY strong market
- * (e.g. Home Win 70% but Over 2.5 90% → enters with Over 2.5).
+ * 1, X, 2, Over/Under 2.5, BTTS Yes/No only — NO double chance (1X/X2/12)
+ * and NO Over/Under 1.5/3.5. If there is a clear winner, Top 10 shows the
+ * pure win pick (e.g. Away Win 88%), not X2. Goals/BTTS markets are used
+ * only when they are stronger than any 1X2 outcome.
+ * Used by Top 10 (>=80% only).
  */
 export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
   const { hw, d, aw } = getNormalized1x2(pred);
@@ -117,15 +119,8 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     ["Home Win", hw],
     ["Draw", d],
     ["Away Win", aw],
-    ["1X (Home/Draw)", clamp(hw + d, 5, 97)],
-    ["X2 (Draw/Away)", clamp(d + aw, 5, 97)],
-    ["12 (Home/Away)", clamp(hw + aw, 5, 97)],
-    ["Over 1.5", g.over15],
-    ["Under 1.5", g.under15],
     ["Over 2.5", g.over25],
     ["Under 2.5", g.under25],
-    ["Over 3.5", g.over35],
-    ["Under 3.5", g.under35],
     ["BTTS Yes", g.bttsYes],
     ["BTTS No", g.bttsNo],
   ];
