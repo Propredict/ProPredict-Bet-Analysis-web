@@ -33,6 +33,9 @@ const DashboardMatchPreviews = lazy(() => import("@/components/dashboard/Dashboa
 const LazyFallback = forwardRef<HTMLDivElement>((_, ref) => <div ref={ref} className="h-32 flex items-center justify-center"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" /></div>);
 LazyFallback.displayName = "LazyFallback";
 
+// Stripe monthly promo (€9.99 first month) valid until Oct 28, 2026
+const PROMO_ACTIVE = Date.now() < new Date("2026-10-28T23:59:59Z").getTime();
+
 const Index = () => {
   const { maybeShowInterstitial } = useAndroidInterstitial();
   const isAndroid = getIsAndroidApp();
@@ -114,16 +117,24 @@ const Index = () => {
                 </a>
               )}
             </div>
-            <Link
-              to="/get-premium"
-              className="animate-cta-blink mt-1 inline-flex w-fit items-center gap-2 self-center rounded-full bg-gradient-to-r from-primary to-blue-600 px-5 py-2.5 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-md transition-all hover:opacity-95 sm:self-start"
-              aria-label="Become Premium and unlock all tips and predictions for one month / Postani Premium korisnik i otključaj sve predikcije na mesec dana"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4 text-yellow-300" fill="currentColor" aria-hidden="true">
-                <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
-              </svg>
-              Become Premium / Postani Premium
-            </Link>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              <Link
+                to="/get-premium"
+                className="animate-cta-blink inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-5 py-2.5 text-sm font-extrabold uppercase tracking-wide text-gray-900 shadow-[0_0_18px_rgba(250,204,21,0.45)] transition-all hover:brightness-105"
+                aria-label="Become Premium and unlock all tips and predictions for one month / Postani Premium korisnik i otključaj sve predikcije na mesec dana"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4 text-yellow-900" fill="currentColor" aria-hidden="true">
+                  <path d="M5 16L3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5zm0 2h14v2H5v-2z"/>
+                </svg>
+                Become Premium / Postani Premium
+              </Link>
+              {PROMO_ACTIVE && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-red-400/50 bg-red-500/20 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-red-300 shadow-md backdrop-blur-sm">
+                  <span aria-hidden="true">🔥</span>
+                  1st Month €9.99 <span className="font-bold line-through opacity-80">€14.99</span>
+                </span>
+              )}
+            </div>
           </div>
             {/* Center Premium Access block (desktop) — centered over the hero image on wide screens */}
             <Link
