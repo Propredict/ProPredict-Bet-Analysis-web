@@ -7,11 +7,9 @@ import { Helmet } from "react-helmet-async";
 import {
   Check,
   X,
-  Zap,
   Target,
   Brain,
   Bell,
-  Clock,
   Shield,
   Star,
   Crown,
@@ -19,6 +17,9 @@ import {
   Quote,
   ExternalLink,
   AlertTriangle,
+  Ticket,
+  BarChart3,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -149,14 +150,15 @@ const webPlans = {
       buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-         { text: "Full access to Daily Predictions / Potpun pristup dnevnim predikcijama", included: true },
-        { text: "Free AI Basic predictions / Besplatne osnovne AI predikcije", included: true },
-        { text: "Live scores / Rezultati uživo", included: true },
-        { text: "League standings / Tabela liga", included: true },
-        { text: "Ads supported / Podržano reklamama", included: true },
-        { text: "Match Previews / Pregledi utakmica", included: false },
-        { text: "Exclusive content / Ekskluzivni sadržaj", included: false },
-        { text: "Premium content / Premium sadržaj", included: false },
+        { text: "Access to Daily Predictions / Pristup dnevnim predikcijama", included: true },
+        { text: "Free Basic Predictions / Besplatne osnovne predikcije", included: true },
+        { text: "Live Scores & Results / Rezultati uživo", included: true },
+        { text: "League Standings / Tabele liga", included: true },
+        { text: "Ads Supported / Podržano reklamama", included: true },
+        { text: "Premium Tips & Tickets / Premium tipovi i tiketi", included: false },
+        { text: "Full Match Analysis / Puna analiza utakmica", included: false },
+        { text: "Exclusive Content / Ekskluzivni sadržaj", included: false },
+        { text: "Priority Support / Prioritetna podrška", included: false },
       ],
     },
     {
@@ -169,10 +171,9 @@ const webPlans = {
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
-        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
-        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Premium & Daily Predictions / Premium i dnevne predikcije", included: true },
+        { text: "Daily Premium Tickets / Dnevni Premium tiketi", included: true },
         { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
-        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
         { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
         { text: "Full AI Analysis / Puna AI analiza", included: true },
         { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
@@ -191,14 +192,15 @@ const webPlans = {
       buttonText: "Current Plan / Trenutni plan",
       buttonVariant: "outline" as const,
       features: [
-        { text: "Full access to Daily Predictions / Potpun pristup dnevnim predikcijama", included: true },
-        { text: "Free AI Basic predictions / Besplatne osnovne AI predikcije", included: true },
-        { text: "Live scores / Rezultati uživo", included: true },
-        { text: "League standings / Tabela liga", included: true },
-        { text: "Ads supported / Podržano reklamama", included: true },
-        { text: "Match Previews / Pregledi utakmica", included: false },
-        { text: "Exclusive content / Ekskluzivni sadržaj", included: false },
-        { text: "Premium content / Premium sadržaj", included: false },
+        { text: "Access to Daily Predictions / Pristup dnevnim predikcijama", included: true },
+        { text: "Free Basic Predictions / Besplatne osnovne predikcije", included: true },
+        { text: "Live Scores & Results / Rezultati uživo", included: true },
+        { text: "League Standings / Tabele liga", included: true },
+        { text: "Ads Supported / Podržano reklamama", included: true },
+        { text: "Premium Tips & Tickets / Premium tipovi i tiketi", included: false },
+        { text: "Full Match Analysis / Puna analiza utakmica", included: false },
+        { text: "Exclusive Content / Ekskluzivni sadržaj", included: false },
+        { text: "Priority Support / Prioritetna podrška", included: false },
       ],
     },
     {
@@ -212,10 +214,9 @@ const webPlans = {
       buttonVariant: "default" as const,
       features: [
         { text: "All Premium Features / Sve Premium funkcije", included: true },
-        { text: "All Free & Premium Predictions / Sve Free i Premium predikcije", included: true },
-        { text: "Daily Free & Premium Tickets / Dnevni Free i Premium tiketi", included: true },
+        { text: "Premium & Daily Predictions / Premium i dnevne predikcije", included: true },
+        { text: "Daily Premium Tickets / Dnevni Premium tiketi", included: true },
         { text: "Live Scores & League Standings / Rezultati uživo i tabele", included: true },
-        { text: "All Free & Premium Tips / Svi Free i Premium tipovi", included: true },
         { text: "VIP Match Analysis / VIP analiza utakmica", included: true },
         { text: "Full AI Analysis / Puna AI analiza", included: true },
         { text: "Unlimited Match Previews / Neograničeni pregledi utakmica", included: true },
@@ -227,12 +228,12 @@ const webPlans = {
 };
 
 const benefits = [
-  { icon: Target, title: "Premium AI Predictions / Premium AI predikcije", description: "AI analysis with 90%+ historical accuracy / AI analiza sa 90%+ tačnosti" },
-  { icon: Zap, title: "VIP Tickets / VIP tiketi", description: "Curated multi-match AI analysis and insights / Odabrana multi-match AI analiza i uvidi" },
-  { icon: Brain, title: "Full AI Analysis / Puna AI analiza", description: "Complete AI-powered match analysis and insights / Kompletna AI analiza utakmica i uvidi" },
-  { icon: Bell, title: "Real-time Alerts / Obaveštenja uživo", description: "Instant notifications for new predictions / Trenutna obaveštenja za nove predikcije" },
-  { icon: Clock, title: "Priority Access / Prioritetan pristup", description: "Get insights before match kickoff / Uvidi pre početka utakmice" },
-  { icon: Shield, title: "Flexible & Risk-Free / Fleksibilno i bez rizika", description: "Cancel or switch plans anytime, no questions asked / Otkaži ili promeni plan u bilo kom trenutku" },
+  { icon: Target, title: "Premium AI Predictions / Premium AI predikcije", description: "AI analysis with 90%+ accuracy / AI analiza sa 90%+ tačnosti", circle: "bg-blue-500/10 border-blue-500/40", color: "text-blue-600" },
+  { icon: Ticket, title: "VIP Tickets / VIP tiketi", description: "Curated multi-match tickets / Odabrani multi-match tiketi", circle: "bg-blue-500/10 border-blue-500/40", color: "text-blue-600" },
+  { icon: BarChart3, title: "Full AI Analysis / Puna AI analiza", description: "Complete match stats & insights / Kompletna statistika i uvidi", circle: "bg-blue-500/10 border-blue-500/40", color: "text-blue-600" },
+  { icon: Bell, title: "Real-time Alerts / Obaveštenja uživo", description: "Instant notifications for new predictions / Trenutna obaveštenja za nove predikcije", circle: "bg-blue-500/10 border-blue-500/40", color: "text-blue-600" },
+  { icon: Crown, title: "Priority Access / Prioritetan pristup", description: "Get insights before kickoff / Uvidi pre početka utakmice", circle: "bg-amber-400/10 border-amber-400/40", color: "text-amber-500" },
+  { icon: Ban, title: "Ad-Free Experience / Bez reklama", description: "Enjoy a cleaner, faster app / Čistija i brža aplikacija", circle: "bg-red-500/10 border-red-500/40", color: "text-red-500" },
 ];
 
 const stats = [
@@ -604,7 +605,7 @@ export default function GetPremium() {
             >
               {isPremium && (
                 <>
-                  <Badge className="absolute -top-0 right-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0 text-[9px] px-2.5 py-1 rounded-b-lg rounded-t-none shadow">
+                  <Badge className="absolute -top-0 right-4 bg-fuchsia-500 text-white border-0 text-[9px] px-2.5 py-1 rounded-b-lg rounded-t-none shadow">
                     <Crown className="h-2.5 w-2.5 mr-1" />
                     Best Value / Najbolja vrednost
                   </Badge>
