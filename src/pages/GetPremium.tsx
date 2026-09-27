@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import appBannerImg from "@/assets/google-play-banner.jfif";
+import premiumHeroImg from "@/assets/premium-hero-stadium.jpg";
+import premiumCrownImg from "@/assets/premium-crown.png";
 import { Helmet } from "react-helmet-async";
 import {
   Check,
@@ -252,6 +254,8 @@ const faqs = [
   { question: "Can I cancel anytime? / Mogu li otkazati u bilo kom trenutku?", answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your billing period. / Da, možeš otkazati pretplatu u bilo kom trenutku. Pristup ostaje do kraja obračunskog perioda." },
   { question: "How do Premium AI Predictions work? / Kako rade Premium AI predikcije?", answer: "Our AI models provide carefully curated predictions with detailed analysis, giving you deeper insights to understand match dynamics. / Naši AI modeli pružaju pažljivo odabrane predikcije sa detaljnom analizom za dublje razumevanje utakmica." },
   { question: "Can I change my plan anytime? / Mogu li promeniti plan u bilo kom trenutku?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is adjusted accordingly. / Da, možeš nadograditi ili sniziti plan u bilo kom trenutku. Promene stupaju na snagu odmah." },
+  { question: "How do payments and refunds work? / Kako funkcionišu plaćanja i povraćaj novca?", answer: "Payments are processed securely via Stripe on the website or Google Play in the Android app. You can manage or cancel your subscription anytime in your account settings. Refund requests are handled according to the store's policy — contact us and we will help. / Plaćanja se bezbedno obrađuju preko Stripe-a na sajtu ili Google Play-a u Android aplikaciji. Pretplatom upravljaš ili je otkažeš u bilo kom trenutku u podešavanjima naloga. Zahtevi za povraćaj novca se rešavaju prema pravilima prodavnice — kontaktiraj nas i pomoći ćemo." },
+  { question: "How can I contact support? / Kako da kontaktiram podršku?", answer: "You can reach us anytime via the Live Chat in the app or by email at propredictsupp@gmail.com. Premium users get priority support with faster responses. / Možeš nas kontaktirati u bilo kom trenutku preko Live Chat-a u aplikaciji ili emailom na propredictsupp@gmail.com. Premium korisnici imaju prioritetnu podršku sa bržim odgovorima." },
 ];
 
 function TestimonialsSlider() {
