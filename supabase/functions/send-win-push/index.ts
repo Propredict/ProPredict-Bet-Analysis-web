@@ -178,16 +178,21 @@ serve(async (req) => {
       });
     }
 
-    if (type !== "tip" && type !== "ticket") {
-      if (type !== "wc_pick") {
-        return new Response(JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    // World Cup content is fully disabled — never send win pushes for it.
+    if (type === "wc_pick" || record?.category === "wc_pick" || record?.tier === "wc_pick") {
+      return new Response(JSON.stringify({ skipped: true, reason: "world_cup_disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const contentTier = type === "wc_pick" ? "wc_pick" : (record.tier ?? "free");
-    const category = type === "wc_pick" ? "wc_pick" : (record.category as string | undefined);
+    if (type !== "tip" && type !== "ticket") {
+      return new Response(JSON.stringify({ skipped: true, reason: `unknown type: ${type}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const contentTier = record.tier ?? "free";
+    const category = record.category as string | undefined;
     const winBody = getWinBody(type, record);
     const bigPicture = "https://propredict.me/push-win.jpg";
 
