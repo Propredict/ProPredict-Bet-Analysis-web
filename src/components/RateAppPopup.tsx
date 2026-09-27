@@ -150,18 +150,6 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               <span className="text-primary font-semibold">Amazing</span>
             </div>
 
-            {/* Reward banner */}
-            <div
-              className="mt-4 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl"
-              style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)' }}
-            >
-              <Gift className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-foreground">
-                Get <span className="font-extrabold text-primary">+50 points</span> after rating
-              </span>
-              <span className="text-sm">🌟</span>
-            </div>
-
             {/* Quick choice buttons */}
             <div className="flex gap-2.5 mt-4">
               <button
