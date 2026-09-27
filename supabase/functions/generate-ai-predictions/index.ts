@@ -7007,7 +7007,10 @@ async function applySpecials(
   // category='diamond_pick', tier='premium'. Each pick is a 2-leg combo
   // (e.g. "BTTS & Over 2.5", "1X & Over 1.5"). Combined probability ≥ 70%.
   // Idempotent: deletes prior AI-generated diamond_pick tips for today before insert.
-  try {
+  // DISABLED: Diamond tips are added manually by admin only. The system must
+  // never auto-create (or delete) diamond_pick tips.
+  const AUTO_DIAMOND_TIPS_ENABLED = false;
+  if (AUTO_DIAMOND_TIPS_ENABLED) try {
     const factorial = (n: number): number => (n <= 1 ? 1 : n * factorial(n - 1));
     const poissonPmf = (k: number, lambda: number): number =>
       (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
