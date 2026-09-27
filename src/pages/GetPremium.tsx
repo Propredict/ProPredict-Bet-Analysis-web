@@ -582,47 +582,59 @@ export default function GetPremium() {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
         {currentPlans.map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
           const isFree = plan.id === "free";
+          const showPromo = isPremium && !isAndroidApp && billingPeriod === "monthly" && Date.now() < Date.parse("2026-10-28T23:00:00Z");
 
           return (
             <Card
               key={plan.id}
-              className={`relative p-4 transition-all ${
+              className={`relative p-5 transition-all overflow-hidden ${
                 isPremium
-                  ? "bg-gradient-to-b from-violet-500/10 via-card to-card border-violet-500/30 ring-1 ring-violet-500/20"
+                  ? "border-2 border-violet-500/70 bg-gradient-to-b from-violet-500/10 via-card to-card shadow-[0_0_30px_rgba(139,92,246,0.25)] ring-1 ring-violet-400/30"
                   : isFree
-                  ? "bg-gradient-to-b from-primary/15 via-card to-card border-primary/30"
+                  ? "bg-card border-border"
                   : "bg-card border-border"
               }`}
             >
               {isPremium && (
-                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 text-white border-0 text-[9px] px-2">
-                  <Crown className="h-2.5 w-2.5 mr-1" />
-                  Best Value / Najbolja vrednost
-                </Badge>
+                <>
+                  <Badge className="absolute -top-0 right-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0 text-[9px] px-2.5 py-1 rounded-b-lg rounded-t-none shadow">
+                    <Crown className="h-2.5 w-2.5 mr-1" />
+                    Best Value / Najbolja vrednost
+                  </Badge>
+                  <img
+                    src={premiumCrownImg}
+                    alt=""
+                    loading="lazy"
+                    className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-28 sm:h-28 object-contain opacity-90 pointer-events-none select-none"
+                  />
+                </>
               )}
 
-              <div className="text-center space-y-2 pt-2">
-                <h3 className="text-sm font-semibold text-foreground">{plan.name}</h3>
-                {isPremium && !isAndroidApp && billingPeriod === "monthly" && Date.now() < Date.parse("2026-10-28T23:00:00Z") ? (
-                  <div className="space-y-1">
-                    <Badge className="bg-warning/20 text-warning border-0 text-[9px] px-2">
-                      SPECIAL PROMO — THIS MONTH ONLY
+              <div className="text-center space-y-2 pt-3">
+                <h3 className={`text-base font-bold ${isPremium ? "text-foreground flex items-center justify-center gap-1.5" : "text-foreground"}`}>
+                  {isPremium && <Crown className="h-4 w-4 text-warning" />}
+                  {plan.name}
+                </h3>
+                {showPromo ? (
+                  <div className="space-y-1.5">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[9px] px-2.5 font-bold tracking-wide">
+                      1 MONTH DISCOUNT OFFER
                     </Badge>
-                    <div className="flex items-baseline justify-center gap-1.5">
+                    <div className="flex items-baseline justify-center gap-2">
                       <span className="text-sm text-muted-foreground line-through">€14.99</span>
-                      <span className="text-2xl font-bold text-foreground">€9.99</span>
-                      <span className="text-xs text-muted-foreground">/ 1st month</span>
+                      <span className="text-3xl font-extrabold text-primary">€9.99</span>
+                      <span className="text-xs text-muted-foreground">/ first month</span>
                     </div>
-                    <p className="text-[10px] text-primary font-medium">First month €9.99, then €14.99/month.</p>
+                    <p className="text-[10px] text-muted-foreground">Then €14.99/month. Cancel anytime. / Zatim €14.99 mesečno. Otkaži kada želiš.</p>
                   </div>
                 ) : (
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-2xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
                     <span className="text-xs text-muted-foreground">{plan.period}</span>
                   </div>
                 )}
@@ -633,9 +645,9 @@ export default function GetPremium() {
               </div>
 
               <Button
-                className={`w-full mt-4 h-8 text-xs ${
+                className={`w-full mt-4 h-9 text-xs font-semibold ${
                   isPremium && !isCurrentPlan
-                    ? "bg-gradient-to-r from-violet-500 via-purple-500 to-violet-500 hover:opacity-90 text-white border-0"
+                    ? "bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500 hover:opacity-90 text-white border-0 shadow-lg shadow-violet-500/30"
                     : ""
                 }`}
                 variant={isCurrentPlan ? "outline" : plan.buttonVariant}
@@ -652,11 +664,11 @@ export default function GetPremium() {
                 }
               </Button>
 
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-2 relative">
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-[11px]">
                     {f.included ? (
-                      <Check className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                      <Check className={`h-3.5 w-3.5 flex-shrink-0 ${isPremium ? "text-violet-400" : "text-primary"}`} />
                     ) : (
                       <X className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
                     )}
