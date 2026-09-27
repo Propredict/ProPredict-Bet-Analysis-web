@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown, Gift } from "lucide-react";
+import { Star, X, Send, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,7 +40,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
       }
     } catch {}
     const result = await onSubmit(selectedStars);
-    if (result?.success && result?.rewarded) {
+    if (result?.success) {
       setStep("thanks");
     } else {
       onClose();
@@ -150,18 +150,6 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               <span className="text-primary font-semibold">Amazing</span>
             </div>
 
-            {/* Reward banner */}
-            <div
-              className="mt-4 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl"
-              style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)' }}
-            >
-              <Gift className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-foreground">
-                Get <span className="font-extrabold text-primary">+50 points</span> after rating
-              </span>
-              <span className="text-sm">🌟</span>
-            </div>
-
             {/* Quick choice buttons */}
             <div className="flex gap-2.5 mt-4">
               <button
@@ -214,7 +202,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
                 Awesome! Rate us ⭐
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
-                Earn <span className="font-extrabold text-primary">+50 points</span> for rating!
+                Tap the stars to rate your experience
               </p>
             </div>
 
@@ -260,11 +248,8 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
               One last step 🙌
             </DialogTitle>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              ⭐ Leave a 5-star rating on Google Play and add a short comment to get your reward 🎁
+              ⭐ Leave a 5-star rating on Google Play — it helps us grow! 💚
             </p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-xs font-extrabold text-primary">🎁 +50 points waiting for you!</span>
-            </div>
             <button
               onClick={handleGoToPlayStore}
               disabled={submitting}
@@ -330,9 +315,6 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             <DialogTitle className="text-lg font-extrabold text-foreground">
               Thank you so much! 🚀
             </DialogTitle>
-            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-sm font-extrabold text-primary">🎁 +50 points added!</span>
-            </div>
             <div className="flex justify-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
