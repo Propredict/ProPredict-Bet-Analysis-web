@@ -315,9 +315,6 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
             <DialogTitle className="text-lg font-extrabold text-foreground">
               Thank you so much! 🚀
             </DialogTitle>
-            <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
-              <span className="text-sm font-extrabold text-primary">🎁 +50 points added!</span>
-            </div>
             <div className="flex justify-center gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
