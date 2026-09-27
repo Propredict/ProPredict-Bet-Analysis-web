@@ -67,7 +67,7 @@ export function AppDownloadPopup({ force = false }: { force?: boolean } = {}) {
           <div className="absolute inset-0 bg-gradient-to-b from-[#04122c]/40 via-transparent to-[#071a38]" />
 
           {/* Logo block */}
-          <div className="absolute top-4 right-5 flex flex-col items-end drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+          <div className="absolute top-4 right-14 sm:right-16 flex flex-col items-end drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-1">
               <Crown className="h-5 w-5 text-warning fill-warning/30" />
               <span className="text-2xl font-black tracking-tight">
