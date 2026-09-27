@@ -598,8 +598,8 @@ export default function GetPremium() {
                 isPremium
                   ? "border-2 border-violet-500/70 bg-gradient-to-b from-violet-500/10 via-card to-card shadow-[0_0_30px_rgba(139,92,246,0.25)] ring-1 ring-violet-400/30"
                   : isFree
-                  ? "bg-card border-border"
-                  : "bg-card border-border"
+                  ? "bg-card border-2 border-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
+                  : "bg-card border-2 border-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
               }`}
             >
               {isPremium && (
@@ -748,7 +748,7 @@ export default function GetPremium() {
       {/* App Download CTA - Website only */}
       {!isAndroidApp && (
         <div className="relative rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-gradient-to-r from-[#0a1628] via-[#0d1f3c] to-[#0a2a4a]">
-          <img src={appPhonesImg} alt="ProPredict app on phones" width={1280} height={720} loading="lazy" className="absolute inset-0 h-full w-full object-cover object-right" />
+          <img src={appPhonesImg} alt="ProPredict app on phones" width={1280} height={720} loading="lazy" className="absolute inset-0 h-full w-full object-cover object-[75%_center]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-[#0a1628]/80 to-transparent" />
           <div className="relative flex flex-col md:flex-row items-stretch min-h-[240px] sm:min-h-[300px]">
             {/* Left: text + store badges */}
