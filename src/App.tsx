@@ -18,7 +18,6 @@ function NavigateWithSearch({ to }: { to: string }) {
   return <Navigate to={`${pathname}${search ? `?${search}` : ""}`} replace />;
 }
 import AppLayout from "@/layouts/AppLayout";
-import { AppDownloadPopup } from "@/components/AppDownloadPopup";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import { PlayerProfileProvider } from "@/contexts/PlayerProfileContext";
@@ -200,7 +199,7 @@ const App = () => {
                 <Routes>
                   {/* Auth pages */}
                   <Route path="/login" element={<Login />} />
-                  <Route path="/__popup-test" element={<div className="min-h-screen bg-background p-8"><AppDownloadPopup force /></div>} />
+
 
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
