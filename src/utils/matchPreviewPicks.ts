@@ -105,17 +105,18 @@ export const TOP10_MIN_CONFIDENCE = 80;
 export const TOP10_MAX = 10;
 
 /**
- * Strongest single market for a match from the unified model:
- * 1, X, 2, Over/Under 2.5, BTTS Yes/No only — NO double chance (1X/X2/12)
- * and NO Over/Under 1.5/3.5. If there is a clear winner, Top 10 shows the
- * pure win pick (e.g. Away Win 88%), not X2. Goals/BTTS markets are used
- * only when they are stronger than any 1X2 outcome.
- * Used by Top 10 (>=80% only).
+ * Strongest single market for a match from the unified model.
+ * Priority order (Top 10, >=80% only):
+ *   1) 1X2 (Home Win / Draw / Away Win)
+ *   2) Over 2.5 / Under 2.5
+ *   3) BTTS Yes / No
+ *   4) FALLBACK only when NONE of the above reaches 80%: Over 1.5 / Under 3.5
+ * No double chance (1X/X2/12) anywhere.
  */
 export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
   const { hw, d, aw } = getNormalized1x2(pred);
   const g = calculateGoalMarketProbs(pred);
-  const options: Array<[string, number]> = [
+  const primary: Array<[string, number]> = [
     ["Home Win", hw],
     ["Draw", d],
     ["Away Win", aw],
@@ -124,7 +125,20 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
     ["BTTS Yes", g.bttsYes],
     ["BTTS No", g.bttsNo],
   ];
-  const [label, pct] = options.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+  let [label, pct] = primary.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+
+  // Fallback: only when no primary market reaches the Top 10 threshold
+  if (pct < TOP10_MIN_CONFIDENCE) {
+    const fallback: Array<[string, number]> = [
+      ["Over 1.5", g.over15],
+      ["Under 3.5", g.under35],
+    ];
+    const [fLabel, fPct] = fallback.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+    if (fPct > pct) {
+      label = fLabel;
+      pct = fPct;
+    }
+  }
 
   // Use the same AI confidence shown on the AI Predictions card when it is
   // higher than the raw market probability, so Top 10 matches that page.
