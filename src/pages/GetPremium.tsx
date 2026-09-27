@@ -556,12 +556,12 @@ export default function GetPremium() {
 
       {/* Billing Toggle - Both Web and Android */}
       <div className="flex justify-center">
-        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card border border-border shadow-sm">
           <button
             onClick={() => setBillingPeriod("monthly")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`px-5 py-2 text-xs font-semibold rounded-full transition-all ${
               billingPeriod === "monthly"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                ? "bg-primary text-primary-foreground shadow"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -569,14 +569,14 @@ export default function GetPremium() {
           </button>
           <button
             onClick={() => setBillingPeriod("annual")}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+            className={`px-5 py-2 text-xs font-semibold rounded-full transition-all flex items-center gap-1.5 ${
               billingPeriod === "annual"
-                ? "bg-gradient-to-r from-warning via-accent to-primary text-white"
+                ? "bg-primary text-primary-foreground shadow"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Annual / Godišnje
-            <Badge className="bg-primary/20 text-primary border-0 text-[9px] px-1">Save 33% / Uštedi 33%</Badge>
+            <Badge className="bg-primary/15 text-primary border-0 text-[9px] px-1.5">Save 33%</Badge>
           </button>
         </div>
       </div>
