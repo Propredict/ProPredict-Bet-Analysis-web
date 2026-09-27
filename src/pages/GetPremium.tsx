@@ -454,13 +454,27 @@ export default function GetPremium() {
       <div className="mb-4">
       </div>
 
-      {/* Header */}
-      <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Crown className="h-6 w-6 text-warning" />
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upgrade to Premium / Nadogradi na Premium</h1>
+      {/* Hero — stadium banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 shadow-lg">
+        <img
+          src={premiumHeroImg}
+          alt="Football stadium at night under floodlights"
+          className="absolute inset-0 h-full w-full object-cover"
+          width={1920}
+          height={768}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-sidebar/70 via-sidebar/50 to-background" />
+        <div className="relative px-4 py-10 sm:py-14 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2.5">
+            <Crown className="h-7 w-7 sm:h-9 sm:w-9 text-warning drop-shadow" />
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white drop-shadow-lg tracking-tight">
+              Upgrade to Premium
+            </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">Choose Premium Plan / Izaberi Premium plan</p>
+          <p className="text-xs sm:text-sm text-white/85 max-w-lg mx-auto leading-relaxed">
+            Get full access to all features and take your football predictions to the next level. / Otključaj sve funkcije i podigni svoje predikcije na viši nivo.
+          </p>
+        </div>
       </div>
 
       {/* Cross-platform subscription protection banners */}
