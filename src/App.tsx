@@ -199,6 +199,8 @@ const App = () => {
                 <Routes>
                   {/* Auth pages */}
                   <Route path="/login" element={<Login />} />
+                  <Route path="/__popup-test" element={<div className="min-h-screen bg-background p-8"><AppDownloadPopup force /></div>} />
+
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/unsubscribe" element={<Unsubscribe />} />

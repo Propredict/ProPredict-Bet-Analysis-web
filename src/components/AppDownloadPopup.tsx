@@ -18,12 +18,13 @@ const FEATURES = [
   { icon: Trophy, label: "MORE WINS", en: "Better results", sr: "Bolji rezultati" },
 ];
 
-export function AppDownloadPopup() {
+export function AppDownloadPopup({ force = false }: { force?: boolean } = {}) {
   const [show, setShow] = useState(false);
   const isAndroid = getIsAndroidApp();
 
   useEffect(() => {
     // Don't show on Android app or if already dismissed today
+    if (force) { setShow(true); return; }
     if (isAndroid || wasDismissedToday()) return;
 
     const timer = setTimeout(() => {
