@@ -110,7 +110,7 @@ export const TOP10_MAX = 10;
  *   1) 1X2 (Home Win / Draw / Away Win)
  *   2) Over 2.5 / Under 2.5
  *   3) BTTS Yes / No
- *   4) FALLBACK only when NONE of the above reaches 80%: Over 1.5 / Under 3.5
+ *   4) FALLBACK only when ALL of the above are below 70%: Over 1.5 / Under 3.5
  * No double chance (1X/X2/12) anywhere.
  */
 export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
@@ -145,8 +145,10 @@ export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
 
   let [label, pct] = primary.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
 
-  // Fallback: only when no primary market reaches the Top 10 threshold
-  if (pct < TOP10_MIN_CONFIDENCE) {
+  // Fallback: Over 1.5 / Under 3.5 are used ONLY when every primary market
+  // (1X2, Over/Under 2.5, BTTS) is below 70%. If any primary market is 70%+,
+  // it always wins — e.g. Away Win 83% beats Over 1.5 88%.
+  if (pct < 70) {
     const fallback: Array<[string, number]> = [
       ["Over 1.5", g.over15],
       ["Under 3.5", g.under35],
