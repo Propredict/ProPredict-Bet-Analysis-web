@@ -3,88 +3,47 @@ import { leagueTier } from "./topPicksRanking";
 
 export type Tier = "free" | "pro" | "premium";
 
+const TOP_PRIORITY_RE = /nations league|euro championship|euro qualification|european championship/i;
+
 /**
- * Single source of truth for AI prediction tier assignment.
+ * Single source of truth for AI prediction tier assignment (page + dashboard).
  *
- * Used by both the AI Predictions page and the dashboard so a match
- * classified as Pro on /ai-predictions is also Pro on the dashboard.
- *
- * A prediction is eligible when its concrete displayed market pick is at
- * least 65%. Tier caps cascade
- * Premium → Pro → Free, strongest verified predictions first.
+ * - Free: the 3 strongest picks of the day (showcase — Premium users see these too).
+ * - Premium: next strongest, up to 15.
+ * - Pro: the rest, up to 10.
+ * Order everywhere: Nations League / Euro first, then top leagues, then the rest.
+ * Only concrete picks ≥65% are eligible.
  */
+export const TIER_CAPS = { free: 3, premium: 15, pro: 10 };
+
 export function assignTiers(predictions: Array<any>): {
   tierMap: Map<string, Tier>;
   safeFallbackIds: Set<string>;
 } {
   const map = new Map<string, Tier>();
-  const fallbackIds = new Set<string>();
 
-  const scored = predictions.map((p) => {
-    // The same concrete market and percentage shown in Main determines tier.
-    const verifiedStrength = getBestEligibleProbability(p);
-    return {
-      id: p.id!,
-      strength: verifiedStrength,
-      prediction: p,
-    };
-  });
+  const qualified = predictions
+    .map((p) => ({ id: p.id!, strength: getBestEligibleProbability(p), prediction: p }))
+    .filter((s) => s.strength >= 65);
 
+  const prio = (s: (typeof qualified)[0]) => (TOP_PRIORITY_RE.test(s.prediction.league ?? "") ? 0 : 1);
+  const tier3 = (s: (typeof qualified)[0]) => (leagueTier(s.prediction.league) >= 3 ? 1 : 0);
 
+  const sorted = [...qualified].sort(
+    (a, b) =>
+      prio(a) - prio(b) ||
+      tier3(a) - tier3(b) ||
+      b.strength - a.strength ||
+      leagueTier(a.prediction.league) - leagueTier(b.prediction.league),
+  );
 
-  const sorted = [...scored].sort((a, b) => {
-    if (b.strength !== a.strength) return b.strength - a.strength;
-    return leagueTier(a.prediction.league) - leagueTier(b.prediction.league);
-  });
-
-  const PREMIUM_CAP = 10;
-  const PRO_CAP = 10;
-  // Free shows up to 10 verified picks (overflow + reserved weakest qualified).
-  const FREE_CAP = 10;
-  // Free is never empty: reserve the weakest qualified picks for Free when
-  // there are not enough picks to overflow out of Premium/Pro.
-  const FREE_MIN = 5;
-  let premiumCount = 0;
-  let proCount = 0;
-  let freeCount = 0;
-
-  const qualified = sorted.filter((s) => s.strength >= 65);
-  const reservedFree = new Set<string>();
-  if (qualified.length > FREE_MIN && qualified.length <= PREMIUM_CAP + PRO_CAP) {
-    const reserveSize = Math.min(FREE_MIN, Math.max(1, Math.floor(qualified.length / 3)));
-    for (const s of qualified.slice(-reserveSize)) reservedFree.add(s.id);
-  }
-
+  let free = 0, premium = 0, pro = 0;
   for (const s of sorted) {
-    if (reservedFree.has(s.id)) {
-      if (freeCount < FREE_CAP) {
-        freeCount++;
-        map.set(s.id, "free");
-      }
-      continue;
-    }
-
-    // Quality rule: no tier contains a card without a concrete verified pick.
-    if (s.strength < 65) continue;
-
-    // Rank decides the tier: the 10 highest displayed percentages are Premium,
-    // the next 10 are Pro, and the next 10 are Free.
-    let tier: Tier;
-    if (premiumCount < PREMIUM_CAP) {
-      tier = "premium";
-      premiumCount++;
-    } else if (proCount < PRO_CAP) {
-      tier = "pro";
-      proCount++;
-    } else if (freeCount < FREE_CAP) {
-      tier = "free";
-      freeCount++;
-    } else {
-      continue;
-    }
-
-    map.set(s.id, tier);
+    if (free < TIER_CAPS.free) { map.set(s.id, "free"); free++; }
+    else if (premium < TIER_CAPS.premium) { map.set(s.id, "premium"); premium++; }
+    else if (pro < TIER_CAPS.pro) { map.set(s.id, "pro"); pro++; }
+    else break;
   }
 
-  return { tierMap: map, safeFallbackIds: fallbackIds };
+  return { tierMap: map, safeFallbackIds: new Set<string>() };
 }

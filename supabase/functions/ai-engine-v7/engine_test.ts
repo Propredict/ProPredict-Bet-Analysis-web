@@ -148,5 +148,5 @@ Deno.test("engine MAIN is the market with the highest final confidence", () => {
 Deno.test("allocate: unused Premium slots roll down to Pro", () => {
   const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
   const a = allocate(pool as PoolItem[]);
-  assertEquals(a.premium.length, 0); assertEquals(a.free.length, 3); assertEquals(a.pro.length, 22);
+  assertEquals(a.premium.length, 0); assertEquals(a.free.length, 3); assertEquals(a.pro.length, 22 > 10 + 15 ? 25 : 22);
 });
