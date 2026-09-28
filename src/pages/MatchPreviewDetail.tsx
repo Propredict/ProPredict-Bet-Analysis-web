@@ -389,16 +389,16 @@ export default function MatchPreviewDetail() {
 
         {/* ============ TABS ============ */}
         {unlocked && (
-          <div className="flex gap-1 overflow-x-auto rounded-2xl border border-[#2a4d7d] bg-[#12294d] p-1.5 shadow-[0_0_20px_rgba(37,99,235,0.15)] no-scrollbar">
+          <div className="flex gap-2 overflow-x-auto rounded-2xl border-2 border-blue-400/50 bg-[#1d3f70] p-2 shadow-[0_0_28px_rgba(59,130,246,0.35)] no-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex-1 min-w-[110px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                  "flex-1 min-w-[130px] inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm sm:text-base font-extrabold transition-all whitespace-nowrap [&_svg]:h-5 [&_svg]:w-5",
                   activeTab === tab.id
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/40"
-                    : "bg-white/[0.06] text-white/80 hover:text-white hover:bg-white/10"
+                    ? "bg-blue-500 text-white ring-2 ring-blue-300/70 shadow-lg shadow-blue-500/50"
+                    : "bg-[#2b5594] text-white border border-blue-300/30 hover:bg-[#3565ad]"
                 )}
               >
                 {tab.icon}
