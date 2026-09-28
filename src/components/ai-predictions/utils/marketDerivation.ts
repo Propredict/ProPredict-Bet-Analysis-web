@@ -839,8 +839,21 @@ const V7_MAIN_TO_TYPE: Record<string, MarketType> = {
 };
 
 export function getBestPickType(prediction: AIPrediction): MarketType {
-  // v7 is the single source of truth: its published MAIN market is the pick.
+  // Some already-published v7 rows still carry the legacy Over 1.5 / Under 3.5
+  // MAIN. For display, choose the strongest real core market from the stored
+  // v7 probabilities: 1/X/2, BTTS, or Over/Under 2.5. The stored legacy MAIN
+  // is only a fallback when no core market reaches the publication floor.
   if (isV7Prediction(prediction)) {
+    const coreTypes: MarketType[] = [
+      "home_win", "away_win", "draw",
+      "over25", "under25", "btts_yes", "btts_no",
+    ];
+    const strongestCore = coreTypes
+      .map((type) => ({ type, probability: getPickConfidence(prediction, type) }))
+      .filter(({ probability }) => probability >= MIN_PICK_PROBABILITY)
+      .sort((a, b) => b.probability - a.probability)[0];
+    if (strongestCore) return strongestCore.type;
+
     const main = String((prediction as any).main_market ?? (prediction as any).prediction ?? "").trim();
     const t = V7_MAIN_TO_TYPE[main];
     if (t && getPickConfidence(prediction, t) >= MIN_PICK_PROBABILITY) return t;
