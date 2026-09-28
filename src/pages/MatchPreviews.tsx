@@ -25,6 +25,9 @@ const MAX_MATCHES = TOP10_MAX;
 // Anything not listed → tier 4 (only used as last-resort fallback)
 const LEAGUE_TIERS: Record<string, number> = {
   // Tier 1 — elite
+  "UEFA Nations League": 1,
+  "Nations League": 1,
+  "Euro Championship - Qualification": 1,
   "Premier League": 1,
   "La Liga": 1,
   "Primera Division": 1,
@@ -62,6 +65,7 @@ const LEAGUE_TIERS: Record<string, number> = {
 
 // Within a tier, this sub-priority orders the elite leagues so PL/LaLiga/UCL show first
 const LEAGUE_PRIORITY: Record<string, number> = {
+  "UEFA Nations League": 0, "Nations League": 0, "Euro Championship - Qualification": 0,
   "UEFA Champions League": 1, "Champions League": 1,
   "Premier League": 2,
   "La Liga": 3, "Primera Division": 3,
