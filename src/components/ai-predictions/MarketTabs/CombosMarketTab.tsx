@@ -42,6 +42,9 @@ export function CombosMarketTab({ prediction, hasAccess }: Props) {
     if (leg === "1") return `${prediction.home_team} to win`;
     if (leg === "2") return `${prediction.away_team} to win`;
     if (leg.toLowerCase() === "x") return "Match ends in a draw";
+    if (leg.toUpperCase() === "1X") return `${prediction.home_team} win or draw`;
+    if (leg.toUpperCase() === "X2") return `${prediction.away_team} win or draw`;
+    if (leg === "12") return "Either team wins (no draw)";
     if (leg.toLowerCase() === "btts yes") return "Both teams score";
     if (leg.toLowerCase() === "btts no") return "At least one team fails to score";
     return leg;
