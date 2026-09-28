@@ -217,8 +217,8 @@ export default function MatchPreviewDetail() {
   const tabs: { id: DetailTab; label: string; icon: ReactNode }[] = [
     { id: "analysis", label: "Analysis", icon: <BarChart3 className="h-3.5 w-3.5" /> },
     { id: "insights", label: "Insights", icon: <Lightbulb className="h-3.5 w-3.5" /> },
-    { id: "h2h", label: "H2H", icon: <ArrowLeftRight className="h-3.5 w-3.5" /> },
     { id: "predictions", label: "Our Predictions", icon: <Target className="h-3.5 w-3.5" /> },
+    { id: "h2h", label: "H2H", icon: <ArrowLeftRight className="h-3.5 w-3.5" /> },
     { id: "results", label: "Results", icon: <Trophy className="h-3.5 w-3.5" /> },
   ];
 
@@ -376,7 +376,7 @@ export default function MatchPreviewDetail() {
 
         {/* ============ TABS ============ */}
         {unlocked && (
-          <div className="flex gap-1 overflow-x-auto rounded-2xl border border-[#1c3a5e] bg-[#0a1830]/90 p-1.5 no-scrollbar">
+          <div className="flex gap-1 overflow-x-auto rounded-2xl border border-[#2a4d7d] bg-[#12294d] p-1.5 shadow-[0_0_20px_rgba(37,99,235,0.15)] no-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -385,7 +385,7 @@ export default function MatchPreviewDetail() {
                   "flex-1 min-w-[110px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
                   activeTab === tab.id
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-900/40"
-                    : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                    : "bg-white/[0.06] text-white/80 hover:text-white hover:bg-white/10"
                 )}
               >
                 {tab.icon}
