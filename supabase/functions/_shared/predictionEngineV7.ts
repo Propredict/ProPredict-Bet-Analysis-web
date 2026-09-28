@@ -13,7 +13,8 @@ export const MIN_QUALITY_ANALYSE = 30;   // below → rejected (insufficient dat
 export const QUALITY_MEDIUM = 50;
 export const QUALITY_HIGH = 75;
 export const PREMIUM_MIN_CONFIDENCE = 85;
-export const CAPS = { premium: 10, pro: 10, free: 10 };
+// Free = 3 showcase picks (highest confidence). Pro absorbs former Free overflow (10 + 7).
+export const CAPS = { premium: 15, pro: 17, free: 3 };
 const MAX_GOALS = 8;
 const DC_RHO = -0.08;
 export const BASE_RATE_WEIGHT = 0.8;
@@ -404,20 +405,27 @@ export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem
   const publishable = qualified.filter((i) => i.result.data_quality >= QUALITY_MEDIUM);
   const used = new Set<string>();
 
+  // Free showcase: the 3 highest-confidence published picks (Nations League/Euro first).
+  // Premium users see every tier, so these picks are visible to Premium AND Free.
+  const byConfidence = (a: PoolItem, b: PoolItem) => {
+    const ta = a.topPriority ? 0 : 1, tb = b.topPriority ? 0 : 1;
+    return ta - tb || b.result.confidence - a.result.confidence || rankScore(b) - rankScore(a);
+  };
+  const free = [...publishable].sort(byConfidence).slice(0, CAPS.free);
+  free.forEach((i) => used.add(i.id));
+
   // Premium: conf ≥85 AND HIGH quality, never lowered. Tier 1/2 first, Tier 3 only remaining capacity.
   const premium = publishable
-    .filter((i) => i.result.confidence >= PREMIUM_MIN_CONFIDENCE && i.result.data_quality >= QUALITY_HIGH)
+    .filter((i) => !used.has(i.id) && i.result.confidence >= PREMIUM_MIN_CONFIDENCE && i.result.data_quality >= QUALITY_HIGH)
     .slice(0, CAPS.premium);
   premium.forEach((i) => used.add(i.id));
 
+  // Pro: everything else that qualifies (former Free overflow + unused Premium slots roll into Pro).
   const unusedPremium = CAPS.premium - premium.length;
   const proCap = CAPS.pro + unusedPremium;
-  const slots = proCap + CAPS.free;
   const rest = publishable.filter((i) => !used.has(i.id));
-  const placed = rest.slice(0, slots); // already Tier 1/2 first, then rankScore
-  const placedIds = new Set(placed.map((i) => i.id));
-  const pro = placed.slice(0, proCap);
-  const free = placed.slice(proCap);
-  const unplaced = rest.filter((i) => !placedIds.has(i.id));
+  const pro = rest.slice(0, proCap); // already Nations League first, Tier 1/2, then rankScore
+  const proIds = new Set(pro.map((i) => i.id));
+  const unplaced = rest.filter((i) => !proIds.has(i.id));
   return { premium, pro, free, limitedHeld, analysedOnly, unplaced };
 }
