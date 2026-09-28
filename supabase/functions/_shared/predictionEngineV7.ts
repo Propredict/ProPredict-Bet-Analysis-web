@@ -374,7 +374,7 @@ export function runEngine(f: FixtureInput): EngineResult {
 }
 
 // ---------------- Pool allocation ----------------
-export interface PoolItem { id: string; tier: LeagueTier; result: EngineResult }
+export interface PoolItem { id: string; tier: LeagueTier; result: EngineResult; topPriority?: boolean }
 export type TierName = "premium" | "pro" | "free";
 
 export function rankScore(i: PoolItem): number {
@@ -395,8 +395,9 @@ export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem
   const notRejected = pool.filter((i) => !i.result.rejected);
   const analysedOnly = notRejected.filter((i) => i.result.confidence >= MIN_PUBLISH_CONFIDENCE && i.result.confidence < MIN_USER_CONFIDENCE);
   const byPriority = (a: PoolItem, b: PoolItem) => {
+    const ta = a.topPriority ? 0 : 1, tb = b.topPriority ? 0 : 1;
     const pa = a.tier === 3 ? 1 : 0, pb = b.tier === 3 ? 1 : 0;
-    return pa - pb || rankScore(b) - rankScore(a);
+    return ta - tb || pa - pb || rankScore(b) - rankScore(a);
   };
   const qualified = notRejected.filter((i) => i.result.confidence >= MIN_USER_CONFIDENCE).sort(byPriority);
   const limitedHeld = qualified.filter((i) => i.result.data_quality < QUALITY_MEDIUM);

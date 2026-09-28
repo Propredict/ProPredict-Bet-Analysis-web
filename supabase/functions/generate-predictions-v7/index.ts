@@ -9,7 +9,7 @@
 // so users see a stable pick all day.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { classifyLeague, isWorldCup } from "../_shared/leaguePriorityV7.ts";
+import { classifyLeague, isTopPriority, isWorldCup } from "../_shared/leaguePriorityV7.ts";
 import { api, analyseFixture } from "../_shared/v7Fixture.ts";
 import { allocate, finalConfidence, ENGINE_VERSION, type PoolItem } from "../_shared/predictionEngineV7.ts";
 
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       if (!data || data.length < 1000) break;
     }
     const byId = new Map(rows.map((r) => [r.match_id, r]));
-    const pool: PoolItem[] = rows.map((r) => ({ id: r.match_id, tier: r.league_tier, result: r.result }));
+    const pool: PoolItem[] = rows.map((r) => ({ id: r.match_id, tier: r.league_tier, result: r.result, topPriority: isTopPriority(r.fixture?.league?.id, r.fixture?.league?.name) }));
     const a = allocate(pool);
     const tierOf = new Map<string, string>();
     a.premium.forEach((i) => tierOf.set(i.id, "premium"));
