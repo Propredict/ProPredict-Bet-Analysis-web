@@ -351,6 +351,14 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
             { label: "Draw", short: "X", pct: allProbs.draw, outcome: "draw" as const, logo: null },
             { label: prediction.away_team, short: "2", pct: allProbs.away_win, outcome: "away" as const, logo: awayLogo },
           ].map((item) => {
+            // When the headline AI pick IS this 1X2 outcome, show the same
+            // confidence as the headline (e.g. "Tigres Win 92%" -> the 1 cell
+            // also reads 92%, not the raw 1X2 share of 80%).
+            const headlineOutcome =
+              pick.type === "home_win" ? "home" :
+              pick.type === "away_win" ? "away" :
+              pick.type === "draw" ? "draw" : null;
+            const displayPct = headlineOutcome === item.outcome ? pick.conf : item.pct;
             // Highlight the outcome our model rates highest (normalised 1X2 probabilities).
             const predictedOutcome = (() => {
               const h = allProbs.home_win;
@@ -361,7 +369,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
               return "draw";
             })();
             const isSelected = predictedOutcome === item.outcome;
-            const fairOdds = item.pct > 0 ? (100 / item.pct).toFixed(2) : "—";
+            const fairOdds = displayPct > 0 ? (100 / displayPct).toFixed(2) : "—";
 
             return (
               <div
@@ -404,7 +412,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
                     !hasAccess && "blur-[5px] select-none",
                     isSelected ? "text-success" : "text-foreground/80"
                   )}>
-                    {item.pct}%
+                    {displayPct}%
                   </span>
                   <span className={cn(
                     "rounded-md bg-secondary px-1.5 py-0.5 tabular-nums font-bold text-muted-foreground",
@@ -419,7 +427,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
                 <div className={cn("mt-1.5 h-1.5 rounded-full bg-secondary overflow-hidden mx-1", !isSelected && "h-1")}>
                   <div
                     className={cn("h-full rounded-full transition-all duration-700", isSelected ? "bg-success" : "bg-primary/60")}
-                    style={{ width: `${Math.max(6, item.pct)}%` }}
+                    style={{ width: `${Math.max(6, displayPct)}%` }}
                   />
                 </div>
               </div>
