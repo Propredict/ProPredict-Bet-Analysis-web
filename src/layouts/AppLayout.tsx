@@ -39,6 +39,7 @@ import { useAppRating } from "@/hooks/useAppRating";
 import { SupportChatWidget } from "@/components/SupportChatWidget";
 import { LiveChatDock } from "@/components/chat/LiveChatDock";
 import { AdminSupportFloating } from "@/components/AdminSupportFloating";
+import { PremiumPromoPopup } from "@/components/PremiumPromoPopup";
 
 
 // Pages where footer should be hidden (header-only layout)
@@ -344,6 +345,9 @@ export default function AppLayout() {
 
       {/* Floating support shortcut — admins only */}
       <AdminSupportFloating />
+
+      {/* Premium upgrade promo — 5 min delay, max 2x/day, hidden for Premium users */}
+      <PremiumPromoPopup />
     </SidebarProvider>
   );
 }
