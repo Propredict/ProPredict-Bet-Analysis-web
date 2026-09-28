@@ -152,7 +152,11 @@ export const TOP10_MAX = 10;
  * No double chance (1X/X2/12) anywhere.
  */
 export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
-  const { hw, d, aw } = getNormalized1x2(pred);
+  const { d } = getNormalized1x2(pred);
+  // Same duel confidence as the AI Predictions card / match-preview hero,
+  // so the percentage is identical on every surface.
+  const hw = getPickConfidence(pred, "home_win");
+  const aw = getPickConfidence(pred, "away_win");
   const g = calculateGoalMarketProbs(pred);
   const primary: Array<[string, number]> = [
     ["Home Win", hw],
