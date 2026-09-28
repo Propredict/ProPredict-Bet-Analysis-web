@@ -68,8 +68,8 @@ export function classifyLeague(leagueId: number | null | undefined, leagueName?:
 export const IMPORTANT_LEAGUE_IDS = new Set<number>([39, 40, 135, 78, 140, 61, 88, 94, 2, 3, 848, 5]);
 
 /** National-team competitions that always go FIRST (ordering only, never thresholds). */
-export const TOP_PRIORITY_IDS = new Set<number>([5, 4, 960]); // Nations League, Euro, Euro qualification
+export const TOP_PRIORITY_IDS = new Set<number>([5, 4, 960, 6, 36]); // Nations League, Euro, Euro qualification, AFCON, AFCON qualification
 export function isTopPriority(leagueId: number | null | undefined, leagueName?: string | null): boolean {
   if (leagueId && TOP_PRIORITY_IDS.has(leagueId)) return true;
-  return /nations league|euro championship|euro qualification/i.test(leagueName ?? "");
+  return /nations league|euro championship|euro qualification|africa cup of nations|afcon/i.test(leagueName ?? "");
 }

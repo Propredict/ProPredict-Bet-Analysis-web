@@ -59,6 +59,25 @@ function form(list: any[] | null, teamId: number, beforeTs: number): MatchScore[
     });
 }
 
+// National teams have no league-season statistics in the API, so season/venue
+// stats come back null and their data quality collapses (Nations League, AFCON…).
+// Fallback: build the same VenueStats from the team's real last-10 fixtures.
+function venueFromFixtures(list: any[] | null, teamId: number, side: "home" | "away" | "total", beforeTs: number): VenueStats | null {
+  if (!list) return null;
+  const ms = list.filter((f) =>
+    FT.has(f.fixture?.status?.short) && f.fixture?.timestamp < beforeTs && f.goals?.home != null &&
+    (side === "total" || (side === "home" ? f.teams?.home?.id === teamId : f.teams?.away?.id === teamId))
+  ).slice(0, 10);
+  if (!ms.length) return null;
+  let gf = 0, ga = 0;
+  for (const f of ms) {
+    const isHome = f.teams?.home?.id === teamId;
+    gf += isHome ? f.goals.home : f.goals.away;
+    ga += isHome ? f.goals.away : f.goals.home;
+  }
+  return { played: ms.length, goalsFor: gf, goalsAgainst: ga };
+}
+
 function oddsFrom(resp: any[] | null): OddsInput | null {
   const bms = resp?.[0]?.bookmakers;
   if (!bms?.length) return null;
