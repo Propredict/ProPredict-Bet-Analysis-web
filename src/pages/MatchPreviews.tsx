@@ -366,8 +366,6 @@ export default function MatchPreviews() {
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const pct = match.bestPick?.pct ?? match.confidence;
-              // Real bookmaker consensus odds for 1X2 picks; fair odds from our
-              // model only for markets where bookmaker odds are not stored.
 
               return (
                 <button
@@ -434,7 +432,6 @@ export default function MatchPreviews() {
                         </div>
                       </div>
 
-                      {/* Real odds (mobile & app) */}
 
                     </div>
                   </div>
@@ -497,11 +494,6 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
-                    {/* Real odds (desktop) */}
-                    <div className="flex w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                      <span className="text-base font-black text-primary">{displayOdds}</span>
-                    </div>
 
                     <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
                   </div>
