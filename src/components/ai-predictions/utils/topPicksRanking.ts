@@ -200,10 +200,14 @@ function hasRealData(p: AIPrediction): boolean {
   // odds snapshots are not always available for every league/match,
   // but xG + form are sufficient to guarantee the prediction is real
   // (not a fabricated fallback).
-  if (num(anyP.xg_home) <= 0 || num(anyP.xg_away) <= 0) return false;
+  const hasXg = num(anyP.xg_home) > 0 && num(anyP.xg_away) > 0;
 
   const hasForm =
     anyP.last_home_goals != null || anyP.last_away_goals != null;
+  // When xG exists it is the primary signal. When it does not exist at all
+  // (e.g. national teams without season xG), real recent form is enough —
+  // we never fabricate data, we only relax which real signal is required.
+  if (!hasXg && !hasForm) return false;
   if (!hasForm) return false;
 
   return true;

@@ -412,10 +412,13 @@ export default function AIPredictions() {
           ? (p as any).xg_total
           : parseXgFromFactors(p.key_factors)?.total;
       if (typeof xgTotal === "number" && xgTotal < 2.4) return false;
-      // Require real data (xG must exist for both teams)
+      // Real data required: xG for both teams when it exists; when xG is
+      // missing entirely (e.g. national teams), real recent form is enough.
       const xgH = (p as any).xg_home;
       const xgA = (p as any).xg_away;
-      if (!(typeof xgH === "number" && xgH > 0 && typeof xgA === "number" && xgA > 0)) return false;
+      const hasXg = typeof xgH === "number" && xgH > 0 && typeof xgA === "number" && xgA > 0;
+      const hasForm = (p as any).last_home_goals != null || (p as any).last_away_goals != null;
+      if (!hasXg && !hasForm) return false;
       return true;
     });
     if (candidates.length === 0) return null;
