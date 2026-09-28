@@ -351,6 +351,14 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
             { label: "Draw", short: "X", pct: allProbs.draw, outcome: "draw" as const, logo: null },
             { label: prediction.away_team, short: "2", pct: allProbs.away_win, outcome: "away" as const, logo: awayLogo },
           ].map((item) => {
+            // When the headline AI pick IS this 1X2 outcome, show the same
+            // confidence as the headline (e.g. "Tigres Win 92%" -> the 1 cell
+            // also reads 92%, not the raw 1X2 share of 80%).
+            const headlineOutcome =
+              pick.type === "home_win" ? "home" :
+              pick.type === "away_win" ? "away" :
+              pick.type === "draw" ? "draw" : null;
+            const displayPct = headlineOutcome === item.outcome ? pick.conf : item.pct;
             // Highlight the outcome our model rates highest (normalised 1X2 probabilities).
             const predictedOutcome = (() => {
               const h = allProbs.home_win;
