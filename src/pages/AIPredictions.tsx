@@ -1447,28 +1447,7 @@ export default function AIPredictions() {
 
             return (
               <div className="space-y-2">
-                {/* PREMIUM PICKS — fuchsia hero header */}
-                {visiblePremium.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
-                  <div>
-                    <div className="flex flex-col items-center text-center my-5 md:my-7">
-                      <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
-                          <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400" />
-                          <h2 className="text-xs md:text-sm font-extrabold tracking-tight text-sidebar whitespace-nowrap">
-                            Premium Picks ({tierCounts.premium})
-                          </h2>
-                        </div>
-                        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
-                      {visiblePremium.map(renderCard)}
-                    </div>
-                  </div>
-                )}
-
-                {/* PRO PICKS — amber hero header */}
+                {/* PRO PICKS — amber hero header (Pro comes before Premium) */}
                 {visiblePro.length > 0 && (tierFilter === "all" || tierFilter === "pro") && (
                   <div>
                     <div className="flex flex-col items-center text-center my-5 md:my-7">
@@ -1485,6 +1464,27 @@ export default function AIPredictions() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
                       {visiblePro.map(renderCard)}
+                    </div>
+                  </div>
+                )}
+
+                {/* PREMIUM PICKS — fuchsia hero header */}
+                {visiblePremium.length > 0 && (tierFilter === "all" || tierFilter === "premium") && (
+                  <div>
+                    <div className="flex flex-col items-center text-center my-5 md:my-7">
+                      <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-blue-500/60" />
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-blue-500/15 border border-blue-500/30 shadow-sm shadow-blue-500/10">
+                          <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400" />
+                          <h2 className="text-xs md:text-2xl font-extrabold tracking-tight text-sidebar whitespace-nowrap">
+                            Premium Picks ({tierCounts.premium})
+                          </h2>
+                        </div>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent via-blue-500/40 to-blue-500/60" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
+                      {visiblePremium.map(renderCard)}
                     </div>
                   </div>
                 )}
