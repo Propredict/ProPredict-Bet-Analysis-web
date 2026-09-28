@@ -2,6 +2,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import {
   calculateGoalMarketProbs,
   getNormalized1x2,
+  getPickConfidence,
 } from "@/components/ai-predictions/utils/marketDerivation";
 
 export interface MatchPreviewAIPick {
