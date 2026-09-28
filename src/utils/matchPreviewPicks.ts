@@ -95,10 +95,44 @@ export const MIN_PICK_CONFIDENCE = 65;
  * Ignores the 65% display gate so ranking/eligibility logic still has a value.
  */
 export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
-  // Top 30 and AI Predictions must never calculate a different headline pick.
-  // Both surfaces consume the same centralized market-selection result.
-  const pick = getBestMarketPickWithLabel(pred);
-  return makePick(pick.label, pick.pct);
+  // The match-preview hero must show the strongest DIRECTIONAL pick — the
+  // same one Top 10 lists (e.g. Sweden–Poland: Away Win 83%). Over/Under
+  // markets are excluded from the hero entirely; they live in the Goals tab.
+  // Candidates: 1X2 + BTTS Yes/No, plus the stored AI confidence attached to
+  // its matching market (or to the strongest 1X2 outcome when MAIN is a
+  // goals market like "Over 1.5").
+  const { hw, d, aw } = getNormalized1x2(pred);
+  const g = calculateGoalMarketProbs(pred);
+  const candidates: Array<[string, number]> = [
+    ["Home Win", hw],
+    ["Draw", d],
+    ["Away Win", aw],
+    ["BTTS Yes", g.bttsYes],
+    ["BTTS No", g.bttsNo],
+  ];
+  const aiConf = Number(pred.confidence ?? 0);
+  if (pred.prediction && aiConf > 0) {
+    const p = String(pred.prediction).toLowerCase().trim();
+    const home = String(pred.home_team ?? "").toLowerCase();
+    const away = String(pred.away_team ?? "").toLowerCase();
+    let mainLabel: string | null = null;
+    if (p === "1" || p === "home win" || (home && p.includes(home) && p.includes("win"))) mainLabel = "Home Win";
+    else if (p === "2" || p === "away win" || (away && p.includes(away) && p.includes("win"))) mainLabel = "Away Win";
+    else if (p === "x" || p === "draw") mainLabel = "Draw";
+    else if (p.includes("btts") && p.includes("yes")) mainLabel = "BTTS Yes";
+    else if (p.includes("btts") && p.includes("no")) mainLabel = "BTTS No";
+    if (mainLabel) {
+      candidates.push([mainLabel, aiConf]);
+    } else {
+      // MAIN is a goals market: the AI confidence still describes the match
+      // favourite, so attach it to the strongest 1X2 outcome.
+      const best1x2: Array<[string, number]> = [["Home Win", hw], ["Draw", d], ["Away Win", aw]];
+      const [bLabel] = best1x2.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+      candidates.push([bLabel, aiConf]);
+    }
+  }
+  const [label, pct] = candidates.reduce((best, cur) => (cur[1] > best[1] ? cur : best));
+  return makePick(label, pct);
 }
 
 export const TOP10_MIN_CONFIDENCE = 80;
