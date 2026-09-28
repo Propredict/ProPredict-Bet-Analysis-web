@@ -830,7 +830,21 @@ export function applyPickDiversity(predictions: AIPrediction[]): void {
  * eligibility keep using the strongest raw probability (see
  * getBestEligibleProbability).
  */
+const V7_MAIN_TO_TYPE: Record<string, MarketType> = {
+  "1": "home_win", "2": "away_win", "X": "draw",
+  "1X": "dc_1x", "X2": "dc_x2", "12": "dc_12",
+  "Over 1.5": "over15", "Over 2.5": "over25", "Over 3.5": "over35",
+  "Under 2.5": "under25", "Under 3.5": "under35",
+  "BTTS Yes": "btts_yes", "BTTS No": "btts_no",
+};
+
 export function getBestPickType(prediction: AIPrediction): MarketType {
+  // v7 is the single source of truth: its published MAIN market is the pick.
+  if (isV7Prediction(prediction)) {
+    const main = String((prediction as any).main_market ?? (prediction as any).prediction ?? "").trim();
+    const t = V7_MAIN_TO_TYPE[main];
+    if (t && getPickConfidence(prediction, t) >= MIN_PICK_PROBABILITY) return t;
+  }
   const candidates = getMarketCandidates(prediction);
 
   const top = candidates[0];
