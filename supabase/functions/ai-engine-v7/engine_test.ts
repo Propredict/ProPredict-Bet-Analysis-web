@@ -76,8 +76,8 @@ Deno.test("high probability with limited data is never Premium nor published", (
   assert(finalConfidence(90, 40) < 85);
   const mk = (id: string, tier: 1 | 2 | 3, confidence: number, q: number): PoolItem => ({ id, tier, result: { confidence, data_quality: q } as any });
   const a = allocate([mk("lim", 3, 80, 40), mk("t1weak", 1, 70, 80), mk("t2strong", 2, 84, 80), mk("prem", 1, 88, 90)]);
-  assertEquals(a.premium.map((x) => x.id), ["prem"]);
-  assertEquals(a.pro[0].id, "t2strong");           // stronger Tier 2 beats weaker Tier 1
+  // Free showcase = top 3 by confidence (Tier 1/2 first); Premium users see these too.
+  assertEquals(a.free.map((x) => x.id), ["prem", "t2strong", "t1weak"]);
   assert(a.limitedHeld.some((x) => x.id === "lim")); // limited data held back
   assert(![...a.pro, ...a.free].some((x) => x.id === "lim"));
 });
@@ -91,8 +91,8 @@ Deno.test("65–69 never published; Tier 3 never displaces Tier 1/2", () => {
   assert(!pub.includes("t1_68"));
   assert(a.analysedOnly.some((x) => x.id === "t1_68"));
   assert(a.pro.some((x) => x.id === "t1_72"));
-  const placed = [...a.pro, ...a.free];
-  assertEquals(placed[placed.length - 1].id, "t3_84"); // Tier 3 only after all Tier 1/2
+  assert(!a.free.some((x) => x.id === "t3_84"));  // Free showcase never picks Tier 3 over Tier 1/2
+  assertEquals(a.pro[a.pro.length - 1].id, "t3_84"); // Tier 3 only after all Tier 1/2
 });
 
 Deno.test("league classification", () => {
@@ -148,5 +148,5 @@ Deno.test("engine MAIN is the market with the highest final confidence", () => {
 Deno.test("allocate: unused Premium slots roll down to Pro", () => {
   const pool = Array.from({ length: 25 }, (_, i) => (({ id: "t" + i, tier: 1 as const, result: { confidence: 75, data_quality: 80 } as any })));
   const a = allocate(pool as PoolItem[]);
-  assertEquals(a.premium.length, 0); assertEquals(a.pro.length, 20); assertEquals(a.free.length, 5);
+  assertEquals(a.premium.length, 0); assertEquals(a.free.length, 3); assertEquals(a.pro.length, 22);
 });
