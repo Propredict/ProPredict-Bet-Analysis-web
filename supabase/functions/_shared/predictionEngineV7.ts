@@ -270,9 +270,15 @@ export const MARKET_PREFERENCE: Record<string, number> = {
   "Over 3.5": 3, "Under 3.5": 3,
   "Over 1.5": 4, "Under 1.5": 4,
 };
+// Core markets users actually follow: 1X2, BTTS, Over/Under 2.5.
+// Over 1.5 / Under 3.5 are near-certain outcomes — they are only used as
+// MAIN when no core market qualifies (fallback), never ahead of a core pick.
+export const CORE_MARKETS = new Set(["1", "X", "2", "Over 2.5", "Under 2.5", "BTTS Yes", "BTTS No"]);
 export function selectMain<T extends { market: string; p: number; c: number }>(eligible: T[]): T {
-  const maxC = Math.max(...eligible.map((r) => r.c));
-  const near = eligible.filter((r) => maxC - r.c <= PREFERENCE_MARGIN);
+  const core = eligible.filter((r) => CORE_MARKETS.has(r.market));
+  const pool = core.length ? core : eligible;
+  const maxC = Math.max(...pool.map((r) => r.c));
+  const near = pool.filter((r) => maxC - r.c <= PREFERENCE_MARGIN);
   near.sort((a, b) => (MARKET_PREFERENCE[a.market] ?? 9) - (MARKET_PREFERENCE[b.market] ?? 9) || b.c - a.c);
   return near[0];
 }

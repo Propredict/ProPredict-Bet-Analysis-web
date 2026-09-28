@@ -28,8 +28,8 @@ Deno.test("synthetic balanced high-scoring teams → goals market, never 1X2", (
     homeForm: form(Array(10).fill([2, 2])), awayForm: form(Array(10).fill([2, 2])),
     odds: { bookmakers: 6, home: 2.5, draw: 4.0, away: 2.6, over25: 1.45, under25: 2.8, bttsYes: 1.5, bttsNo: 2.6 },
   }));
-  // O1.5 92.6 vs O2.5 78.7: gap > margin → strongest (O1.5) stays main (spec example 3)
-  assertEquals(r.main_market, "Over 1.5");
+  // Core markets (1X2, BTTS, O/U 2.5) always win over O1.5/U3.5 when eligible
+  assertEquals(r.main_market, "Over 2.5");
   assert(r.markets["1"] < 50 && r.markets["2"] < 50);
 });
 
@@ -109,17 +109,17 @@ Deno.test("league classification", () => {
 
 import { selectMain } from "../_shared/predictionEngineV7.ts";
 const mk = (o: Record<string, number>) => Object.entries(o).map(([market, p]) => ({ market, p, c: p }));
-Deno.test("main selection: spec example 1 → U3.5 84", () => {
+Deno.test("main selection: core market beats O1.5/U3.5", () => {
   const r = selectMain(mk({ "Over 1.5": 88, "Under 3.5": 84, "BTTS Yes": 79, "1": 72 }));
-  assertEquals([r.market, r.p], ["Under 3.5", 84]);
+  assertEquals([r.market, r.p], ["BTTS Yes", 79]);
 });
 Deno.test("main selection: spec example 2 → U2.5 89", () => {
   const r = selectMain(mk({ "Over 2.5": 72, "Under 2.5": 89, "BTTS Yes": 76, "1": 73 }));
   assertEquals([r.market, r.p], ["Under 2.5", 89]);
 });
-Deno.test("main selection: spec example 3 → O1.5 91 (never a weaker market for variety)", () => {
+Deno.test("main selection: O1.5 91 loses to core O2.5 72", () => {
   const r = selectMain(mk({ "Over 1.5": 91, "Under 3.5": 76, "Over 2.5": 72 }));
-  assertEquals([r.market, r.p], ["Over 1.5", 91]);
+  assertEquals([r.market, r.p], ["Over 2.5", 72]);
 });
 Deno.test("main selection: O1.5 alone stays main (no rejection)", () => {
   const r = selectMain(mk({ "Over 1.5": 80 }));
