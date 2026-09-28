@@ -175,7 +175,20 @@ export default function MatchPreviewDetail() {
     const pred = prediction as AIPrediction;
     const norm = getNormalized1x2(pred);
     const goals = calculateGoalMarketProbs(pred);
-    const topScores = getConsistentTopCorrectScores(pred, {}, 3);
+    // Scores must agree with the hero AI pick (e.g. Away Win → away team leads).
+    const heroLabel = (heroPick?.label || "").toLowerCase();
+    const heroMarket =
+      heroLabel.startsWith("home win") ? "home_win"
+      : heroLabel.startsWith("away win") ? "away_win"
+      : heroLabel.startsWith("draw") ? "draw"
+      : heroLabel.startsWith("btts yes") ? "btts_yes"
+      : heroLabel.startsWith("btts no") ? "btts_no"
+      : heroLabel.startsWith("1x") ? "dc_1x"
+      : heroLabel.startsWith("x2") ? "dc_x2"
+      : heroLabel.startsWith("over 2.5") ? "over25"
+      : heroLabel.startsWith("under 2.5") ? "under25"
+      : undefined;
+    const topScores = getConsistentTopCorrectScores(pred, heroMarket ? { marketType: heroMarket as any } : {}, 3);
     const xgHome = typeof (prediction as any).xg_home === "number" && (prediction as any).xg_home > 0
       ? (prediction as any).xg_home : null;
     const xgAway = typeof (prediction as any).xg_away === "number" && (prediction as any).xg_away > 0
@@ -504,10 +517,10 @@ export default function MatchPreviewDetail() {
         {unlocked && derived && activeTab === "predictions" && (
           <div className="space-y-4">
             {/* PREDICTED SCORE */}
-            {prediction.predicted_score && (
+            {(derived.topScores[0]?.score || prediction.predicted_score) && (
               <Panel icon={<Target className="h-4 w-4 text-blue-400" />} title="Predicted Score">
                 {(() => {
-                  const parts = String(prediction.predicted_score).match(/^(\d+)\s*[-:]\s*(\d+)$/);
+                  const parts = String(derived.topScores[0]?.score || prediction.predicted_score).match(/^(\d+)\s*[-:]\s*(\d+)$/);
                   const hGoals = parts ? parseInt(parts[1]) : 0;
                   const aGoals = parts ? parseInt(parts[2]) : 0;
                   return (
