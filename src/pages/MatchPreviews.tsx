@@ -195,6 +195,10 @@ export default function MatchPreviews() {
         tier: (p as any).league_tier ?? getLeagueTier(p.league),
       }))
       .sort((a, b) => {
+        // Nations League / Euro national-team matches always first
+        const nl = (l: string | null) => /nations league|euro championship|euro qualification/i.test(l ?? "") ? 0 : 1;
+        const nlDiff = nl(a.p.league) - nl(b.p.league);
+        if (nlDiff !== 0) return nlDiff;
         // Top leagues first (Tier 1/2 before Tier 3/4), then strongest market %
         const groupA = a.tier <= 2 ? 0 : 1;
         const groupB = b.tier <= 2 ? 0 : 1;
