@@ -366,22 +366,6 @@ export default function MatchPreviews() {
               const homeLogo = getTeamLogo(match.home_team, match.away_team, "home");
               const awayLogo = getTeamLogo(match.home_team, match.away_team, "away");
               const pct = match.bestPick?.pct ?? match.confidence;
-              // Real bookmaker consensus odds for 1X2 picks; fair odds from our
-              // model only for markets where bookmaker odds are not stored.
-              const pickLabel = match.bestPick?.label ?? "";
-              const realOdds =
-                pickLabel === "Home Win" ? match.consensus_home
-                : pickLabel === "Draw" ? match.consensus_draw
-                : pickLabel === "Away Win" ? match.consensus_away
-                : pickLabel === "Over 2.5" ? match.market_odds?.over_2_5
-                : pickLabel === "Under 2.5" ? match.market_odds?.under_2_5
-                : pickLabel === "BTTS Yes" ? match.market_odds?.btts_yes
-                : pickLabel === "BTTS No" ? match.market_odds?.btts_no
-                : null;
-              // Only real bookmaker odds are shown — never model-derived values.
-              const displayOdds = realOdds && Number(realOdds) > 1
-                ? Number(realOdds).toFixed(2)
-                : "—";
 
               return (
                 <button
@@ -448,11 +432,7 @@ export default function MatchPreviews() {
                         </div>
                       </div>
 
-                      {/* Real odds (mobile & app) */}
-                      <div className="flex w-16 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                        <span className="text-sm font-black text-primary">{displayOdds}</span>
-                      </div>
+
                     </div>
                   </div>
 
@@ -514,11 +494,6 @@ export default function MatchPreviews() {
                       </div>
                     </div>
 
-                    {/* Real odds (desktop) */}
-                    <div className="flex w-20 shrink-0 flex-col items-center rounded-xl bg-secondary/70 px-2 py-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Odds</span>
-                      <span className="text-base font-black text-primary">{displayOdds}</span>
-                    </div>
 
                     <ChevronRight className="h-6 w-6 shrink-0 text-primary" />
                   </div>
