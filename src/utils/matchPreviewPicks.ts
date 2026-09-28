@@ -2,6 +2,7 @@ import type { AIPrediction } from "@/hooks/useAIPredictions";
 import {
   calculateGoalMarketProbs,
   getNormalized1x2,
+  getPickConfidence,
 } from "@/components/ai-predictions/utils/marketDerivation";
 
 export interface MatchPreviewAIPick {
@@ -99,7 +100,12 @@ export function getTopMatchPreviewPick(pred: AIPrediction): MatchPreviewAIPick {
   // Candidates: 1X2 + BTTS Yes/No, plus the stored AI confidence attached to
   // its matching market (or to the strongest 1X2 outcome when MAIN is a
   // goals market like "Over 1.5").
-  const { hw, d, aw } = getNormalized1x2(pred);
+  const { d } = getNormalized1x2(pred);
+  // Home/Away use the SAME duel confidence as the AI Predictions card
+  // (side vs side, draw excluded) so Top 10, the card and this hero always
+  // show the identical percentage — e.g. Leon Home Win 88% everywhere.
+  const hw = getPickConfidence(pred, "home_win");
+  const aw = getPickConfidence(pred, "away_win");
   const g = calculateGoalMarketProbs(pred);
   const candidates: Array<[string, number]> = [
     ["Home Win", hw],
@@ -146,7 +152,11 @@ export const TOP10_MAX = 10;
  * No double chance (1X/X2/12) anywhere.
  */
 export function getStrongestMarketPick(pred: AIPrediction): MatchPreviewAIPick {
-  const { hw, d, aw } = getNormalized1x2(pred);
+  const { d } = getNormalized1x2(pred);
+  // Same duel confidence as the AI Predictions card / match-preview hero,
+  // so the percentage is identical on every surface.
+  const hw = getPickConfidence(pred, "home_win");
+  const aw = getPickConfidence(pred, "away_win");
   const g = calculateGoalMarketProbs(pred);
   const primary: Array<[string, number]> = [
     ["Home Win", hw],
