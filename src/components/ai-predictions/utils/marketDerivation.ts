@@ -603,27 +603,24 @@ export function deriveMarkets(prediction: AIPrediction): DerivedMarkets {
     recommended: true,
   };
 
-  // Every Best/Value combo follows the actual normalized 1X2 favourite. Rank
-  // the goal legs by this match's Poisson probabilities, never by fixed labels.
-  const comboGoalCandidates = effectivePrediction === "X"
-    ? [
-        { label: "Under 3.5", probability: 100 - goalProbs.over35 },
-        { label: "Over 1.5", probability: goalProbs.over15 },
-        { label: "Over 2.5", probability: goalProbs.over25 },
-      ]
-    : [
-        { label: "Over 1.5", probability: goalProbs.over15 },
-        { label: "Over 2.5", probability: goalProbs.over25 },
-        { label: "Under 2.5", probability: goalProbs.under25 },
-      ];
-
-  const limitedCombos = comboGoalCandidates
+  // Build a pool of real combos from the same score distribution: the 1X2
+  // favourite AND its safer double chance, each paired with goal legs. Rank by
+  // the real joint probability so safer combos (e.g. X2 + Over 1.5) surface
+  // when a straight win is uncertain. No numbers are inflated.
+  const resultLegs: string[] = [effectivePrediction, doubleChanceOption];
+  const goalLegs = ["Over 1.5", "Over 2.5", "Under 2.5", "Under 3.5"];
+  const pool: { label: string; probability: number }[] = [];
+  for (const r of resultLegs) {
+    for (const g of goalLegs) {
+      const label = `${r} & ${g}`;
+      const p = calculateComboProbability(prediction, label);
+      if (p !== null) pool.push({ label, probability: p });
+    }
+  }
+  const limitedCombos = pool
     .sort((a, b) => b.probability - a.probability)
     .slice(0, 2)
-    .map((goal) => ({
-      label: `${effectivePrediction} & ${goal.label}`,
-      recommended: goal.probability >= 50,
-    }));
+    .map((c) => ({ label: c.label, recommended: c.probability >= 50 }));
 
   // AI Guidance
   const badge = getRiskBadge(prediction.risk_level, prediction.confidence);
