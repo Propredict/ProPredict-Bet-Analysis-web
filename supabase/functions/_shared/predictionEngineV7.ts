@@ -409,7 +409,8 @@ export function allocate(pool: PoolItem[]): { premium: PoolItem[]; pro: PoolItem
   // Premium users see every tier, so these picks are visible to Premium AND Free.
   const byConfidence = (a: PoolItem, b: PoolItem) => {
     const ta = a.topPriority ? 0 : 1, tb = b.topPriority ? 0 : 1;
-    return ta - tb || b.result.confidence - a.result.confidence || rankScore(b) - rankScore(a);
+    const pa = a.tier === 3 ? 1 : 0, pb = b.tier === 3 ? 1 : 0;
+    return ta - tb || pa - pb || b.result.confidence - a.result.confidence || rankScore(b) - rankScore(a);
   };
   const free = [...publishable].sort(byConfidence).slice(0, CAPS.free);
   free.forEach((i) => used.add(i.id));
