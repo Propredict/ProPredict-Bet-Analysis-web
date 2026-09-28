@@ -216,8 +216,8 @@ export default function MatchPreviewDetail() {
   if (!prediction) {
     return (
       <div className="page-content space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/match-previews")} className="gap-2">
-          <ArrowLeft className="h-4 w-4" /> Back to Match Previews
+        <Button variant="ghost" onClick={() => navigate("/match-previews")} className="gap-2 text-base font-bold text-foreground hover:text-primary -ml-2">
+          <ArrowLeft className="h-5 w-5" /> Back to Match Previews
         </Button>
         <div className="p-6 text-center rounded-2xl bg-card border border-border">
           <p className="text-muted-foreground">Match not found.</p>
