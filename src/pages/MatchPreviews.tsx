@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Crown, Diamond } from "lucide-react";
+import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Check, Crown, Diamond } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
@@ -13,6 +13,7 @@ import { calculateGoalMarketProbs } from "@/components/ai-predictions/utils/mark
 import { getStrongestMarketPick as getTopMatchPreviewPick, TOP10_MIN_CONFIDENCE, TOP10_MAX } from "@/utils/matchPreviewPicks";
 import AdSlot from "@/components/ads/AdSlot";
 import { PageHero } from "@/components/layout/PageHero";
+import aiBrainAsset from "@/assets/ai-brain.png.asset.json";
 
 const MIN_CONFIDENCE_PRIMARY = 80; // Prefer 80%+ matches
 const MIN_CONFIDENCE_FALLBACK = 70; // Fallback to 70%+ if not enough
@@ -279,33 +280,66 @@ export default function MatchPreviews() {
               AI Curated
             </span>
           }
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/30 bg-primary-foreground/10 px-2.5 py-1">
-                <Diamond className="h-3.5 w-3.5 text-primary-foreground" />
-                <span className="text-primary-foreground font-black tracking-widest uppercase text-[10px]">
-                  Available for Premium Users
-                </span>
-                <span className="text-primary-foreground/70 text-[10px] font-semibold">
-                  / Dostupno za Premium korisnike
-                </span>
-              </span>
-              <Button
-                size="sm"
-                className="rounded-full bg-gradient-to-r from-fuchsia-600 to-primary text-white font-bold px-4 shadow-[0_0_20px_rgba(232,121,249,0.25)] hover:opacity-90"
-                onClick={() => navigate("/get-premium")}
-              >
-                <Crown className="h-4 w-4 mr-1.5" />
-                Get Premium
-                <span className="text-white/70 font-semibold ml-1">/ Postani Premium</span>
-              </Button>
-            </div>
-          }
         />
 
 
         {/* Sponsored: 1xBet affiliate banner – web only */}
 
+        {/* Premium Info Card */}
+        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-background/80 to-background p-5">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
+            <div className="md:col-span-2 space-y-3">
+              {/* Two info rows — desktop only (hidden on mobile & Android app) */}
+              <div className="hidden md:flex items-start gap-3">
+                <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm text-foreground/90">
+                  Only matches where our AI is <span className="text-primary font-bold">80%+ confident</span> in any pick (1, X, 2, Over/Under 2.5, BTTS). / Samo utakmice gde je naš AI 80%+ siguran u bilo koji tip.
+                </p>
+              </div>
+              <div className="hidden md:flex items-start gap-3">
+                <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm text-foreground/90">
+                  Click any match to unlock full AI-powered analysis, predictions, and key factors.
+                </p>
+              </div>
+              <div className="flex flex-col items-start gap-3">
+                <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-primary/10 border border-primary/20 w-fit">
+                  <Diamond className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-primary font-black tracking-widest uppercase text-[10px]">
+                    Available for Premium Users
+                  </span>
+                  <span className="text-muted-foreground/70 text-[10px] font-semibold hidden sm:inline">
+                    / Dostupno za Premium korisnike
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  className="rounded-full bg-gradient-to-r from-fuchsia-600 to-primary text-white font-bold px-5 shadow-[0_0_20px_rgba(232,121,249,0.25)] hover:opacity-90"
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Get Premium
+                  <span className="text-white/70 font-semibold ml-1.5 hidden sm:inline">/ Postani Premium</span>
+                </Button>
+              </div>
+            </div>
+            <div className="hidden md:flex justify-end items-center">
+              <img
+                src={aiBrainAsset.url}
+                alt="AI brain"
+                className="w-24 h-24 object-contain drop-shadow-[0_0_25px_hsl(var(--primary)/0.35)]"
+                loading="lazy"
+                width={96}
+                height={96}
+              />
+            </div>
+          </div>
+        </Card>
 
         {isFreeUser && (
           <Card className="relative overflow-hidden p-5 border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
