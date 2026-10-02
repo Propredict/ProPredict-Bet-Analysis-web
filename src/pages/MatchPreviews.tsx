@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Check, Crown } from "lucide-react";
+import { Eye, Loader2, Sparkles, ChevronRight, Trophy, Check, Crown, Diamond } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMatchPreviews } from "@/hooks/useMatchPreviews";
