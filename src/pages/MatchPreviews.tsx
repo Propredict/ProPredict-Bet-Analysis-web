@@ -307,11 +307,25 @@ export default function MatchPreviews() {
                   Click any match to unlock full AI-powered analysis, predictions, and key factors.
                 </p>
               </div>
-              <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-primary/10 border border-primary/20 w-fit">
-                <Diamond className="h-3.5 w-3.5 text-primary" />
-                <span className="text-primary font-black tracking-widest uppercase text-[10px]">Premium</span>
-                <span className="h-1 w-1 rounded-full bg-primary" />
-                <span className="text-muted-foreground text-[10px] font-semibold">Unlimited Match Previews</span>
+              <div className="flex flex-col items-start gap-3">
+                <div className="flex items-center gap-2 py-1.5 px-3 rounded-full bg-primary/10 border border-primary/20 w-fit">
+                  <Diamond className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-primary font-black tracking-widest uppercase text-[10px]">
+                    Available for Premium Users
+                  </span>
+                  <span className="text-muted-foreground/70 text-[10px] font-semibold hidden sm:inline">
+                    / Dostupno za Premium korisnike
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  className="rounded-full bg-gradient-to-r from-fuchsia-600 to-primary text-white font-bold px-5 shadow-[0_0_20px_rgba(232,121,249,0.25)] hover:opacity-90"
+                  onClick={() => navigate("/get-premium")}
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Get Premium
+                  <span className="text-white/70 font-semibold ml-1.5 hidden sm:inline">/ Postani Premium</span>
+                </Button>
               </div>
             </div>
             <div className="hidden md:flex justify-end items-center">
