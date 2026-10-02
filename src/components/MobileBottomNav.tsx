@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Zap, Heart, Crown, Ticket, LayoutDashboard } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Zap, BrainCircuit, Crown, ListOrdered, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -12,16 +12,16 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Live",
-    icon: Zap,
-    path: "/live-scores",
-    matchPaths: ["/live-scores"]
+    label: "AI Predictions",
+    icon: BrainCircuit,
+    path: "/ai-predictions",
+    matchPaths: ["/ai-predictions"]
   },
   {
-    label: "Tiket",
-    icon: Ticket,
-    path: "/tickets",
-    matchPaths: ["/tickets", "/daily-predictions", "/premium-predictions"]
+    label: "Top 10",
+    icon: ListOrdered,
+    path: "/match-previews",
+    matchPaths: ["/match-previews", "/match-preview/"]
   },
   {
     label: "Dashboard",
@@ -36,16 +36,15 @@ const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/get-premium"]
   },
   {
-    label: "Favorites",
-    icon: Heart,
-    path: "/favorites",
-    matchPaths: ["/favorites"]
+    label: "Live",
+    icon: Zap,
+    path: "/live-scores",
+    matchPaths: ["/live-scores"]
   },
 ];
 
 export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const isActive = (item: NavItem) => {
     if (item.matchPaths) {
@@ -68,9 +67,11 @@ export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
           const Icon = item.icon;
 
           return (
-            <button
+            <Link
               key={item.path}
-              onClick={() => navigate(item.path)}
+              to={item.path}
+              aria-label={item.label}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-1.5 transition-all",
                 active
@@ -91,12 +92,12 @@ export const MobileBottomNav = forwardRef<HTMLElement>((_, ref) => {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium",
+                "text-[10px] font-medium text-center leading-tight",
                 active && "font-semibold"
               )}>
                 {item.label}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>
