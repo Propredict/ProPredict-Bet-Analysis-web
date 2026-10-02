@@ -290,7 +290,8 @@ export default function MatchPreviews() {
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
             <div className="md:col-span-2 space-y-3">
-              <div className="flex items-start gap-3">
+              {/* Two info rows — desktop only (hidden on mobile & Android app) */}
+              <div className="hidden md:flex items-start gap-3">
                 <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
                   <Check className="h-4 w-4 text-primary" />
                 </div>
@@ -298,7 +299,7 @@ export default function MatchPreviews() {
                   Only matches where our AI is <span className="text-primary font-bold">80%+ confident</span> in any pick (1, X, 2, Over/Under 2.5, BTTS). / Samo utakmice gde je naš AI 80%+ siguran u bilo koji tip.
                 </p>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="hidden md:flex items-start gap-3">
                 <div className="mt-0.5 p-1 rounded-md bg-primary/20 border border-primary/40">
                   <Check className="h-4 w-4 text-primary" />
                 </div>
