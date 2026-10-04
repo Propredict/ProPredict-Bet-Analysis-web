@@ -584,9 +584,9 @@ export default function GetPremium() {
         </div>
       </div>
 
-      {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-        {currentPlans.map((plan) => {
+      {/* Pricing Cards — Premium only */}
+      <div className="grid grid-cols-1 gap-4 items-stretch max-w-md mx-auto">
+        {currentPlans.filter((plan) => plan.id === "premium").map((plan) => {
           const isCurrentPlan = currentPlan === plan.id;
           const isPremium = plan.id === "premium";
           const isFree = plan.id === "free";
