@@ -64,6 +64,8 @@ const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const ManageTips = lazy(() => import("./pages/admin/ManageTips"));
 const ManageTickets = lazy(() => import("./pages/admin/ManageTickets"));
+const ManageCorrectScore = lazy(() => import("./pages/admin/ManageCorrectScore"));
+const CorrectScore = lazy(() => import("./pages/CorrectScore"));
 const AdminSupportChat = lazy(() => import("./pages/admin/SupportChat"));
 const AdminSureOddsAnalytics = lazy(() => import("./pages/admin/SureOddsAnalytics"));
 
@@ -237,6 +239,7 @@ const App = () => {
                     <Route path="/premium-tips" element={<NavigateWithSearch to="/single-tips?view=premium" />} />
                     <Route path="/premium-predictions" element={<NavigateWithSearch to="/premium-tickets" />} />
                     <Route path="/premium-tickets" element={<PremiumTickets />} />
+                    <Route path="/correct-score" element={<CorrectScore />} />
                     <Route path="/ai-predictions" element={<AIPredictions />} />
                     <Route path="/league-statistics" element={<LeagueStatistics />} />
                     <Route path="/match-previews" element={<MatchPreviews />} />
@@ -277,6 +280,14 @@ const App = () => {
                       element={
                         <AdminRoute>
                           <ManageTickets />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/correct-score"
+                      element={
+                        <AdminRoute>
+                          <ManageCorrectScore />
                         </AdminRoute>
                       }
                     />

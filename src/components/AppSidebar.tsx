@@ -60,6 +60,7 @@ const premiumItems = [
 ];
 
 const tools = [
+  { title: "Correct Score", url: "/correct-score", icon: Target },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
@@ -69,6 +70,7 @@ const adminItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Manage Tips", url: "/admin/tips", icon: Lightbulb },
   { title: "Manage Tickets", url: "/admin/tickets", icon: Ticket },
+  { title: "Correct Score", url: "/admin/correct-score", icon: Target },
   { title: "Sure Odds Tracking", url: "/admin/sure-odds-analytics", icon: Target },
   { title: "Support Inbox", url: "/admin/support", icon: MessageCircle },
 ];
