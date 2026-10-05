@@ -1,4 +1,5 @@
-import { Lock, Crown } from "lucide-react";
+import { Lock, Crown, Share2 } from "lucide-react";
+import { shareContent } from "@/lib/shareContent";
 import type { CSTicket } from "@/hooks/useCorrectScoreTickets";
 
 interface Props {
@@ -11,8 +12,25 @@ export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
   const date = ticket.ticket_date
     ? new Date(ticket.ticket_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
     : "";
+
+  const handleShare = () => {
+    const matches = ticket.matches.map((m) => `${m.home_team} vs ${m.away_team}`).join(", ");
+    shareContent(
+      "ProPredict Correct Score",
+      `Correct Score picks ${date}: ${matches}`,
+      "https://propredict.me/correct-score"
+    );
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-amber-400/60 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 p-3 shadow-xl sm:p-5">
+      <button
+        onClick={handleShare}
+        aria-label="Share / Podeli"
+        className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-amber-300 shadow-lg transition-transform hover:scale-105 active:scale-95"
+      >
+        <Share2 className="h-4 w-4" />
+      </button>
       <div className="mb-3 flex flex-col items-center gap-1">
         <p className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
           propredict<span className="text-primary">.me</span>
