@@ -65,7 +65,8 @@ export function useTickets(includeAll = false) {
       const { data, error } = await query as any;
       if (error) throw error;
 
-      return (data ?? []).map((ticket: any) => {
+      // Correct Score tickets live on their own page
+      return (data ?? []).filter((t: any) => includeAll || t.category !== "correct_score").map((ticket: any) => {
         const matches = (ticket.matches ?? []).sort(
           (a: TicketMatch, b: TicketMatch) =>
             (a.sort_order ?? 0) - (b.sort_order ?? 0),
