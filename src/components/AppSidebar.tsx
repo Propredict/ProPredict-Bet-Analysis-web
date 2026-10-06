@@ -60,7 +60,6 @@ const premiumItems = [
 ];
 
 const tools = [
-  { title: "Correct Score", url: "/correct-score", icon: Target },
   { title: "Live Scores", url: "/live-scores", icon: Zap },
   { title: "My Favorites", url: "/favorites", icon: Heart },
   { title: "League Stats", url: "/league-statistics", icon: BarChart3 },
@@ -177,6 +176,18 @@ export function AppSidebar() {
                 >
                   <Eye className="h-5 w-5" />
                   {!collapsed && <span>Top 10 AI Picks</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/correct-score" 
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold transition-colors hover:bg-sidebar-accent"
+                  activeClassName="bg-primary/20 text-primary"
+                >
+                  <Target className="h-5 w-5" />
+                  {!collapsed && <span>Correct Score</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
