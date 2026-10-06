@@ -6,9 +6,11 @@ interface Props {
   ticket: CSTicket;
   locked?: boolean;
   onUnlock?: () => void;
+  /** 1-based ticket number shown under the card title, e.g. "Correct Score #1" */
+  number?: number;
 }
 
-export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
+export function CorrectScoreCard({ ticket, locked, onUnlock, number }: Props) {
   const date = ticket.ticket_date
     ? new Date(ticket.ticket_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
     : "";

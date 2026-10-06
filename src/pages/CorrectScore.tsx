@@ -31,10 +31,11 @@ export default function CorrectScore() {
           <p className="py-10 text-center text-muted-foreground">No correct score picks yet. / Još nema tipova.</p>
         ) : (
           <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
-            {list.map((t) => (
+            {list.map((t, i) => (
               <CorrectScoreCard
                 key={t.id}
                 ticket={t}
+                number={i + 1}
                 locked={t.tier === "premium" && !isPremium}
                 onUnlock={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
               />
