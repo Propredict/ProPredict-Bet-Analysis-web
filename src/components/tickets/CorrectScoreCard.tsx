@@ -43,6 +43,11 @@ export function CorrectScoreCard({ ticket, locked, onUnlock, number }: Props) {
             {ticket.tier === "premium" ? "Premium" : "Free"}
           </span>
         </div>
+        {number != null && (
+          <p className="mt-1.5 text-center text-base font-black uppercase tracking-[0.16em] text-slate-900 sm:text-lg">
+            Correct Score #{number}
+          </p>
+        )}
       </div>
 
       <div className="space-y-3">
