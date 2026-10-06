@@ -23,7 +23,7 @@ export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-amber-400/60 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 p-3 shadow-xl sm:p-5">
+    <div className="relative overflow-hidden rounded-3xl border-2 border-slate-900/80 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 p-3 shadow-[0_14px_40px_-16px_rgba(15,23,42,0.65)] ring-1 ring-inset ring-amber-100/50 sm:p-5">
       <button
         onClick={handleShare}
         aria-label="Share / Podeli"
@@ -45,7 +45,7 @@ export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
 
       <div className="space-y-3">
         {ticket.matches.map((m, i) => (
-          <div key={i} className="rounded-xl border border-amber-200/70 bg-amber-200/60 p-3 shadow-inner">
+          <div key={i} className="rounded-xl border-2 border-slate-900/30 bg-amber-200/60 p-3 shadow-inner">
             <div className="flex items-center justify-between gap-2">
               <span className="flex-1 truncate text-center text-sm font-black uppercase text-slate-900 sm:text-base">{m.home_team}</span>
               <span className="text-lg font-black italic text-amber-700">VS</span>

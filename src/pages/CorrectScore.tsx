@@ -23,21 +23,23 @@ export default function CorrectScore() {
         <title>Correct Score Picks – ProPredict</title>
         <meta name="description" content="Today's correct score predictions: three score options for selected matches." />
       </Helmet>
-      <div className="mx-auto max-w-xl space-y-5">
+      <div className="mx-auto max-w-6xl space-y-6">
         <h1 className="text-center text-3xl font-extrabold">Correct Score</h1>
         {isLoading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : list.length === 0 ? (
           <p className="py-10 text-center text-muted-foreground">No correct score picks yet. / Još nema tipova.</p>
         ) : (
-          list.map((t) => (
-            <CorrectScoreCard
-              key={t.id}
-              ticket={t}
-              locked={t.tier === "premium" && !isPremium}
-              onUnlock={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
-            />
-          ))
+          <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
+            {list.map((t) => (
+              <CorrectScoreCard
+                key={t.id}
+                ticket={t}
+                locked={t.tier === "premium" && !isPremium}
+                onUnlock={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
+              />
+            ))}
+          </div>
         )}
         <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only.</p>
       </div>
