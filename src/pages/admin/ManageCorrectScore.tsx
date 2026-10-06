@@ -110,7 +110,7 @@ export default function ManageCorrectScore() {
 
         <div>
           <p className="mb-2 text-xs font-bold uppercase text-muted-foreground">Pregled</p>
-          <CorrectScoreCard ticket={preview} number={1} />
+          <CorrectScoreCard ticket={preview} />
         </div>
       </div>
 
