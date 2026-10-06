@@ -32,13 +32,16 @@ export default function CorrectScore() {
         ) : (
           <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
             {list.map((t, i) => (
-              <CorrectScoreCard
-                key={t.id}
-                ticket={t}
-                number={i + 1}
-                locked={t.tier === "premium" && !isPremium}
-                onUnlock={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
-              />
+              <div key={t.id} className="space-y-2.5">
+                <h2 className="text-center text-xl font-extrabold tracking-tight md:text-2xl">
+                  Correct Score <span className="text-primary">#{i + 1}</span>
+                </h2>
+                <CorrectScoreCard
+                  ticket={t}
+                  locked={t.tier === "premium" && !isPremium}
+                  onUnlock={() => navigate(isAuthenticated ? "/get-premium" : "/login")}
+                />
+              </div>
             ))}
           </div>
         )}
