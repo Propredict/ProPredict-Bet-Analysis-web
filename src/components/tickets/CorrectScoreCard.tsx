@@ -1,6 +1,24 @@
 import { Lock, Crown, Share2 } from "lucide-react";
 import { shareContent } from "@/lib/shareContent";
+import { getFlagUrl } from "@/lib/countryFlags";
 import type { CSTicket } from "@/hooks/useCorrectScoreTickets";
+
+function TeamName({ name }: { name: string }) {
+  const flag = getFlagUrl(name, 40);
+  return (
+    <span className="flex min-w-0 flex-1 flex-col items-center gap-1 sm:flex-row sm:justify-center sm:gap-1.5">
+      {flag && (
+        <img
+          src={flag}
+          alt=""
+          loading="lazy"
+          className="h-4 w-6 shrink-0 rounded-sm border border-slate-900/40 object-cover shadow-sm sm:h-5 sm:w-7"
+        />
+      )}
+      <span className="max-w-full truncate text-center text-sm font-black uppercase text-slate-900 sm:text-base">{name}</span>
+    </span>
+  );
+}
 
 interface Props {
   ticket: CSTicket;
@@ -47,9 +65,9 @@ export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
         {ticket.matches.map((m, i) => (
           <div key={i} className="rounded-xl border-2 border-slate-900/30 bg-amber-200/60 p-3 shadow-inner">
             <div className="flex items-center justify-between gap-2">
-              <span className="flex-1 truncate text-center text-sm font-black uppercase text-slate-900 sm:text-base">{m.home_team}</span>
+              <TeamName name={m.home_team} />
               <span className="text-lg font-black italic text-amber-700">VS</span>
-              <span className="flex-1 truncate text-center text-sm font-black uppercase text-slate-900 sm:text-base">{m.away_team}</span>
+              <TeamName name={m.away_team} />
             </div>
             <div className="my-2 flex items-center gap-2">
               <div className="h-px flex-1 bg-slate-900/60" />
