@@ -144,13 +144,13 @@ export default function ManageTickets() {
   const storedTotalOdds = Math.min(totalOdds, 99.99);
 
 
+  // Every typed word must match (team, league or country), so "kenya w" or
+  // "seychelles" finds the exact match instead of being buried in the list.
+  const searchTokens = matchSearch.toLowerCase().trim().split(/\s+/).filter(Boolean);
   const filteredFixtures = fixtures.filter((f) => {
-    const s = matchSearch.toLowerCase();
-    return (
-      f.homeTeam?.toLowerCase().includes(s) ||
-      f.awayTeam?.toLowerCase().includes(s) ||
-      f.league?.toLowerCase().includes(s)
-    );
+    if (!searchTokens.length) return true;
+    const hay = `${f.homeTeam ?? ""} ${f.awayTeam ?? ""} ${f.league ?? ""} ${(f as any).leagueCountry ?? ""}`.toLowerCase();
+    return searchTokens.every((t) => hay.includes(t));
   });
 
   /* =====================
