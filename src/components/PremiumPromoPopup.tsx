@@ -205,6 +205,9 @@ export function PremiumPromoPopup() {
           <p className="mt-1 text-[11px] text-white/60">
             {promoActive ? "Then €14.99 per month. Cancel anytime." : "Per month. Cancel anytime."}
           </p>
+          <p className="mt-1 text-[11px] font-semibold text-amber-300">
+            One payment = full 30 days of Premium / Jedna uplata = punih 30 dana Premiuma
+          </p>
 
           {/* Trust row */}
           <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-semibold text-white/70">
