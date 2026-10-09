@@ -331,8 +331,16 @@ export default function ManageTips() {
       ) : (
         <div className="grid gap-4">
           {tips.map((tip) => (
-            <Card key={tip.id} className="p-4">
+            <Card
+              key={tip.id}
+              className={cn("p-4", selectedIds.includes(tip.id) && "border-primary/60")}
+            >
               <div className="flex justify-between gap-4">
+                <Checkbox
+                  className="mt-1 shrink-0"
+                  checked={selectedIds.includes(tip.id)}
+                  onCheckedChange={() => toggleSelect(tip.id)}
+                />
                 <div className="flex-1">
                   <div className="flex gap-2 mb-1 flex-wrap">
                     {tierBadge(tip.tier)}
