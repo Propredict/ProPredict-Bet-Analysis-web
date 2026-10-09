@@ -636,6 +636,7 @@ export default function GetPremium() {
                       <span className="text-xs text-muted-foreground">/ first month</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Then €14.99/month. Cancel anytime. / Zatim €14.99 mesečno. Otkaži kada želiš.</p>
+                    <p className="text-[11px] font-semibold text-foreground">One payment = full 30 days of Premium access / Jedna uplata = punih 30 dana Premium pristupa</p>
                   </div>
                 ) : (
                   <div className="flex items-baseline justify-center gap-1">
