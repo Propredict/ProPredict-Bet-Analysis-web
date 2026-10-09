@@ -9,6 +9,7 @@ import {
   XCircle,
   CalendarIcon,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -142,6 +143,9 @@ export default function ManageTips() {
   const [formData, setFormData] = useState(defaultTip);
   const [customPrediction, setCustomPrediction] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   /* =====================
      Handlers
@@ -208,6 +212,34 @@ export default function ManageTips() {
     }
   };
 
+  const toggleSelect = (id: string) =>
+    setSelectedIds((ids) =>
+      ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]
+    );
+
+  const allSelected = tips.length > 0 && selectedIds.length === tips.length;
+  const toggleAll = () =>
+    setSelectedIds(allSelected ? [] : tips.map((t) => t.id));
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteTip.mutateAsync(id);
+      }
+      toast.success(
+        `${selectedIds.length} ${selectedIds.length === 1 ? "tip" : "tips"} deleted`
+      );
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Delete failed");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleMarkResult = async (id: string, result: TipResult) => {
     await updateTip.mutateAsync({
       id,
@@ -261,12 +293,35 @@ export default function ManageTips() {
 
   return (
     <div className="section-gap max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center gap-2 mb-4 flex-wrap">
         <h1 className="font-bold text-lg">Manage Tips</h1>
-        <Button onClick={handleCreate} className="gap-1">
-          <Plus className="h-4 w-4" />
-          Add Tip
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {tips.length > 0 && (
+            <>
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                Select all
+              </label>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={!selectedIds.length || bulkDeleting}
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                {bulkDeleting ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-1" />
+                )}
+                Delete{selectedIds.length ? ` (${selectedIds.length})` : ""}
+              </Button>
+            </>
+          )}
+          <Button onClick={handleCreate} className="gap-1">
+            <Plus className="h-4 w-4" />
+            Add Tip
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -276,8 +331,16 @@ export default function ManageTips() {
       ) : (
         <div className="grid gap-4">
           {tips.map((tip) => (
-            <Card key={tip.id} className="p-4">
+            <Card
+              key={tip.id}
+              className={cn("p-4", selectedIds.includes(tip.id) && "border-primary/60")}
+            >
               <div className="flex justify-between gap-4">
+                <Checkbox
+                  className="mt-1 shrink-0"
+                  checked={selectedIds.includes(tip.id)}
+                  onCheckedChange={() => toggleSelect(tip.id)}
+                />
                 <div className="flex-1">
                   <div className="flex gap-2 mb-1 flex-wrap">
                     {tierBadge(tip.tier)}
@@ -610,6 +673,29 @@ export default function ManageTips() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* BULK DELETE */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={() => setBulkDeleteOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {selectedIds.length} {selectedIds.length === 1 ? "tip" : "tips"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -35,6 +37,8 @@ interface AdminTicketCardProps {
   onDelete: () => void;
   onMarkWon: () => void;
   onMarkLost: () => void;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 
@@ -107,6 +111,8 @@ export function AdminTicketCard({
   onDelete,
   onMarkWon,
   onMarkLost,
+  selected,
+  onToggleSelect,
 }: AdminTicketCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const matches = ticket.matches || [];
@@ -119,11 +125,23 @@ export function AdminTicketCard({
   const isScheduled = ticketDate && ticketDate > getTodayBelgradeDate();
 
   return (
-    <Card className="bg-card border-border overflow-hidden">
+    <Card
+      className={cn(
+        "bg-card border-border overflow-hidden",
+        selected && onToggleSelect && "border-primary/60"
+      )}
+    >
       {/* Header Section */}
       <div className="p-4 space-y-3">
         {/* Row 1: Badges */}
         <div className="flex flex-wrap items-center gap-2">
+          {onToggleSelect && (
+            <Checkbox
+              className="mr-1"
+              checked={!!selected}
+              onCheckedChange={onToggleSelect}
+            />
+          )}
           {isScheduled ? (
             <Badge className="gap-1 bg-blue-500/20 text-blue-500 border-blue-500/30">
               <CalendarClock className="h-3 w-3" />
