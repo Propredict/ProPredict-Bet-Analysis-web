@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Loader2, Search, X, Calendar, Sparkles, CalendarIcon } from "lucide-react";
+import { Plus, Loader2, Search, X, Calendar, Sparkles, CalendarIcon, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,9 @@ export default function ManageTickets() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewTicket, setPreviewTicket] =
     useState<TicketWithMatches | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // ===== Ticket info
   const [title, setTitle] = useState("");
@@ -300,6 +304,35 @@ export default function ManageTickets() {
     toast.success("Ticket deleted");
   };
 
+  const toggleSelect = (id: string) =>
+    setSelectedIds((ids) =>
+      ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]
+    );
+
+  const allSelected = tickets.length > 0 && selectedIds.length === tickets.length;
+  const toggleAll = () =>
+    setSelectedIds(allSelected ? [] : tickets.map((t) => t.id));
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteTicket.mutateAsync(id);
+      }
+      toast.success(
+        `${selectedIds.length} ${selectedIds.length === 1 ? "ticket" : "tickets"} deleted`
+      );
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+    } catch (error) {
+      const err = error as any;
+      toast.error(err?.message || "Delete failed");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleMarkResult = async (
     ticketId: string,
     newResult: TicketResult
@@ -391,11 +424,34 @@ export default function ManageTickets() {
 
   return (
     <div className="section-gap max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center gap-2 mb-4 flex-wrap">
         <h1 className="font-bold">Manage Tickets</h1>
-        <Button size="sm" onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-1" /> Add Ticket
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {tickets.length > 0 && (
+            <>
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                Select all
+              </label>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={!selectedIds.length || bulkDeleting}
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                {bulkDeleting ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-1" />
+                )}
+                Delete{selectedIds.length ? ` (${selectedIds.length})` : ""}
+              </Button>
+            </>
+          )}
+          <Button size="sm" onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-1" /> Add Ticket
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -406,6 +462,8 @@ export default function ManageTickets() {
             <AdminTicketCard
               key={t.id}
               ticket={t}
+              selected={selectedIds.includes(t.id)}
+              onToggleSelect={() => toggleSelect(t.id)}
               onEdit={() => handleEdit(t)}
               onPreview={() => setPreviewTicket(t)}
               onDelete={() => setDeleteId(t.id)}
@@ -954,6 +1012,29 @@ export default function ManageTickets() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* BULK DELETE */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={() => setBulkDeleteOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {selectedIds.length} {selectedIds.length === 1 ? "ticket" : "tickets"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
