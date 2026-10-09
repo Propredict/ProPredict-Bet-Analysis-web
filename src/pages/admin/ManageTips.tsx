@@ -9,6 +9,7 @@ import {
   XCircle,
   CalendarIcon,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -142,6 +143,9 @@ export default function ManageTips() {
   const [formData, setFormData] = useState(defaultTip);
   const [customPrediction, setCustomPrediction] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   /* =====================
      Handlers
@@ -205,6 +209,34 @@ export default function ManageTips() {
     if (deleteId) {
       await deleteTip.mutateAsync(deleteId);
       setDeleteId(null);
+    }
+  };
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds((ids) =>
+      ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]
+    );
+
+  const allSelected = tips.length > 0 && selectedIds.length === tips.length;
+  const toggleAll = () =>
+    setSelectedIds(allSelected ? [] : tips.map((t) => t.id));
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    setBulkDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        await deleteTip.mutateAsync(id);
+      }
+      toast.success(
+        `${selectedIds.length} ${selectedIds.length === 1 ? "tip" : "tips"} deleted`
+      );
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Delete failed");
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
