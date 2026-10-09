@@ -293,12 +293,35 @@ export default function ManageTips() {
 
   return (
     <div className="section-gap max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center gap-2 mb-4 flex-wrap">
         <h1 className="font-bold text-lg">Manage Tips</h1>
-        <Button onClick={handleCreate} className="gap-1">
-          <Plus className="h-4 w-4" />
-          Add Tip
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {tips.length > 0 && (
+            <>
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                Select all
+              </label>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={!selectedIds.length || bulkDeleting}
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                {bulkDeleting ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-1" />
+                )}
+                Delete{selectedIds.length ? ` (${selectedIds.length})` : ""}
+              </Button>
+            </>
+          )}
+          <Button onClick={handleCreate} className="gap-1">
+            <Plus className="h-4 w-4" />
+            Add Tip
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
