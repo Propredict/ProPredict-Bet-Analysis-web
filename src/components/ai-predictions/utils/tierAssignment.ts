@@ -10,11 +10,11 @@ const TOP_PRIORITY_RE = /nations league|euro championship|euro qualification|eur
  *
  * - Free: the 3 strongest picks of the day (showcase — Premium users see these too).
  * - Premium: next strongest, up to 15.
- * - Pro: the rest, up to 10.
+ * - Pro: the rest, up to 15.
  * Order everywhere: Nations League / Euro first, then top leagues, then the rest.
  * Only concrete picks ≥65% are eligible.
  */
-export const TIER_CAPS = { free: 3, premium: 15, pro: 10 };
+export const TIER_CAPS = { free: 3, premium: 15, pro: 15 };
 
 export function assignTiers(predictions: Array<any>): {
   tierMap: Map<string, Tier>;
