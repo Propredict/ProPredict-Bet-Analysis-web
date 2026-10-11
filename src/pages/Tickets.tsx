@@ -22,7 +22,7 @@ export default function Tickets() {
   }, [maybeShowInterstitial]);
 
   const todayBelgrade = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-  const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily" && ticket.category !== "sure_odds" && ticket.ticket_date === todayBelgrade);
+  const dailyTickets = tickets.filter((ticket) => ticket.tier === "daily" && ticket.category !== "sure_odds" && (ticket.category as string) !== "correct_score" && !/^correct score/i.test(String(ticket.title ?? "")) && ticket.ticket_date === todayBelgrade);
 
   useEffect(() => {
     if (!highlightId) return;

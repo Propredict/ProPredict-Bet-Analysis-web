@@ -24,7 +24,9 @@ export default function PremiumTickets() {
   const todayBelgrade = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
   const premiumTickets = tickets.filter((ticket) => {
     const isRisk = ["multi_risk", "risk", "risk_of_day", "risk_of_the_day"].includes(String(ticket.category));
-    return ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRisk;
+    const isCorrectScore =
+      String(ticket.category) === "correct_score" || /^correct score/i.test(String(ticket.title ?? ""));
+    return ticket.tier === "premium" && ticket.ticket_date === todayBelgrade && !isRisk && !isCorrectScore;
   });
 
   useEffect(() => {

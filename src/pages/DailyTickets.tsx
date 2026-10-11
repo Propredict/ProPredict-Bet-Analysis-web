@@ -68,7 +68,7 @@ export default function DailyTickets() {
     timeZone: "Europe/Belgrade",
   });
   
-  const dailyTickets = tickets.filter(ticket => ticket.tier === "daily" && (ticket.category as string) !== "sure_odds" && ticket.ticket_date === todayBelgrade);
+  const dailyTickets = tickets.filter(ticket => ticket.tier === "daily" && (ticket.category as string) !== "sure_odds" && (ticket.category as string) !== "correct_score" && !/^correct score/i.test(String(ticket.title ?? "")) && ticket.ticket_date === todayBelgrade);
   const unlockedCount = dailyTickets.filter(ticket => canAccess("daily", "ticket", ticket.id)).length;
 
   const handleRefresh = () => {
