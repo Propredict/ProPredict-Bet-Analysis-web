@@ -184,6 +184,9 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Buy Me a Coffee floating support widget */}
+        <BuyMeACoffeeWidget />
+
         {/* Dashboard kockice — Daily/Premium Ticket + Sure Odds 2+ / Daily Tips / Premium Tips */}
         <Suspense fallback={<LazyFallback />}>
           <BettingTickets />
