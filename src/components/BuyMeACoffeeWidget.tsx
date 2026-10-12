@@ -21,6 +21,14 @@ export function BuyMeACoffeeWidget() {
     script.dataset.yMargin = "18";
     document.body.appendChild(script);
 
+    // The BMC widget registers a DOMContentLoaded listener on load. In an SPA
+    // that event has already fired, so re-dispatch it once the script loads.
+    script.onload = () => {
+      if (document.readyState !== "loading") {
+        window.dispatchEvent(new Event("DOMContentLoaded"));
+      }
+    };
+
     return () => {
       script.remove();
       // Remove any leftover BMC widget nodes from the SPA DOM
