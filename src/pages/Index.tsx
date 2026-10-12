@@ -9,6 +9,7 @@ import { Helmet } from "react-helmet-async";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
 import { getIsAndroidApp } from "@/hooks/usePlatform";
 import { DashboardTipsPopup } from "@/components/dashboard/DashboardTipsPopup";
+import { BuyMeACoffeeWidget } from "@/components/BuyMeACoffeeWidget";
 
 // Lightweight components – eager
 import { GuestBanner } from "@/components/GuestBanner";
