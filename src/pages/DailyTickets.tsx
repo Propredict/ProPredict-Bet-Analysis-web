@@ -12,6 +12,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { SupportButton } from "@/components/SupportButton";
 
 
 export default function DailyTickets() {
@@ -218,6 +219,9 @@ export default function DailyTickets() {
           renderTickets()
         )}
       </div>
+
+      {/* Support button */}
+      <SupportButton className="mt-4" />
 
       {/* Compliance Disclaimer */}
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">

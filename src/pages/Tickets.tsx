@@ -7,6 +7,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { SupportButton } from "@/components/SupportButton";
 
 export default function Tickets() {
   const navigate = useNavigate();
@@ -82,6 +83,8 @@ export default function Tickets() {
             <TicketGroup title="Daily Ticket" subtitle="Open daily selection" badge="Daily" tickets={dailyTickets} tier="daily" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>
         </div>
+
+        <SupportButton className="mt-4" />
 
         <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
       </div>
