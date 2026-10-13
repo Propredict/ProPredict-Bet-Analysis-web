@@ -5,6 +5,7 @@ import { CorrectScoreCard } from "@/components/tickets/CorrectScoreCard";
 import { useCorrectScoreTickets } from "@/hooks/useCorrectScoreTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { SupportButton } from "@/components/SupportButton";
 
 export default function CorrectScore() {
   const navigate = useNavigate();

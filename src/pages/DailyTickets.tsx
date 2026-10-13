@@ -12,6 +12,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AdSlot from "@/components/ads/AdSlot";
+import { SupportButton } from "@/components/SupportButton";
 
 
 export default function DailyTickets() {

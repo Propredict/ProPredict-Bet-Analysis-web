@@ -7,6 +7,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
 import { useAndroidInterstitial } from "@/hooks/useAndroidInterstitial";
+import { SupportButton } from "@/components/SupportButton";
 
 export default function PremiumTickets() {
   const navigate = useNavigate();
@@ -89,6 +90,8 @@ export default function PremiumTickets() {
             <TicketGroup title="Premium Ticket" subtitle="Premium members" badge="Exclusive" tickets={premiumTickets} tier="premium" isLoading={isLoading} getUnlockMethod={getAccess} unlockingId={unlockingId} onUnlock={unlock} onRefresh={refetch} />
           </div>
         </div>
+
+        <SupportButton className="mt-4" />
 
         <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.</p>
       </div>
