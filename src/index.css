@@ -294,6 +294,23 @@
     box-shadow: 0 0 20px hsl(211 100% 42% / 0.25);
   }
 
+  /* "Buy Me a Beer" support pill (beer-gold) */
+  .btn-beer {
+    background: linear-gradient(135deg, hsl(46 97% 60%), hsl(38 96% 49%));
+    color: hsl(26 65% 13%);
+    border: 1px solid hsl(38 90% 38% / 0.55);
+    box-shadow: 0 6px 22px -9px hsl(42 96% 50% / 0.6);
+  }
+
+  .btn-beer:hover {
+    box-shadow: 0 10px 30px -9px hsl(42 96% 50% / 0.75);
+    transform: translateY(-1px);
+  }
+
+  .btn-beer:active {
+    transform: translateY(0);
+  }
+
   /* Soft shadows for depth */
   .shadow-soft {
     box-shadow: 0 4px 20px -4px hsl(var(--background) / 0.8);
