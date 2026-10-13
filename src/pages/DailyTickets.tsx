@@ -219,6 +219,9 @@ export default function DailyTickets() {
         )}
       </div>
 
+      {/* Support button */}
+      <SupportButton className="mt-4" />
+
       {/* Compliance Disclaimer */}
       <p className="text-[9px] sm:text-[10px] text-muted-foreground text-center mt-4">
         These AI-generated predictions are for informational and entertainment purposes only. No gambling services are provided.

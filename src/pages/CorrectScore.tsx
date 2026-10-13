@@ -45,6 +45,7 @@ export default function CorrectScore() {
             ))}
           </div>
         )}
+        <SupportButton className="mt-4" />
         <p className="text-center text-xs text-muted-foreground">These AI-generated predictions are for informational and entertainment purposes only.</p>
       </div>
     </>
