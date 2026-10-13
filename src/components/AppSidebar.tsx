@@ -6,7 +6,6 @@ import {
   Lightbulb,
   
   Crown,
-  Sparkles,
   Brain,
   Zap,
   Heart,
@@ -55,7 +54,6 @@ const packagesItems = [
 const premiumItems = [
   { title: "Premium Ticket", url: "/premium-tickets", icon: Ticket },
   { title: "Premium Tips", url: "/single-tips?view=premium", icon: Crown },
-  { title: "Diamond Tips", url: "/single-tips?view=diamond", icon: Sparkles },
   { title: "Risk of the Day", url: "/single-tips?view=risk", icon: AlertTriangle },
 ];
 
