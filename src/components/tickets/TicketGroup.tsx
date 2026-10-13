@@ -134,7 +134,7 @@ export function TicketGroup({
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-[9px] font-bold uppercase text-primary sm:text-center sm:text-xs">{parsed.league || "Football"}</p>
-                            <div className="mt-1.5 min-w-0 space-y-1 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-1 sm:space-y-0">
+                            <div className="mt-1.5 min-w-0 space-y-1 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-4 sm:space-y-0">
                               <div className="flex min-w-0 items-center gap-1 sm:justify-center">
                                 <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" />
                                 <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.homeTeam}</span>
