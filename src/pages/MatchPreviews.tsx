@@ -266,6 +266,11 @@ export default function MatchPreviews() {
       <Helmet>
         <title>Top 10 AI Picks – Safest Football Predictions | ProPredict</title>
         <meta name="description" content="The Top 10 AI Picks of the day — only matches where our AI model is 80%+ confident in a pick." />
+        <meta property="og:title" content="Top 10 AI Picks – Safest Football Predictions | ProPredict" />
+        <meta property="og:description" content="The Top 10 AI Picks of the day — only matches where our AI model is 80%+ confident in a pick." />
+        <meta property="og:url" content="https://propredict.me/match-previews" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://propredict.me/og-image.png" />
       </Helmet>
 
       <div className="page-content space-y-4">
