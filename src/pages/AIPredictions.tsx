@@ -592,10 +592,11 @@ export default function AIPredictions() {
   return (
     <>
       <Helmet>
-        <title>AI Predictions – ProPredict</title>
-        <meta name="description" content="AI-generated sports predictions and statistical insights. No guarantee of accuracy. For informational purposes only." />
-        <meta property="og:title" content="AI Predictions – ProPredict" />
-        <meta property="og:description" content="AI-generated sports predictions and statistical insights for football matches worldwide." />
+        <title>AI Football Predictions Today – 1X2, BTTS, Over/Under | ProPredict</title>
+        <meta name="description" content="AI football predictions for today's matches: 1X2, BTTS, Over/Under 2.5 and correct score probabilities from real data. For informational purposes only." />
+        <meta property="og:title" content="AI Football Predictions Today | ProPredict" />
+        <meta property="og:description" content="AI football predictions for today's matches: 1X2, BTTS, Over/Under 2.5 and correct score probabilities from real data." />
+        <link rel="canonical" href="https://propredict.me/ai-predictions" />
         <meta property="og:image" content="https://propredict.me/og-image.png" />
         <meta property="og:url" content="https://propredict.me/ai-predictions" />
         <meta property="og:type" content="website" />

@@ -34,11 +34,11 @@ export function AIHeroBanner({ day, onDayChange }: AIHeroBannerProps) {
               Smart data. Higher probability.
             </p>
             <h1 className="mt-1 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl md:text-5xl">
-              <span className="text-primary">AI</span> Predictions
+              <span className="text-primary">AI</span> Football Predictions
             </h1>
-            <p className="mt-1.5 text-sm font-bold text-white/90 md:text-lg">AI-powered match analysis</p>
+            <p className="mt-1.5 text-sm font-bold text-white/90 md:text-lg">AI-powered match analysis for today and tomorrow</p>
             <p className="mt-1.5 max-w-xl text-[11px] leading-relaxed text-white/65 md:text-sm">
-              Advanced AI algorithms analyze form, stats, head-to-head, odds and more to give you the most accurate predictions.
+              Our AI football predictions analyze team form, stats, head-to-head and odds to estimate 1X2, Over/Under 2.5, BTTS and correct score probabilities for every match.
             </p>
           </div>
 
