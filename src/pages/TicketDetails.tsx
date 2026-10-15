@@ -63,8 +63,9 @@ export default function TicketDetails() {
   const ticket = tickets.find((t) => t.id === id);
   const isUnlocking = unlockingId === id;
 
-  // Share URL
-  const shareUrl = `https://propredict.me/tickets/${id}`;
+  // Share URL (base) — each network gets its own utm_source tag
+  const baseShareUrl = `https://propredict.me/tickets/${id}`;
+  const shareUrl = withUtm(baseShareUrl, "share", "ticket");
   const shareText = ticket 
     ? `Check out this AI prediction: ${ticket.title} on ProPredict!` 
     : "Check out this AI prediction on ProPredict!";
@@ -89,22 +90,22 @@ export default function TicketDetails() {
   };
 
   const handleTwitterShare = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(withUtm(baseShareUrl, "x", "ticket"))}`;
     openUrl(url);
   };
 
   const handleFacebookShare = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(withUtm(baseShareUrl, "facebook", "ticket"))}`;
     openUrl(url);
   };
 
   const handleWhatsAppShare = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${withUtm(baseShareUrl, "whatsapp", "ticket")}`)}`;
     openUrl(url);
   };
 
   const handleTelegramShare = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(withUtm(baseShareUrl, "telegram", "ticket"))}&text=${encodeURIComponent(shareText)}`;
     openUrl(url);
   };
 
