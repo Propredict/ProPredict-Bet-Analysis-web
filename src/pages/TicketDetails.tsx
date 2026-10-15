@@ -18,6 +18,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { cn } from "@/lib/utils";
+import { withUtm } from "@/lib/shareContent";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
 import { toast } from "sonner";
@@ -116,7 +117,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: shareUrl,
+          url: withUtm(baseShareUrl, "instagram", "ticket"),
         });
         return;
       } catch (err) {
@@ -140,7 +141,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: shareUrl,
+          url: withUtm(baseShareUrl, "tiktok", "ticket"),
         });
         return;
       } catch (err) {
