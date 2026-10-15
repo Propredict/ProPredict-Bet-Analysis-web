@@ -1,5 +1,14 @@
 import { toast } from "sonner";
 
+/**
+ * Appends UTM source tags to a share URL so we can see which
+ * network (Facebook, WhatsApp, Telegram...) brings visitors back.
+ */
+export function withUtm(url: string, source: string, campaign = "share"): string {
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}utm_source=${encodeURIComponent(source)}&utm_medium=social&utm_campaign=${encodeURIComponent(campaign)}`;
+}
+
 export async function shareContent(title: string, text: string, url: string) {
   if (navigator.share) {
     try {
