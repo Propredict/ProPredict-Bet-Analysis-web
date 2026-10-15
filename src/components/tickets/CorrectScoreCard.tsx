@@ -1,5 +1,5 @@
 import { Lock, Crown, Share2 } from "lucide-react";
-import { shareContent } from "@/lib/shareContent";
+import { shareContent, withUtm } from "@/lib/shareContent";
 import { getFlagUrl } from "@/lib/countryFlags";
 import type { CSTicket } from "@/hooks/useCorrectScoreTickets";
 
@@ -36,7 +36,7 @@ export function CorrectScoreCard({ ticket, locked, onUnlock }: Props) {
     shareContent(
       "ProPredict Correct Score",
       `Correct Score picks ${date}: ${matches}`,
-      "https://propredict.me/correct-score"
+      withUtm("https://propredict.me/correct-score", "share", "correct_score")
     );
   };
 
