@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Ticket, Crown, Diamond, Target } from "lucide-react";
+import { Sparkles, Ticket, Crown, TicketCheck, Target } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,8 @@ const categories = [
   { label: "Daily Picks", icon: Sparkles, color: "text-primary", path: "/daily-tips" },
   { label: "Sure Odds 2+ Ticket", icon: Ticket, color: "text-primary", path: "/exclusive-tickets" },
   { label: "Premium Picks", icon: Crown, color: "text-primary", path: "/premium-tips" },
-  { label: "💎 Diamond Pick", icon: Diamond, color: "text-primary", path: "/diamond-pick" },
   { label: "🎯 Risk of the Day", icon: Target, color: "text-primary", path: "/risk-of-the-day" },
+  { label: "Premium Ticket", icon: TicketCheck, color: "text-primary", path: "/premium-tickets" },
 ];
 
 export function PicksCategoryModal({ open, onOpenChange }: Props) {
