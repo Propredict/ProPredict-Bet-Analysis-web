@@ -262,16 +262,17 @@ const Login = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">
-          <div className="text-center w-full space-y-1">
-            <p className="text-base font-semibold text-foreground">
-              {isSignUp
-                ? "Already have an account? / Već imaš profil?"
-                : "Don't have an account? / Nemaš profil?"}
+          <div className="text-center w-full space-y-2 border-t border-border pt-4">
+            <p className="text-xl sm:text-2xl font-bold tracking-tight text-foreground uppercase">
+              Don't have an account?
+            </p>
+            <p className="text-lg font-bold text-foreground">
+              Nemaš profil?
             </p>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline font-bold text-base"
+              className="text-primary hover:underline font-bold text-lg mt-1"
               disabled={isLoading}
             >
               {isSignUp
