@@ -141,8 +141,8 @@ export function TicketGroup({
                               </div>
                               <span className="hidden text-[9px] font-bold uppercase text-muted-foreground sm:block">vs</span>
                               <div className="flex min-w-0 items-center gap-1 sm:justify-start">
-                                <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
                                 <span className="min-w-0 whitespace-normal break-words text-[12px] font-extrabold leading-tight text-foreground sm:text-xl">{parsed.awayTeam}</span>
+                                <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" />
                               </div>
                             </div>
                             {isLocked ? (
