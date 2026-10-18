@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -6,6 +7,7 @@ import { useCorrectScoreTickets } from "@/hooks/useCorrectScoreTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { SupportButton } from "@/components/SupportButton";
+import { activeCorrectScoreTickets, correctScoreDate } from "@/lib/correctScoreExpiry";
 
 export default function CorrectScore() {
   const navigate = useNavigate();
@@ -14,9 +16,12 @@ export default function CorrectScore() {
   const { isAdmin } = useAdminAccess();
   const isPremium = isAdmin || plan === "premium";
 
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Belgrade" });
-  const visible = tickets.filter((t) => (t.ticket_date ?? "") >= today);
-  const list = visible.length ? visible : tickets.slice(0, 2);
+  const [today, setToday] = useState(() => correctScoreDate());
+  useEffect(() => {
+    const timer = window.setInterval(() => setToday(correctScoreDate()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const list = activeCorrectScoreTickets(tickets, today);
 
   return (
     <>
