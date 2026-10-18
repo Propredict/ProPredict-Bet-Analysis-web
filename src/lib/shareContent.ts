@@ -19,7 +19,7 @@ export async function shareContent(title: string, text: string, url: string) {
     }
   }
   try {
-    await navigator.clipboard.writeText(`${text} ${url}`);
+    await navigator.clipboard.writeText(`${text} ${url}`.trim());
     toast.success("Link copied to clipboard! / Link kopiran!");
   } catch {
     toast.error("Failed to share / Deljenje nije uspelo");
