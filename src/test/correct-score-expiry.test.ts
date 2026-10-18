@@ -4,8 +4,10 @@ import { activeCorrectScoreTickets, correctScoreDate } from "@/lib/correctScoreE
 describe("Correct Score expiry", () => {
   it("keeps a ticket dated the 15th on the 15th and removes it at Belgrade midnight on the 16th", () => {
     const tickets = [{ ticket_date: "2026-10-15" }];
-    expect(activeCorrectScoreTickets(tickets, correctScoreDate(new Date("2026-10-15T21:59:59Z"))))).toEqual(tickets);
-    expect(activeCorrectScoreTickets(tickets, correctScoreDate(new Date("2026-10-15T22:00:00Z"))))).toEqual([]);
+    const beforeMidnight = correctScoreDate(new Date("2026-10-15T21:59:59Z"));
+    const afterMidnight = correctScoreDate(new Date("2026-10-15T22:00:00Z"));
+    expect(activeCorrectScoreTickets(tickets, beforeMidnight)).toEqual(tickets);
+    expect(activeCorrectScoreTickets(tickets, afterMidnight)).toEqual([]);
   });
 
   it("does not bring back old tickets when no current tickets exist", () => {
