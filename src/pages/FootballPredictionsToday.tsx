@@ -109,8 +109,8 @@ export default function FootballPredictionsToday() {
       if (data && data.length > 0) setMatches(data as MatchPick[]);
     };
     fetchMatches();
-    // Re-fetch every 5 minutes to drop finished matches
-    const iv = setInterval(fetchMatches, 5 * 60 * 1000);
+    // Re-fetch every 15 minutes to drop finished matches (upcoming list, saves Disk IO)
+    const iv = setInterval(fetchMatches, 15 * 60 * 1000);
     return () => clearInterval(iv);
   }, []);
 

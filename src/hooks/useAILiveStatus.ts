@@ -25,8 +25,10 @@ export function useAILiveStatus() {
       if (error) throw error;
       return (data ?? []) as AIPrediction[];
     },
-    staleTime: 60_000, // 1 minute
-    refetchInterval: 60_000,
+    // The prediction list only changes when new predictions are generated;
+    // live scores themselves come from the fixtures feed, not this query.
+    staleTime: 10 * 60_000,
+    refetchInterval: 15 * 60_000,
   });
 
   // Create a lookup map by normalized team names

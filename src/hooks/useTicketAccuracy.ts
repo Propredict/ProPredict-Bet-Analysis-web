@@ -17,6 +17,9 @@ export function useTicketAccuracy() {
       if (error) throw error;
       return (data ?? []) as TicketAccuracy[];
     },
-    refetchInterval: 30_000,
+    // Accuracy only changes when finished tickets are settled — no need to
+    // re-run this aggregate view every 30s for every visitor (Disk IO).
+    staleTime: 10 * 60_000,
+    refetchInterval: 15 * 60_000,
   });
 }
