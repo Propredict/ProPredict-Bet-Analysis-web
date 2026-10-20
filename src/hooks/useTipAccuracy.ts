@@ -17,6 +17,8 @@ export function useTipAccuracy() {
       if (error) throw error;
       return (data ?? []) as TipAccuracy[];
     },
-    refetchInterval: 30_000, // auto refresh
+    // Finished-tip accuracy changes rarely — refresh slowly to save Disk IO.
+    staleTime: 10 * 60_000,
+    refetchInterval: 15 * 60_000,
   });
 }
