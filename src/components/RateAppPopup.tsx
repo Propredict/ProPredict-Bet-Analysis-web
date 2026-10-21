@@ -102,14 +102,14 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
           onMouseLeave={() => setHoveredStars(0)}
           onClick={() => handleStarSelect(star)}
           disabled={submitting}
-          className="transition-transform duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+          className="rounded-md outline-none transition-transform duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary active:scale-95 disabled:opacity-50"
           aria-label={`Rate ${star} stars`}
         >
           <Star
             className={`${size} transition-colors duration-200 ${
               star <= displayStars
                 ? "fill-warning text-warning drop-shadow-sm"
-                : "fill-muted text-border"
+                : "fill-card text-warning/60"
             }`}
           />
         </button>
