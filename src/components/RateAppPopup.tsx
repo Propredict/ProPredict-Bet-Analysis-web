@@ -134,7 +134,7 @@ export function RateAppPopup({ open, onClose, onSubmit, submitting }: RateAppPop
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
         data-rating-popup-open={open ? "true" : "false"}
-        className="w-[92vw] max-w-[360px] max-h-[95vh] gap-0 overflow-y-auto rounded-2xl border-2 border-primary/40 bg-card p-0 shadow-2xl shadow-primary/20 [&>button]:hidden"
+        className="w-[92vw] max-w-[360px] max-h-[95vh] gap-0 overflow-y-auto rounded-2xl border-2 border-primary/40 bg-card p-0 shadow-2xl shadow-primary/20 outline-none focus:outline-none focus-visible:ring-0 [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
