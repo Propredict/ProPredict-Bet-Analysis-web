@@ -123,6 +123,7 @@ export function useTickets(includeAll = false) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-accuracy"] });
     },
   });
 
@@ -169,6 +170,7 @@ export function useTickets(includeAll = false) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-accuracy"] });
     },
   });
 
@@ -183,6 +185,7 @@ export function useTickets(includeAll = false) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["global-win-rate"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-accuracy"] });
     },
   });
 
