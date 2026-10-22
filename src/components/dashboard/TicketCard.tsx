@@ -404,7 +404,7 @@ function TicketCard({
                      <TicketTeamCrest name={parsed.homeTeam} logo={findTicketTeamLogo(parsed.homeTeam, todayMatches)} size="sm" /><span className="min-w-0 whitespace-normal break-words sm:truncate">{parsed.homeTeam}</span>
                    </span>
                    <span className="hidden text-[9px] font-bold text-muted-foreground sm:block">vs</span>
-                   <span className="flex min-w-0 items-center gap-1 sm:justify-start text-[12px] font-bold leading-tight text-foreground sm:text-base">
+                   <span className="flex min-w-0 items-center gap-1 sm:flex-row-reverse sm:justify-end text-[12px] font-bold leading-tight text-foreground sm:text-base">
                      <TicketTeamCrest name={parsed.awayTeam} logo={findTicketTeamLogo(parsed.awayTeam, todayMatches)} size="sm" /><span className="min-w-0 whitespace-normal break-words sm:truncate">{parsed.awayTeam}</span>
                    </span>
                   </div>
