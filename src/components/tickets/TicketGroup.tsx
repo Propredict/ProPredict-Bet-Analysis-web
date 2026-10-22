@@ -70,7 +70,7 @@ export function TicketGroup({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-start">
+            <div className={tickets.length > 1 ? "grid grid-cols-1 gap-5 xl:grid-cols-2 xl:items-start" : "grid grid-cols-1 gap-5"}>
             {tickets.map((ticket, ticketIndex) => {
               const unlockMethod = getUnlockMethod(tier, "ticket", ticket.id);
               const isLocked = unlockMethod?.type !== "unlocked";
