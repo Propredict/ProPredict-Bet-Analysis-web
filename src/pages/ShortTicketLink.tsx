@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useTickets } from "@/hooks/useTickets";
 
@@ -17,6 +17,7 @@ export function todaysTicketsOfTier(tickets: any[], tier: string) {
 }
 
 export default function ShortTicketLink({ tier }: { tier: "premium" | "daily" }) {
+  const { search } = useLocation();
   const { n } = useParams<{ n?: string }>();
   const { tickets, isLoading } = useTickets(false);
   if (isLoading) {
@@ -30,5 +31,5 @@ export default function ShortTicketLink({ tier }: { tier: "premium" | "daily" })
   const idx = Math.max(0, (parseInt(n ?? "1", 10) || 1) - 1);
   const t = list[idx] ?? list[0];
   if (!t) return <Navigate to={tier === "premium" ? "/premium-tickets" : "/tickets"} replace />;
-  return <Navigate to={`/tickets/${t.id}`} replace />;
+  return <Navigate to={`/tickets/${t.id}${search}`} replace />;
 }

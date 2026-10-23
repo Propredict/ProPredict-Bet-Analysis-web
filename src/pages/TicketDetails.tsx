@@ -75,6 +75,7 @@ export default function TicketDetails() {
     return `https://propredict.me/${slug}${list.length > 1 ? `/${pos + 1}` : ""}`;
   })();
   const shareUrl = baseShareUrl;
+  const tagged = (src: string) => `${baseShareUrl}${baseShareUrl.includes("?") ? "&" : "?"}s=${src}`;
   const shareText = ticket 
     ? `Check out this AI prediction: ${ticket.title} on ProPredict!` 
     : "Check out this AI prediction on ProPredict!";
@@ -99,22 +100,22 @@ export default function TicketDetails() {
   };
 
   const handleTwitterShare = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(baseShareUrl)}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(tagged("x"))}`;
     openUrl(url);
   };
 
   const handleFacebookShare = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(baseShareUrl)}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(tagged("fb"))}`;
     openUrl(url);
   };
 
   const handleWhatsAppShare = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${baseShareUrl}`)}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${tagged("wa")}`)}`;
     openUrl(url);
   };
 
   const handleTelegramShare = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(baseShareUrl)}&text=${encodeURIComponent(shareText)}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(tagged("tg"))}&text=${encodeURIComponent(shareText)}`;
     openUrl(url);
   };
 
@@ -125,7 +126,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: baseShareUrl,
+          url: tagged("ig"),
         });
         return;
       } catch (err) {
@@ -149,7 +150,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: baseShareUrl,
+          url: tagged("tt"),
         });
         return;
       } catch (err) {
