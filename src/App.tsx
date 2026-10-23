@@ -37,6 +37,7 @@ const LiveScores = lazy(() => import("./pages/LiveScores"));
 const MyFavorites = lazy(() => import("./pages/MyFavorites"));
 
 const TicketDetails = lazy(() => import("./pages/TicketDetails"));
+const ShortTicketLink = lazy(() => import("./pages/ShortTicketLink"));
 const GetPremium = lazy(() => import("./pages/GetPremium"));
 const Settings = lazy(() => import("./pages/Settings"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -219,6 +220,10 @@ const App = () => {
                     <Route path="/live-scores" element={<LiveScores />} />
                     <Route path="/favorites" element={<MyFavorites />} />
                     <Route path="/winning-history" element={<Navigate to="/" replace />} />
+                    <Route path="/premium-ticket" element={<ShortTicketLink tier="premium" />} />
+                    <Route path="/premium-ticket/:n" element={<ShortTicketLink tier="premium" />} />
+                    <Route path="/free-ticket" element={<ShortTicketLink tier="daily" />} />
+                    <Route path="/free-ticket/:n" element={<ShortTicketLink tier="daily" />} />
                     <Route path="/tickets/:id" element={<TicketDetails />} />
                     <Route path="/tickets" element={<Tickets />} />
                     <Route path="/get-premium" element={<GetPremium />} />

@@ -18,7 +18,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUnlockHandler } from "@/hooks/useUnlockHandler";
 import { cn } from "@/lib/utils";
-import { withUtm } from "@/lib/shareContent";
+import { todaysTicketsOfTier } from "@/pages/ShortTicketLink";
 import { parseMatchName } from "@/types/admin";
 import { formatCombinedOdds } from "@/lib/formatOdds";
 import { toast } from "sonner";
@@ -65,8 +65,16 @@ export default function TicketDetails() {
   const isUnlocking = unlockingId === id;
 
   // Share URL (base) — each network gets its own utm_source tag
-  const baseShareUrl = `https://propredict.me/tickets/${id}`;
-  const shareUrl = withUtm(baseShareUrl, "share", "ticket");
+  const baseShareUrl = (() => {
+    if (!ticket) return `https://propredict.me/tickets/${id}`;
+    const slug = ticket.tier === "premium" ? "premium-ticket" : ticket.tier === "daily" ? "free-ticket" : null;
+    if (!slug) return `https://propredict.me/tickets/${id}`;
+    const list = todaysTicketsOfTier(tickets, ticket.tier);
+    const pos = list.findIndex((t) => t.id === ticket.id);
+    if (pos < 0) return `https://propredict.me/tickets/${id}`;
+    return `https://propredict.me/${slug}${list.length > 1 ? `/${pos + 1}` : ""}`;
+  })();
+  const shareUrl = baseShareUrl;
   const shareText = ticket 
     ? `Check out this AI prediction: ${ticket.title} on ProPredict!` 
     : "Check out this AI prediction on ProPredict!";
@@ -91,22 +99,22 @@ export default function TicketDetails() {
   };
 
   const handleTwitterShare = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(withUtm(baseShareUrl, "x", "ticket"))}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(baseShareUrl)}`;
     openUrl(url);
   };
 
   const handleFacebookShare = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(withUtm(baseShareUrl, "facebook", "ticket"))}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(baseShareUrl)}`;
     openUrl(url);
   };
 
   const handleWhatsAppShare = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${withUtm(baseShareUrl, "whatsapp", "ticket")}`)}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${baseShareUrl}`)}`;
     openUrl(url);
   };
 
   const handleTelegramShare = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(withUtm(baseShareUrl, "telegram", "ticket"))}&text=${encodeURIComponent(shareText)}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(baseShareUrl)}&text=${encodeURIComponent(shareText)}`;
     openUrl(url);
   };
 
@@ -117,7 +125,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: withUtm(baseShareUrl, "instagram", "ticket"),
+          url: baseShareUrl,
         });
         return;
       } catch (err) {
@@ -141,7 +149,7 @@ export default function TicketDetails() {
         await navigator.share({
           title: ticket?.title || "ProPredict Prediction",
           text: shareText,
-          url: withUtm(baseShareUrl, "tiktok", "ticket"),
+          url: baseShareUrl,
         });
         return;
       } catch (err) {
