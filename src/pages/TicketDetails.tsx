@@ -75,6 +75,7 @@ export default function TicketDetails() {
     return `https://propredict.me/${slug}${list.length > 1 ? `/${pos + 1}` : ""}`;
   })();
   const shareUrl = baseShareUrl;
+  const tagged = (src: string) => `${baseShareUrl}${baseShareUrl.includes("?") ? "&" : "?"}s=${src}`;
   const shareText = ticket 
     ? `Check out this AI prediction: ${ticket.title} on ProPredict!` 
     : "Check out this AI prediction on ProPredict!";
