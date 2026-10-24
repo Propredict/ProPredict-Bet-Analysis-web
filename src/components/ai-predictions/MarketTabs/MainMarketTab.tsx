@@ -360,15 +360,18 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
               pick.type === "draw" ? "draw" : null;
             const displayPct = headlineOutcome === item.outcome ? pick.conf : item.pct;
             // Highlight the outcome our model rates highest (normalised 1X2 probabilities).
-            const predictedOutcome = (() => {
-              const h = allProbs.home_win;
-              const d = allProbs.draw;
-              const a = allProbs.away_win;
-              if (h >= d && h >= a) return "home";
-              if (a >= d && a >= h) return "away";
-              return "draw";
-            })();
+            // Even match: home and away within 2 points (and the headline is not a
+            // home/away win) -> highlight X in blue instead. Display only.
+            const h = allProbs.home_win;
+            const d = allProbs.draw;
+            const a = allProbs.away_win;
+            const isEven = Math.abs(h - a) <= 2 && headlineOutcome !== "home" && headlineOutcome !== "away";
+            const predictedOutcome = isEven ? "draw"
+              : (h >= d && h >= a) ? "home"
+              : (a >= d && a >= h) ? "away"
+              : "draw";
             const isSelected = predictedOutcome === item.outcome;
+            const isEvenDraw = isSelected && isEven;
             const fairOdds = displayPct > 0 ? (100 / displayPct).toFixed(2) : "—";
 
             return (
@@ -376,7 +379,9 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
                 key={item.outcome}
                 className={cn(
                   "min-w-0 text-center rounded-xl transition-all",
-                  isSelected
+                  isEvenDraw
+                    ? "flex-[1.35] border-2 border-primary bg-primary/10 px-2 py-3 md:py-4 shadow-md shadow-primary/15"
+                    : isSelected
                     ? "flex-[1.35] border-2 border-success bg-success/10 px-2 py-3 md:py-4 shadow-md shadow-success/15"
                     : "flex-1 border border-border/40 bg-card px-1 py-2 md:py-2.5"
                 )}
