@@ -415,7 +415,7 @@ export function MainMarketTab({ prediction, hasAccess, displayTier = "free", hid
                     "tabular-nums leading-none",
                     isSelected ? "text-2xl md:text-4xl font-black" : "text-base md:text-xl font-extrabold",
                     !hasAccess && "blur-[5px] select-none",
-                    isSelected ? "text-success" : "text-foreground/80"
+                    isEvenDraw ? "text-primary" : isSelected ? "text-success" : "text-foreground/80"
                   )}>
                     {displayPct}%
                   </span>
