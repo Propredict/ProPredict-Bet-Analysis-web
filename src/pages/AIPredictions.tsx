@@ -1073,10 +1073,10 @@ export default function AIPredictions() {
                   </div>
                   <Button
                     onClick={() => navigate("/login")}
-                    className="gap-2 px-6 h-10 text-sm font-semibold"
+                    className="gap-2 px-4 sm:px-6 h-auto min-h-10 py-2 text-sm font-semibold whitespace-normal text-center leading-snug max-w-full"
                   >
-                    <LogIn className="w-4 h-4" />
-                    Sign In for FREE Access / Uloguj se za BESPLATAN pristup
+                    <LogIn className="w-4 h-4 shrink-0" />
+                    <span>Sign In for FREE Access / Uloguj se za BESPLATAN pristup</span>
                   </Button>
                   <p className="text-[10px] text-muted-foreground/60">
                     Free predictions available instantly after sign in / Besplatne predikcije dostupne odmah nakon prijave
