@@ -1,3 +1,4 @@
 - Prediction engine v7 lives in `supabase/functions/_shared/predictionEngineV7.ts` + `leaguePriorityV7.ts` (pure TS, shared by generator and dry-run) — one engine is the single source of truth for all markets.
 - Correct Score public-page expiry uses the shared date/filter helper and a live date refresh; preserve admin records rather than deleting stored tickets to avoid destructive cleanup.
 - Only live-match data may poll fast (live scores, goal checks); client queries for finished/upcoming data from the database refresh at 15 min or slower — Supabase Disk IO budget is the bottleneck.
+- Web `/` renders the dashboard for signed-out visitors (locked content prompts sign-in); only the Android app redirects signed-out users to `/login` — so search/social visitors land on content, not a login wall.

@@ -76,6 +76,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 import { AndroidAuthGate } from "./components/AndroidAuthGate";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,7 +96,10 @@ function RootEntry() {
     return <div className="flex min-h-[60vh] items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   }
 
-  return user ? <Index /> : <Navigate to="/login" replace />;
+  // Web: guests see the dashboard (locked content prompts sign-in).
+  // Android app: unchanged — signed-out users still go to /login.
+  if (!user && getIsAndroidApp()) return <Navigate to="/login" replace />;
+  return <Index />;
 }
 
 const App = () => {
