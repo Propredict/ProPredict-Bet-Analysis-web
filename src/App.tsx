@@ -76,6 +76,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { UserPlanProvider } from "./hooks/useUserPlan";
 import { AndroidAuthGate } from "./components/AndroidAuthGate";
+import { getIsAndroidApp } from "@/hooks/usePlatform";
 
 const queryClient = new QueryClient({
   defaultOptions: {
