@@ -60,6 +60,7 @@ const LeagueStatistics = lazy(() => import("./pages/LeagueStatistics"));
 const MatchPreviews = lazy(() => import("./pages/MatchPreviews"));
 const LiveChat = lazy(() => import("./pages/LiveChat"));
 const MatchPreviewDetail = lazy(() => import("./pages/MatchPreviewDetail"));
+const SeoPredictionsPage = lazy(() => import("./pages/SeoPredictionsPage"));
 
 // Admin - lazy loaded
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -212,8 +213,6 @@ const App = () => {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/unsubscribe" element={<Unsubscribe />} />
 
-                  {/* Legacy landing URL now enters the app directly */}
-                  <Route path="/football-predictions-today" element={<Navigate to="/" replace />} />
 
                   {/* Layout pages */}
                   <Route element={<AppLayout />}>
@@ -255,6 +254,10 @@ const App = () => {
                     <Route path="/match-preview/:matchId" element={<MatchPreviewDetail />} />
                     <Route path="/risk-of-the-day" element={<NavigateWithSearch to="/single-tips?view=risk" />} />
                     <Route path="/diamond-pick" element={<NavigateWithSearch to="/single-tips?view=diamond" />} />
+                    {/* Public search landing pages (show existing AI predictions) */}
+                    <Route path="/football-predictions-today" element={<SeoPredictionsPage variant="today" />} />
+                    <Route path="/btts-predictions-today" element={<SeoPredictionsPage variant="btts" />} />
+                    <Route path="/over-2-5-goals-predictions" element={<SeoPredictionsPage variant="over25" />} />
                     
 
                     {/* Protected */}
