@@ -223,6 +223,21 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
           )}
         </div>
 
+        {/* Popular prediction pages — web only (search landing pages) */}
+        {!isAndroidApp && (
+          <nav aria-label="Popular predictions" className="mb-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {[
+              { label: "Football Predictions Today", path: "/football-predictions-today" },
+              { label: "BTTS Predictions Today", path: "/btts-predictions-today" },
+              { label: "Over 2.5 Goals Predictions", path: "/over-2-5-goals-predictions" },
+            ].map((link) => (
+              <Link key={link.path} to={link.path} className="text-xs font-semibold text-white/80 transition-colors hover:text-white sm:text-sm">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+
         {/* Legal Links */}
         <div className="mb-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           {legalLinks.map((link) => (
