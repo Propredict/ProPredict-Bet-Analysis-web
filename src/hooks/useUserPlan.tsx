@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getIsMobileApp } from "@/hooks/usePlatform";
+import { guestCanView } from "@/lib/guestAccess";
 import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { useDailyTicketUnlock } from "@/hooks/useDailyTicketUnlock";
 import { getPendingAdUnlock, clearPendingAdUnlock } from "@/hooks/pendingAdUnlock";
@@ -294,7 +295,7 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
 
       // Web guests can view Free / Daily tips and tickets without an account.
       // (AI prediction cards add their own sign-in requirement on top.)
-      if (!user && !isMobileApp && (tier === "free" || tier === "daily")) {
+      if (!user && guestCanView(tier, isMobileApp)) {
         return true;
       }
 
