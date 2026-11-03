@@ -290,20 +290,26 @@ export function UserPlanProvider({ children }: { children: ReactNode }) {
     (tier: ContentTier, contentType?: ContentType, contentId?: string) => {
       if (isAdmin) return true;
 
-      // Free tier: guests must sign in first
+      const isMobileApp = getIsMobileApp();
+
+      // Web guests can view Free / Daily tips and tickets without an account.
+      // (AI prediction cards add their own sign-in requirement on top.)
+      if (!user && !isMobileApp && (tier === "free" || tier === "daily")) {
+        return true;
+      }
+
+      // Free tier: guests must sign in first (Android)
       if (tier === "free") {
         if (!user) return false;
         return true;
       }
 
-      const isMobileApp = getIsMobileApp();
-
       // Daily tier access rules:
-      // - Guests (not logged in): Must sign in first (both web & Android)
+      // - Guests: web sees it (rule above); Android must sign in first
       // - WEB (logged in): Always accessible (monetized via AdSense)
       // - ANDROID: Requires Pro/Premium OR ad-unlock (checked via isContentUnlocked)
       if (tier === "daily") {
-        // Guests must sign in to access daily content
+        // Android guests must sign in to access daily content
         if (!user) return false;
 
         // Web: accessible once logged in

@@ -141,10 +141,13 @@ const AIPredictionCardInner = ({
   const isDailyTier = displayTier === "free";
 
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
+  // AI predictions still require sign-in for guests (only tips/tickets are open to web guests)
   const hasAccess = forceLocked
     ? false
-    : forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
-  const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
+    : forceUnlocked || (isAuthenticated && canAccess(contentTier, "tip", prediction.id!));
+  const unlockMethod: UnlockMethod | null = !isAuthenticated && !forceUnlocked
+    ? { type: "login_required", message: "Sign in to unlock" }
+    : getUnlockMethod(contentTier, "tip", prediction.id!);
 
   // Step 4 — "Strong Signal" badge: confidence >= 80 AND xG diff >= 0.8.
   // xG diff is encoded by the backend in key_factors as `step2_xg:H|A|Δ`.
