@@ -1056,7 +1056,8 @@ export default function AIPredictions() {
               </div>
             </div>
 
-            {!isAuthenticated && !planLoading ? (
+            {/* Web guests see Free predictions; only the Android app keeps the sign-in gate */}
+            {!isAuthenticated && !planLoading && isAndroidApp ? (
               /* Guest login gate - only for free predictions */
               <Card className="p-6 md:p-10 text-center border-primary/20 bg-gradient-to-br from-primary/5 via-card to-primary/5">
                 <div className="max-w-sm mx-auto space-y-4">

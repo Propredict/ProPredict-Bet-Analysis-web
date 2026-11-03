@@ -187,7 +187,7 @@ export default function SeoPredictionsPage({ variant }: { variant: SeoPageVarian
           <Link to="/login" className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-secondary p-4 transition-colors hover:border-primary">
             <LogIn className="h-5 w-5 shrink-0 text-primary" />
             <span className="flex-1 text-sm font-semibold text-foreground">
-              Sign in for free to see today's free picks / Uloguj se besplatno da vidiš današnje besplatne predikcije
+              Free picks are open to everyone — sign in free to save favourites / Besplatne predikcije su otvorene svima — uloguj se besplatno za omiljene utakmice
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
           </Link>
@@ -207,7 +207,7 @@ export default function SeoPredictionsPage({ variant }: { variant: SeoPageVarian
           ) : items.length > 0 ? (
             <ul className="space-y-3">
               {items.map((item) => {
-                const unlocked = isAuthenticated && canAccess(TIER_TO_CONTENT[item.tier], "tip", item.prediction.id);
+                const unlocked = canAccess(TIER_TO_CONTENT[item.tier], "tip", item.prediction.id);
                 const target = lockedTarget(item.tier);
                 return <PredictionRow key={item.prediction.id} item={item} unlocked={unlocked} lockedTo={target.to} lockedText={target.text} />;
               })}
