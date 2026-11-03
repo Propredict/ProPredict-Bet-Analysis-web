@@ -53,7 +53,7 @@ function isBigMatch(league: string | null, home: string, away: string): boolean 
 }
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUserPlan, type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
 import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
@@ -105,7 +105,7 @@ const AIPredictionCardInner = ({
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
-  const { getUnlockMethod, canAccess } = useUserPlan();
+  const { getUnlockMethod, canAccess, isAuthenticated } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
   // Not-yet-analysed rows (placeholder probabilities, "Pending regeneration…")
@@ -141,10 +141,13 @@ const AIPredictionCardInner = ({
   const isDailyTier = displayTier === "free";
 
   const contentTier: ContentTier = isPremiumTier ? "premium" : isProTier ? "exclusive" : "daily";
+  // AI predictions still require sign-in for guests (only tips/tickets are open to web guests)
   const hasAccess = forceLocked
     ? false
-    : forceUnlocked || canAccess(contentTier, "tip", prediction.id!);
-  const unlockMethod = getUnlockMethod(contentTier, "tip", prediction.id!);
+    : forceUnlocked || (isAuthenticated && canAccess(contentTier, "tip", prediction.id!));
+  const unlockMethod: UnlockMethod | null = !isAuthenticated && !forceUnlocked
+    ? { type: "login_required", message: "Sign in to unlock" }
+    : getUnlockMethod(contentTier, "tip", prediction.id!);
 
   // Step 4 — "Strong Signal" badge: confidence >= 80 AND xG diff >= 0.8.
   // xG diff is encoded by the backend in key_factors as `step2_xg:H|A|Δ`.
