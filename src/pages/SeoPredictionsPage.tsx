@@ -207,7 +207,7 @@ export default function SeoPredictionsPage({ variant }: { variant: SeoPageVarian
           ) : items.length > 0 ? (
             <ul className="space-y-3">
               {items.map((item) => {
-                const unlocked = canAccess(TIER_TO_CONTENT[item.tier], "tip", item.prediction.id);
+                const unlocked = isAuthenticated && canAccess(TIER_TO_CONTENT[item.tier], "tip", item.prediction.id);
                 const target = lockedTarget(item.tier);
                 return <PredictionRow key={item.prediction.id} item={item} unlocked={unlocked} lockedTo={target.to} lockedText={target.text} />;
               })}

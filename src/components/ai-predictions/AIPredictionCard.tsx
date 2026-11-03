@@ -53,7 +53,7 @@ function isBigMatch(league: string | null, home: string, away: string): boolean 
 }
 import { cn } from "@/lib/utils";
 import type { AIPrediction } from "@/hooks/useAIPredictions";
-import { useUserPlan, type ContentTier } from "@/hooks/useUserPlan";
+import { useUserPlan, type ContentTier, type UnlockMethod } from "@/hooks/useUserPlan";
 import { usePlatform } from "@/hooks/usePlatform";
 import { MainMarketTab } from "./MarketTabs/MainMarketTab";
 import { GoalsMarketTab } from "./MarketTabs/GoalsMarketTab";
@@ -105,7 +105,7 @@ const AIPredictionCardInner = ({
 }: Props) => {
   const navigate = useNavigate();
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
-  const { getUnlockMethod, canAccess } = useUserPlan();
+  const { getUnlockMethod, canAccess, isAuthenticated } = useUserPlan();
   const { isAndroidApp } = usePlatform();
 
   // Not-yet-analysed rows (placeholder probabilities, "Pending regeneration…")
