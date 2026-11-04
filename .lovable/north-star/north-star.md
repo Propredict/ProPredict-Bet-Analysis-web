@@ -2,7 +2,7 @@
 
 # Zvezda vodilja
 
-Kladioničari dobijaju pouzdane tipove za današnje utakmice.
+Fudbalski navijači dobijaju pouzdane predikcije za današnje utakmice.
 
 ## Metrika
 
