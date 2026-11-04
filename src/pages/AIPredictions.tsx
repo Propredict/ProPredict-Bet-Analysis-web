@@ -1239,10 +1239,9 @@ export default function AIPredictions() {
                           </div>
                         ))
                     ) : (
-                      /* Web: show 3 teaser cards */
+                      /* Web: show every Pro card (match name visible, pick locked) */
                       featuredPredictions
                         .filter(p => getPredictionTier(p) === "pro")
-                        .slice(0, 3)
                         .map((prediction) => {
                           // Use the same probability used for tier assignment (not raw confidence)
                           const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
@@ -1310,12 +1309,7 @@ export default function AIPredictions() {
                         );})
                     )}
                   </div>
-                  {/* Web only: show "+X more" and Premium hint */}
-                  {!isAndroidApp && tierCounts.pro > 3 && (
-                    <p className="text-center text-[10px] text-blue-400/70 mt-2">
-                      +{tierCounts.pro - 3} more premium picks available / +{tierCounts.pro - 3} dodatnih premium izbora dostupno
-                    </p>
-                  )}
+                  {/* Web only: Premium hint */}
                   {!isAndroidApp && (
                     <div className="mt-2 flex items-center gap-1.5 py-1.5 px-2 rounded-md bg-blue-500/5 border border-blue-500/10">
                       <Crown className="w-3 h-3 text-blue-400" />
@@ -1355,10 +1349,7 @@ export default function AIPredictions() {
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 md:gap-2">
-                    {(isAndroidApp
-                      ? featuredPredictions.filter(p => getPredictionTier(p) === "premium")
-                      : featuredPredictions.filter(p => getPredictionTier(p) === "premium").slice(0, 3)
-                    ).map((prediction) => {
+                    {featuredPredictions.filter(p => getPredictionTier(p) === "premium").map((prediction) => {
                       // Use the same probability used for tier assignment (≥85% for Premium)
                       const displayedPct = Math.max(prediction.confidence ?? 0, getBestMarketProbability(prediction));
                       return (
@@ -1416,11 +1407,6 @@ export default function AIPredictions() {
                       );
                     })}
                   </div>
-                  {!isAndroidApp && tierCounts.premium > 3 && (
-                    <p className="text-center text-[10px] text-blue-400/70 mt-2">
-                      +{tierCounts.premium - 3} more Premium picks available
-                    </p>
-                  )}
                 </div>
               )}
             </div>
