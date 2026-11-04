@@ -5,6 +5,7 @@
 - [ ] Diagnose and correct Nations League fixture priority across AI Predictions and Top 10 without inventing matches.
 
 ## Done
+- [x] Web: guests/Free users see all 15 Pro and 15 Premium AI prediction cards (match names, locked picks); Android app keeps mandatory sign-in
 - [x] Redesign Get Premium page to match reference image 1 (dark stadium hero, crown, violet-bordered Premium card) + expand FAQ to 5 questions (billing/revenue + contact support)
 - [x] v7 engine activation (SQL files run by user in Supabase)
 - [x] World Cup content + win-push notifications disabled
