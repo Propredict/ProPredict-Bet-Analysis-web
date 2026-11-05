@@ -35,7 +35,7 @@ const COPY: Record<SeoPageVariant, PageCopy> = {
       "Our AI analyses each fixture with an expected-goals model and turns it into probabilities for 1X2, both teams to score and Over/Under 2.5. The strongest market becomes the main pick. Nations League and top European leagues come first.",
     faq: [
       { q: "How often are the predictions updated?", a: "Predictions are generated every day for that day's fixtures and refreshed before kick-off when new data arrives." },
-      { q: "Are the predictions free?", a: "The 3 strongest predictions of the day are free after a quick sign-in. Pro and Premium members see all published picks." },
+      { q: "Are the predictions free?", a: "The 3 strongest predictions of the day are free for everyone, no sign-in needed. Pro and Premium members see all published picks." },
       { q: "What does the percentage mean?", a: "It is the AI's probability for that outcome, based on xG, form and home/away data. Higher means the model is more confident." },
     ],
   },
