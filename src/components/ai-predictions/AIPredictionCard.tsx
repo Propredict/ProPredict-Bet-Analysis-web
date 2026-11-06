@@ -454,7 +454,9 @@ const AIPredictionCardInner = ({
               <CollapsibleContent>
                 <div className="mt-1 md:mt-1.5 p-1.5 md:p-2 bg-secondary rounded space-y-1.5 md:space-y-2">
                   <p className="text-[9px] md:text-[10px] text-muted-foreground leading-relaxed">
-                    {prediction.analysis}
+                    {/* Drop the stored "Main pick … X% confidence." sentence — the card header
+                        already shows the pick and its probability, so a second number can disagree. */}
+                    {prediction.analysis.replace(/^\s*Main pick:[^.]*?\d+% confidence\.\s*/i, "")}
                   </p>
                    {prediction.key_factors && prediction.key_factors.length > 0 && (
                      <div className="flex flex-wrap gap-0.5">
