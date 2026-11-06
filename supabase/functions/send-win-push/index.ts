@@ -200,6 +200,11 @@ serve(async (req) => {
     let navPath: string;
     if (type === "wc_pick") {
       navPath = `/world-cup-2026?tab=predictions&highlight=${record.id}&result=won`;
+    } else if (
+      category === "correct_score" ||
+      /^correct score/i.test(String(record.title ?? ""))
+    ) {
+      navPath = `/correct-score?highlight=${record.id}&result=won`;
     } else if (category && categoryRouteMap[category]) {
       navPath = `${categoryRouteMap[category]}?highlight=${record.id}&result=won`;
     } else {
