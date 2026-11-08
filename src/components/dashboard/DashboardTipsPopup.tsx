@@ -63,7 +63,7 @@ export function DashboardTipsPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[340px] p-0 gap-0 overflow-hidden rounded-2xl border border-primary/40 bg-sidebar text-sidebar-foreground shadow-2xl shadow-primary/15 [&>button]:hidden">
+      <DialogContent className="!flex flex-col w-[92vw] max-w-[340px] h-auto min-h-[200px] max-h-[95vh] overflow-y-auto !animate-none data-[state=open]:!animate-none p-0 gap-0 rounded-2xl border border-primary/40 bg-sidebar text-sidebar-foreground shadow-2xl shadow-primary/15 [&>button]:hidden">
         {/* Top glow line */}
         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         {/* Header */}
