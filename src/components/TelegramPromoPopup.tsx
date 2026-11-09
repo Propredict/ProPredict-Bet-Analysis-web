@@ -81,7 +81,7 @@ export function TelegramPromoPopup() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-sm rounded-3xl overflow-hidden animate-scale-in"
+        className="relative w-full max-w-sm rounded-3xl overflow-hidden"
         style={{
           background: "linear-gradient(160deg, #1c92d2 0%, #0c5d9e 55%, #062f4e 100%)",
           boxShadow: "0 30px 60px -15px rgba(12,93,158,0.55), 0 0 0 1px rgba(255,255,255,0.08)",
