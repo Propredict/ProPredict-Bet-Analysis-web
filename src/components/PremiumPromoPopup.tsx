@@ -125,7 +125,7 @@ export function PremiumPromoPopup() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="relative w-full max-w-sm max-h-[95vh] overflow-y-auto rounded-3xl animate-scale-in"
+        className="relative w-full max-w-sm max-h-[95vh] overflow-y-auto rounded-3xl"
         style={{
           background: "linear-gradient(165deg, #14264d 0%, #0b1a3a 55%, #060f24 100%)",
           boxShadow: "0 30px 70px -15px rgba(6,15,36,0.8), 0 0 0 1px rgba(255,255,255,0.08)",
