@@ -194,10 +194,10 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <span>Follow on Facebook</span>
           </a>
           <a
-            href="https://www.instagram.com/propredictt/"
+            href="https://www.instagram.com/propredictsoccer/"
             target="_blank"
             rel="noopener noreferrer"
-            onClick={openExternal("https://www.instagram.com/propredictt/")}
+            onClick={openExternal("https://www.instagram.com/propredictsoccer/")}
             aria-label="Follow us on Instagram"
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] px-4 py-2 text-[10px] font-bold text-white shadow-md shadow-[#DD2A7B]/30 transition-all hover:scale-105 hover:brightness-110 sm:text-xs"
           >
