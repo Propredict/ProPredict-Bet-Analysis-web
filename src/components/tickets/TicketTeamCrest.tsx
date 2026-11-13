@@ -1,3 +1,5 @@
+import { getFlagUrl } from "@/lib/countryFlags";
+
 type TicketTeamCrestProps = {
   name: string;
   logo?: string | null;
@@ -14,11 +16,12 @@ const initials = (name: string) =>
     .toUpperCase();
 
 export function TicketTeamCrest({ name, logo, size = "md" }: TicketTeamCrestProps) {
+  const src = logo || getFlagUrl(name, 80);
   const dimensions = size === "sm" ? "h-9 w-9 text-[10px]" : "h-11 w-11 text-xs";
 
   return (
     <div className={`flex ${dimensions} shrink-0 items-center justify-center overflow-hidden rounded-full border border-primary/25 bg-secondary font-extrabold text-primary shadow-sm`}>
-      {logo ? <img src={logo} alt={`${name} crest`} className="h-full w-full object-contain p-1" loading="lazy" /> : initials(name)}
+      {src ? <img src={src} alt={`${name} crest`} className="h-full w-full object-contain p-1" loading="lazy" /> : initials(name)}
     </div>
   );
 }

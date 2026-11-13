@@ -1,3 +1,4 @@
+import { getFlagUrl } from "@/lib/countryFlags";
 import { Lock, Loader2, LogIn, Sparkles, Star, Crown, Gift, CheckCircle2, Clock, XCircle, Target, CalendarDays, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,8 +115,8 @@ export function TipCard({ tip, isLocked, unlockMethod, onUnlockClick, onSecondar
     return home === wanted || home.includes(wanted) || wanted.includes(home) ? candidate.homeLogo : candidate.awayLogo;
   };
 
-  const homeLogo = findTeamLogo(tip.homeTeam, tip.homeLogo);
-  const awayLogo = findTeamLogo(tip.awayTeam, tip.awayLogo);
+  const homeLogo = findTeamLogo(tip.homeTeam, tip.homeLogo) || getFlagUrl(tip.homeTeam, 80);
+  const awayLogo = findTeamLogo(tip.awayTeam, tip.awayLogo) || getFlagUrl(tip.awayTeam, 80);
 
   const TeamCrest = ({ logo, name }: { logo?: string | null; name: string }) => (
     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-primary/25 bg-card shadow-sm sm:h-16 sm:w-16">
