@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { automaticTicketsEnabled, disabledGeneratorResponse } from "../_shared/manualContentPolicy.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -426,6 +427,9 @@ function pickRiskMatches(pool: Pred[], limit = 2): Pred[] {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  // Do not generate, wipe admin content, or notify from a legacy scheduled call.
+  if (!automaticTicketsEnabled()) return disabledGeneratorResponse(corsHeaders);
 
   try {
     const supabase = createClient(

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { automaticTicketsEnabled } from "../_shared/manualContentPolicy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -670,7 +671,7 @@ Deno.serve(async (req) => {
     // (e.g. unrecognized market label) or any match isn't finished yet, skip.
     let ticketsResolved = 0;
     let ticketsSkipped = 0;
-    if (!quotaExhausted) try {
+    if (automaticTicketsEnabled() && !quotaExhausted) try {
       const todayStr = formatDate(today);
       const { data: pendingTickets } = await supabase
         .from("tickets")

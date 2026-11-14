@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { automaticTicketsEnabled, disabledGeneratorResponse } from "../_shared/manualContentPolicy.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -832,6 +833,9 @@ serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  // Old schedules may still call this endpoint: exit before any reads or writes.
+  if (!automaticTicketsEnabled()) return disabledGeneratorResponse(corsHeaders);
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
