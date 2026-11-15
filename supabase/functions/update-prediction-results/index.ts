@@ -522,7 +522,10 @@ Deno.serve(async (req) => {
       arenaOrphanFound = orphanedArena?.length ?? 0;
       if (orphanFetchErr) orphanDiag.push(`fetch_error: ${orphanFetchErr.message}`);
 
-      if (orphanedArena && orphanedArena.length > 0) {
+      // Arena points are retired: resolving old arena picks only burned
+      // one API-Football request per pick, so this pass is switched off.
+      const ARENA_RESOLUTION_ENABLED = false;
+      if (ARENA_RESOLUTION_ENABLED && orphanedArena && orphanedArena.length > 0) {
         // Get team names from ai_predictions for notifications (best effort)
         const orphanMatchIds = [...new Set(orphanedArena.map((a: any) => a.match_id))];
         const { data: matchInfoData } = await supabase
