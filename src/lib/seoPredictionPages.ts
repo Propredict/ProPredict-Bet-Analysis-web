@@ -7,7 +7,10 @@ import {
 } from "@/components/ai-predictions/utils/marketDerivation";
 import { assignTiers, type Tier } from "@/components/ai-predictions/utils/tierAssignment";
 
-export type SeoPageVariant = "today" | "btts" | "over25";
+export type SeoPageVariant = "today" | "btts" | "over25" | "ucl";
+
+/** Exact provider name only, so CAF/AFC Champions League are never mixed in. */
+export const isUefaChampionsLeague = (league: string | null | undefined) => /^uefa champions league$/i.test((league ?? "").trim());
 
 export interface SeoPredictionItem {
   prediction: AIPrediction;
@@ -34,7 +37,9 @@ export function selectSeoPredictions(predictions: AIPrediction[], variant: SeoPa
     if (!tier) continue;
     if (p.result_status === "won" || p.result_status === "lost") continue;
 
-    if (variant === "today") {
+    if (variant === "ucl" && !isUefaChampionsLeague(p.league)) continue;
+
+    if (variant === "today" || variant === "ucl") {
       const best = getBestMarketPickWithLabel(p);
       items.push({ prediction: p, tier, label: best.label, pct: best.pct });
       continue;
@@ -47,7 +52,7 @@ export function selectSeoPredictions(predictions: AIPrediction[], variant: SeoPa
   }
 
   return items.sort((a, b) =>
-    variant === "today"
+    variant === "today" || variant === "ucl"
       ? TIER_ORDER[a.tier] - TIER_ORDER[b.tier] || b.pct - a.pct
       : b.pct - a.pct,
   );

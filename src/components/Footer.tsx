@@ -230,6 +230,7 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
               { label: "Football Predictions Today", path: "/football-predictions-today" },
               { label: "BTTS Predictions Today", path: "/btts-predictions-today" },
               { label: "Over 2.5 Goals Predictions", path: "/over-2-5-goals-predictions" },
+              { label: "Champions League Predictions", path: "/champions-league-predictions" },
             ].map((link) => (
               <Link key={link.path} to={link.path} className="text-xs font-semibold text-white/80 transition-colors hover:text-white sm:text-sm">
                 {link.label}

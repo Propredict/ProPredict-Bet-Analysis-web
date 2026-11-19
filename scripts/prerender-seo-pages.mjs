@@ -70,7 +70,32 @@ const PAGES = [
       { q: "How is this different from BTTS?", a: "Over 2.5 only counts total goals. A 3-0 win is Over 2.5 even though only one team scored. See our BTTS page for that market." },
     ],
   },
+  {
+    path: "/champions-league-predictions",
+    title: "Champions League Predictions Today – AI Picks | ProPredict",
+    description:
+      "AI predictions for UEFA Champions League matches: 1X2, BTTS and Over/Under 2.5 with real probabilities from xG and form data.",
+    h1: "Champions League Predictions",
+    intro:
+      "AI predictions for today's UEFA Champions League matches. Every pick comes from real match data — expected goals (xG), recent form, home and away records — and only matches with at least 65% probability are published.",
+    how:
+      "Our AI analyses each Champions League fixture with an expected-goals model and turns it into probabilities for 1X2, both teams to score and Over/Under 2.5. The strongest market becomes the main pick.",
+    faq: [
+      { q: "When are Champions League predictions available?", a: "On Champions League match days, usually Tuesday and Wednesday. On other days this page lists no matches." },
+      { q: "Are the predictions free?", a: "Free picks are open to everyone, no sign-in needed. Pro and Premium members see all published picks." },
+      { q: "What does the percentage mean?", a: "It is the AI's probability for that outcome, based on xG, form and home/away data. Higher means the model is more confident." },
+    ],
+  },
 ];
+
+// Old URLs Google still shows. A static redirect page tells Google the real address.
+const REDIRECTS = {
+  "/daily-analysis": "/single-tips?view=daily",
+  "/daily-predictions": "/tickets",
+  "/premium-tips": "/single-tips?view=premium",
+  "/premium-predictions": "/premium-tickets",
+  "/players": "/ai-predictions",
+};
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -141,4 +166,13 @@ for (const page of PAGES) {
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), renderPage(template, page));
   console.log(`[prerender] ${page.path} -> dist${page.path}/index.html`);
+}
+
+for (const [from, to] of Object.entries(REDIRECTS)) {
+  const target = `${SITE}${to}`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Redirecting…</title><link rel="canonical" href="${target}"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=${to}"><script>location.replace(${JSON.stringify(to)} + location.search.replace(/^\\?/, ${JSON.stringify(to.includes("?") ? "&" : "?")}).replace(/[?&]$/, ""));</script></head><body><a href="${to}">Continue</a></body></html>`;
+  const outDir = join(root, "dist", from.slice(1));
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, "index.html"), html);
+  console.log(`[prerender] redirect ${from} -> ${to}`);
 }

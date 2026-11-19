@@ -71,6 +71,22 @@ const COPY: Record<SeoPageVariant, PageCopy> = {
       { q: "How is this different from BTTS?", a: "Over 2.5 only counts total goals. A 3-0 win is Over 2.5 even though only one team scored. See our BTTS page for that market." },
     ],
   },
+  ucl: {
+    path: "/champions-league-predictions",
+    title: "Champions League Predictions Today – AI Picks | ProPredict",
+    description:
+      "AI predictions for UEFA Champions League matches: 1X2, BTTS and Over/Under 2.5 with real probabilities from xG and form data.",
+    h1: "Champions League Predictions",
+    intro:
+      "AI predictions for today's UEFA Champions League matches. Every pick comes from real match data — expected goals (xG), recent form, home and away records — and only matches with at least 65% probability are published.",
+    how:
+      "Our AI analyses each Champions League fixture with an expected-goals model and turns it into probabilities for 1X2, both teams to score and Over/Under 2.5. The strongest market becomes the main pick.",
+    faq: [
+      { q: "When are Champions League predictions available?", a: "On Champions League match days, usually Tuesday and Wednesday. On other days this page lists no matches." },
+      { q: "Are the predictions free?", a: "Free picks are open to everyone, no sign-in needed. Pro and Premium members see all published picks." },
+      { q: "What does the percentage mean?", a: "It is the AI's probability for that outcome, based on xG, form and home/away data. Higher means the model is more confident." },
+    ],
+  },
 };
 
 const TIER_TO_CONTENT: Record<Tier, ContentTier> = { free: "daily", pro: "exclusive", premium: "premium" };
@@ -215,7 +231,7 @@ export default function SeoPredictionsPage({ variant }: { variant: SeoPageVarian
           ) : (
             <div className="rounded-2xl border border-border bg-card p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                No matches qualify right now. Today's matches may already be finished — check tomorrow's picks in AI Predictions.
+                {variant === "ucl" ? "No Champions League matches with a qualifying pick today. See all of today's picks in AI Predictions." : <>No matches qualify right now. Today's matches may already be finished — check tomorrow's picks in AI Predictions.</>}
               </p>
               <Link to="/ai-predictions" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                 Open AI Predictions <ChevronRight className="h-4 w-4" />

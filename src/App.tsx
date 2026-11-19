@@ -258,6 +258,8 @@ const App = () => {
                     <Route path="/football-predictions-today" element={<SeoPredictionsPage variant="today" />} />
                     <Route path="/btts-predictions-today" element={<SeoPredictionsPage variant="btts" />} />
                     <Route path="/over-2-5-goals-predictions" element={<SeoPredictionsPage variant="over25" />} />
+                    <Route path="/champions-league-predictions" element={<SeoPredictionsPage variant="ucl" />} />
+                    <Route path="/players" element={<NavigateWithSearch to="/ai-predictions" />} />
                     
 
                     {/* Protected */}
