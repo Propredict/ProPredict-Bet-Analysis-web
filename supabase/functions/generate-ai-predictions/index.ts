@@ -9233,6 +9233,27 @@ serve(async (req: Request) => {
     // Parse request body
     const body = await req.json().catch(() => ({}));
 
+    // Security: admin-only modes require the service-role key or an admin user's JWT.
+    const ADMIN_ONLY = ["debug", "purgeFallbacks", "correctWorldCupOnly", "adminOverride", "adminScoreCache", "wcRegenerateNow"];
+    if (ADMIN_ONLY.some((k) => body?.[k] === true)) {
+      const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const srk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      let allowed = !!token && token === srk;
+      if (!allowed && token) {
+        const admin = createClient(Deno.env.get("SUPABASE_URL")!, srk);
+        const { data: u } = await admin.auth.getUser(token);
+        if (u?.user) {
+          const { data: isAdmin } = await admin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+          allowed = isAdmin === true;
+        }
+      }
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Debug mode - test API connectivity and DB state
     if (body.debug === true) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

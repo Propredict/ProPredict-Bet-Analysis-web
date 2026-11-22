@@ -1,3 +1,4 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { PasswordChangedEmail } from '../_shared/email-templates/password-changed.tsx'
@@ -17,7 +18,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json()
+    // Security: send only to the signed-in caller's own address.
+    const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
+    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!)
+    const { data: u } = await sb.auth.getUser(token)
+    const email = u?.user?.email
+    if (!email) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email is required' }), {

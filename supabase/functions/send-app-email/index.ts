@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,8 +75,16 @@ serve(async (req) => {
     let built: { subject: string; html: string };
 
     if (type === "welcome") {
-      if (!body?.email) throw new Error("email required");
-      to = [String(body.email)];
+      // Security: only a signed-in user can trigger a welcome email, and only to their own address.
+      const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+      const { data: u } = await sb.auth.getUser(token);
+      if (!u?.user?.email) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      to = [u.user.email];
       built = buildWelcome(String(body.name ?? ""));
     } else if (type === "contact") {
       to = [SUPPORT_INBOX];
