@@ -33,7 +33,8 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   const [searchParams] = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  // Monthly only — annual option removed
+  const period = "monthly" as const;
   const isAndroid = getIsAndroidApp();
 
   const planRequired = searchParams.get("plan_required");
@@ -42,9 +43,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   const features = premiumFeatures;
   const targetPlan: UserPlan = "premium";
 
-  // Pricing per period
-  const pricing = { monthly: "€2.29/mo", annual: "€119.99/yr", saveBadge: "Save 33%" };
-  const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
+  const currentPrice = "€2.29/mo";
 
   useEffect(() => {
     let frame: number | undefined;
@@ -172,37 +171,6 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
 
         {/* Sticky Bottom CTA */}
         <div className="p-4 pt-3 border-t border-border/30">
-          {/* Monthly / Annual toggle — Android only */}
-          {isAndroid && (
-            <div className="flex items-center justify-center gap-1 mb-3 p-1 rounded-lg bg-muted/50">
-              <button
-                onClick={() => setPeriod("monthly")}
-                className={cn(
-                  "flex-1 py-1.5 text-xs font-semibold rounded-md transition-all",
-                  period === "monthly"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setPeriod("annual")}
-                className={cn(
-                  "flex-1 py-1.5 text-xs font-semibold rounded-md transition-all relative",
-                  period === "annual"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Annual
-                <span className="ml-1 text-[10px] font-bold text-primary">
-                  {pricing.saveBadge}
-                </span>
-              </button>
-            </div>
-          )}
-
           <Button
             onClick={handleSelectPlan}
             disabled={currentPlan === targetPlan}
