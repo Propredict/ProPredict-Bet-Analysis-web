@@ -330,7 +330,7 @@ export default function GetPremium() {
   const isGoogleSubOnWeb = !isAndroidApp && subscriptionSource === "google_play" && currentPlan !== "free";
 
   // Both Android and Web now support monthly/annual toggle
-  const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans[billingPeriod];
+  const currentPlans = isAndroidApp ? androidPlans[billingPeriod] : webPlans.monthly;
 
   // Listen for RevenueCat purchase success on Android
   useEffect(() => {
@@ -445,7 +445,7 @@ export default function GetPremium() {
     <>
     <Helmet>
       <title>Get Premium – Upgrade Your Plan | ProPredict</title>
-      <meta name="description" content="Upgrade to Premium for full access to AI predictions, match previews, and ad-free experience. Flexible monthly and annual plans." />
+      <meta name="description" content="Upgrade to Premium for full access to AI predictions, match previews, and ad-free experience. Simple monthly plan." />
       <meta property="og:title" content="Get Premium – ProPredict" />
       <meta property="og:description" content="Upgrade for full access to AI predictions, match previews, and ad-free experience." />
       <meta property="og:image" content="https://propredict.me/og-image.png" />
@@ -557,7 +557,8 @@ export default function GetPremium() {
         </div>
       )}
 
-      {/* Billing Toggle - Both Web and Android */}
+      {/* Billing Toggle - Android only (web sells monthly only) */}
+      {isAndroidApp && (
       <div className="flex justify-center">
         <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card border border-border shadow-sm">
           <button
@@ -583,6 +584,7 @@ export default function GetPremium() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Pricing Cards — Premium only */}
       <div className="grid grid-cols-1 gap-4 items-stretch max-w-md mx-auto">
