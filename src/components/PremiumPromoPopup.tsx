@@ -10,7 +10,7 @@ import { useUserPlan } from "@/hooks/useUserPlan";
 import { toast } from "sonner";
 
 const SHOW_COUNT_KEY = "propredict:premium_popup_shows";
-const PREMIUM_MONTHLY_PRICE_ID = "price_1U7aifL8E849h6yxdv1QWtqC";
+const PREMIUM_MONTHLY_PRICE_ID = "price_1UewV2L8E849h6yxUfhk7dRP";
 const SHOW_DELAY_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_SHOWS_PER_DAY = 2;
 const PROMO_END = new Date("2026-10-28T23:00:00Z");
@@ -199,7 +199,7 @@ export function PremiumPromoPopup() {
             {promoActive && (
               <span className="text-sm font-bold text-red-400 line-through">€14.99</span>
             )}
-            <span className="text-2xl font-black text-white">{promoActive ? "€9.99" : "€14.99"}</span>
+            <span className="text-2xl font-black text-white">{promoActive ? "€9.99" : "€2.29"}</span>
             {promoActive && <span className="text-xs font-semibold text-white/70">/ first month</span>}
           </div>
           <p className="mt-1 text-[11px] text-white/60">

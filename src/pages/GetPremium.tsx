@@ -44,7 +44,7 @@ const STRIPE_PRICES = {
     annual: "price_1SpZ5OL8E849h6yxLP3NB1pi",
   },
   premium: {
-    monthly: "price_1U7aifL8E849h6yxdv1QWtqC",
+    monthly: "price_1UewV2L8E849h6yxUfhk7dRP",
     annual: "price_1U7ajzL8E849h6yxMwrads83",
   },
 };
@@ -74,7 +74,7 @@ const androidPlans = {
     {
       id: "premium",
       name: "Premium",
-      price: "€14.99",
+      price: "€2.29",
       period: "/month / /mesecno",
        description: "Full access to all predictions / Potpun pristup svim predikcijama",
       buttonText: "Get Premium / Kupi Premium",
@@ -164,7 +164,7 @@ const webPlans = {
     {
       id: "premium",
       name: "Premium",
-      price: "€14.99",
+      price: "€2.29",
       period: "/month / /mesecno",
       description: "Full access to all content / Potpun pristup svim sadržajima",
       buttonText: "Get Premium / Kupi Premium",

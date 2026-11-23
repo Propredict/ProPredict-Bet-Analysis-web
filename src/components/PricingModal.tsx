@@ -43,7 +43,7 @@ export function PricingModal({ open, onOpenChange }: PricingModalProps) {
   const targetPlan: UserPlan = "premium";
 
   // Pricing per period
-  const pricing = { monthly: "€14.99/mo", annual: "€119.99/yr", saveBadge: "Save 33%" };
+  const pricing = { monthly: "€2.29/mo", annual: "€119.99/yr", saveBadge: "Save 33%" };
   const currentPrice = period === "monthly" ? pricing.monthly : pricing.annual;
 
   useEffect(() => {

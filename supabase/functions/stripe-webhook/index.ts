@@ -116,7 +116,7 @@ function getDisplayPrice(subscription: Stripe.Subscription, plan: string): strin
     const symbol = cur === "EUR" ? "€" : cur === "USD" ? "$" : cur + " ";
     return `${symbol}${amount}`;
   }
-  return plan === "premium" ? "€14.99" : "€3.99";
+  return plan === "premium" ? "€2.29" : "€3.99";
 
 }
 
@@ -128,6 +128,7 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1SpZ64L8E849h6yxd2Fnz1YP": "premium", // Premium yearly (legacy price for existing subscribers)
   "price_1U7aifL8E849h6yxdv1QWtqC": "premium", // Premium monthly (new price for new subscribers)
   "price_1U7ajzL8E849h6yxMwrads83": "premium", // Premium yearly (new price for new subscribers)
+  "price_1UewV2L8E849h6yxUfhk7dRP": "premium", // Premium monthly €2.29 (current price for new web subscribers)
 };
 
 const ACTIVE_STRIPE_STATUSES = new Set(["active", "trialing"]);
