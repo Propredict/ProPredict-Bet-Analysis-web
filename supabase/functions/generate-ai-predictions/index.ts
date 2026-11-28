@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { analyzeInjuryImpact, applyInjuryAdjustment } from "./injuryImpact.ts";
+import { isLegacyTierPrediction, LEGACY_TIER_ENGINE_FILTER } from "../_shared/legacyTierGuard.ts";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
 
@@ -6154,7 +6155,8 @@ async function assignTiers(
 ): Promise<{ free: number; pro: number; premium: number; diamond: number }> {
   const { data: allPredictions, error } = await supabase
     .from("ai_predictions")
-    .select("id, home_team, away_team, confidence, is_locked, result_status, prediction, league, analysis, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away")
+    .select("id, home_team, away_team, confidence, is_locked, result_status, prediction, league, analysis, key_factors, last_home_goals, last_away_goals, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away, engine_version")
+    .or(LEGACY_TIER_ENGINE_FILTER)
     .in("match_date", [todayStr, tomorrowStr])
     .in("result_status", ["pending", null])
     .eq("is_locked", false)
@@ -6790,10 +6792,11 @@ async function assignTiers(
 
   // ---- Apply DB updates ----
 
-  // Reset is_premium for both dates
+  // Reset legacy tiers only. V7 owns its Premium locks and thresholds (85+ / HIGH).
   await supabase
     .from("ai_predictions")
     .update({ is_premium: false })
+    .or(LEGACY_TIER_ENGINE_FILTER)
     .in("match_date", [todayStr, tomorrowStr]);
 
   // Mark Premium
@@ -6823,7 +6826,9 @@ async function assignTiers(
   }
 
   // === STEPS 5b–7: Safe Pick, Diamond Pick, Diamond Combo ===
-  const specials = await applySpecials(supabase, todayStr, tomorrowStr, premiumPicks);
+  // Read the current Premium pool after legacy updates so V7 labels are not
+  // accidentally cleared or fed with picks demoted by the legacy allocator.
+  const specials = await applySpecials(supabase, todayStr, tomorrowStr);
 
   return {
     free: freePicks.length,
@@ -6841,9 +6846,37 @@ async function assignTiers(
 async function applySpecials(
   supabase: any,
   todayStr: string,
-  tomorrowStr: string,
-  premiumPicks: any[]
-): Promise<{ safe: number; diamond: number }> {
+  tomorrowStr: string
+): Promise<{ safe: number; diamond: number; premiumPool: number; error?: string }> {
+  const { data, error } = await supabase
+    .from("ai_predictions")
+    .select("id, home_team, away_team, confidence, result_status, prediction, league, analysis, key_factors, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away, engine_version")
+    .in("match_date", [todayStr, tomorrowStr])
+    .eq("is_premium", true)
+    .eq("is_locked", false)
+    .order("confidence", { ascending: false });
+
+  if (error) {
+    console.error("[SPECIALS] Failed to load the current Premium pool:", error.message);
+    return { safe: 0, diamond: 0, premiumPool: 0, error: error.message };
+  }
+
+  // Normalise v7 rows so the existing Diamond/Combo gates can read them:
+  // v7 Premium already requires confidence ≥85 AND HIGH data quality, which is
+  // the v7 equivalent of the legacy "variance_stable" flag; its xG lives in
+  // xg_home/xg_away instead of the legacy "step2_xg:" key factor tag.
+  const premiumPicks = (data ?? [])
+    .filter((p: any) => p.result_status == null || p.result_status === "pending")
+    .map((p: any) => {
+      if (p.engine_version !== "v7") return p;
+      const factors: string[] = Array.isArray(p.key_factors) ? [...p.key_factors] : [];
+      if (!factors.some((f) => typeof f === "string" && f.startsWith("step2_xg:")) && p.xg_home != null && p.xg_away != null) {
+        const h = Number(p.xg_home), a = Number(p.xg_away);
+        factors.push(`step2_xg:${h}|${a}|${Math.round((h - a) * 100) / 100}`);
+      }
+      return { ...p, key_factors: factors, variance_stable: true };
+    });
+
   // Mark Safe Picks (Premium subset with confidence >= 85 AND stable variance)
   // First reset all is_safe_pick for both dates (idempotent)
   await supabase
@@ -7236,7 +7269,7 @@ async function applySpecials(
     console.error("[STEP 7] Diamond combo tips error:", e);
   }
 
-  return { safe: safePickIds.length, diamond: diamond ? 1 : 0 };
+  return { safe: safePickIds.length, diamond: diamond ? 1 : 0, premiumPool: premiumPicks.length };
 }
 
 async function markPredictionLocked(
@@ -7539,6 +7572,13 @@ async function processBatch(
 
   for (const pred of predictions) {
     try {
+      // V7 is generated exclusively by its own engine. The legacy midnight
+      // regenerate must not overwrite V7 picks, probabilities or API usage.
+      if (!isLegacyTierPrediction(pred)) {
+        console.log(`[V7 GUARD] ${pred.match_id}: skip legacy regeneration`);
+        continue;
+      }
+
       const fixtureIdStr = String(pred.match_id);
 
       // Use the daily fixture list first. ALWAYS fallback to direct by-id fetch if missing
@@ -8857,7 +8897,7 @@ async function handleBatchRegenerate(
         const chunk = fixtureIds.slice(i, i + 500);
         const { data: chunkData } = await supabase
           .from("ai_predictions")
-          .select("match_id")
+          .select("match_id, engine_version")
           .in("match_id", chunk);
         if (chunkData) existingGlobalAll = existingGlobalAll.concat(chunkData);
       }
@@ -8865,6 +8905,11 @@ async function handleBatchRegenerate(
 
       const existingDateIds = new Set((existingByDate ?? []).map((p: any) => String(p.match_id)));
       const existingGlobalIds = new Set((existingGlobal.data ?? []).map((p: any) => String(p.match_id)));
+      const legacyGlobalIds = new Set(
+        (existingGlobal.data ?? [])
+          .filter(isLegacyTierPrediction)
+          .map((p: any) => String(p.match_id))
+      );
       
       // Only insert IDs that don't exist ANYWHERE in the table
       const missingIds = fixtureIds.filter((id) => !existingDateIds.has(id) && !existingGlobalIds.has(id));
@@ -8971,7 +9016,7 @@ async function handleBatchRegenerate(
       // but whose match_date is wrong. Without this, fixtures that were ever
       // inserted on another date stay frozen there and never re-enrich.
       const idsToReattach = fixtureIds.filter(
-        (id) => existingGlobalIds.has(id) && !existingDateIds.has(id)
+        (id) => legacyGlobalIds.has(id) && !existingDateIds.has(id)
       );
       if (idsToReattach.length > 0) {
         console.log(
@@ -9096,38 +9141,14 @@ async function handleSpecialsOnly(): Promise<Response> {
   const todayStr = today.toISOString().split("T")[0];
   const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
-  const { data, error } = await supabase
-    .from("ai_predictions")
-    .select("id, home_team, away_team, confidence, result_status, prediction, league, analysis, key_factors, predicted_score, home_win, draw, away_win, match_date, match_timestamp, variance_stable, variance_score, xg_home, xg_away, engine_version")
-    .in("match_date", [todayStr, tomorrowStr])
-    .eq("is_premium", true)
-    .eq("is_locked", false)
-    .order("confidence", { ascending: false });
-
-  if (error) {
-    return new Response(JSON.stringify({ ok: false, mode: "specialsOnly", error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const result = await applySpecials(supabase, todayStr, tomorrowStr);
+  if (result.error) {
+    return new Response(JSON.stringify({ ok: false, mode: "specialsOnly", error: result.error }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
-  // Normalise v7 rows so the existing Diamond/Combo gates can read them:
-  // v7 Premium already requires confidence ≥85 AND HIGH data quality, which is
-  // the v7 equivalent of the legacy "variance_stable" flag; its xG lives in
-  // xg_home/xg_away instead of the legacy "step2_xg:" key factor tag.
-  const premiumPicks = (data ?? [])
-    .filter((p: any) => p.result_status == null || p.result_status === "pending")
-    .map((p: any) => {
-      if (p.engine_version !== "v7") return p;
-      const factors: string[] = Array.isArray(p.key_factors) ? [...p.key_factors] : [];
-      if (!factors.some((f) => typeof f === "string" && f.startsWith("step2_xg:")) && p.xg_home != null && p.xg_away != null) {
-        const h = Number(p.xg_home), a = Number(p.xg_away);
-        factors.push(`step2_xg:${h}|${a}|${Math.round((h - a) * 100) / 100}`);
-      }
-      return { ...p, key_factors: factors, variance_stable: true };
-    });
-
-  const result = await applySpecials(supabase, todayStr, tomorrowStr, premiumPicks);
-  console.log(`[SPECIALS ONLY] premium pool=${premiumPicks.length} safe=${result.safe} diamond=${result.diamond}`);
+  console.log(`[SPECIALS ONLY] premium pool=${result.premiumPool} safe=${result.safe} diamond=${result.diamond}`);
   return new Response(
-    JSON.stringify({ ok: true, mode: "specialsOnly", todayStr, tomorrowStr, premiumPool: premiumPicks.length, ...result }),
+    JSON.stringify({ ok: true, mode: "specialsOnly", todayStr, tomorrowStr, ...result }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 }
